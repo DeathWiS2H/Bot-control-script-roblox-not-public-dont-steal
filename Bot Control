@@ -71,7 +71,7 @@ print("Asu's bot controller VERSION: 0.2.1")
 
 --print cmds in console
 if printcmd then
-print("Asu's Bot Controller")
+print("Death's Bot Controller")
 print("-------------------------------------------------------------------")
 print("args:")
 print("[plr] = player (you don't need to put the full username or display name of someone to make it work)")
