@@ -9,6 +9,7 @@ local printcmd = getgenv().printcmd
 local versionfromconfig = getgenv().version
 
 -- cmd, bool and stuff
+local cmdunadmin = true
 local cmdstatus = true
 local cmdindex = true
 local cmdfollow = true
@@ -107,6 +108,7 @@ print(";unworm                              |  stop the worm/train/snake formati
 print(";spin <number>                       |  make bots spin")
 print(";unspin                              |  make bots stop spinning")
 print(";admin [plr]                         |  give admin to someone, users with admin permission will be allowed to control the bots")
+print(";unadmin [plr]                       |  unadmin someone, users with admin permission will be removed and cannot control the bots")
 print(";arch <number>                       |  make a half-circle with the bots")
 print(";stalk [plr]                         |  follow someone and walk around them")
 print(";unstalk                             |  stop following someone and walking around them")
@@ -369,27 +371,6 @@ local function goto(targetPlayer)
     end
   end
 end
-
-
-      elseif command:sub(1, 7) == "dance" and table.find(bots, displayName) and cmddance then
-        game:GetService("Players").LocalPlayer:PlayEmote("dance")
-        wait(2)
-
-      elseif command:sub(1, 7) == "dance 1" and table.find(bots, displayName) and cmddance then
-        game:GetService("Players").LocalPlayer:PlayEmote("dance1") 
-        wait(2)
-
-      elseif command:sub(1, 7) == "dance 2" and table.find(bots, displayName) and cmddance then
-        game:GetService("Players").LocalPlayer:PlayEmote("dance2")
-        wait(2)
-
-      elseif command:sub(1, 7) == "dance 3" and table.find(bots, displayName) and cmddance then
-        game:GetService("Players").LocalPlayer:PlayEmote("dance3")
-        wait(2)
-
-      elseif command:sub(1, 7) == "dance 4" and table.find(bots, displayName) and cmddance then
-        game:GetService("Players").LocalPlayer:PlayEmote("dance4")
-        wait(2)
 
 -- ;tower
 local function tower(targetPlayer)
@@ -769,12 +750,24 @@ local function stalkPlayer(targetPlayer)
   end
 end
 
--- ;admin
+-- ;admin and ;unadmin
 local function admin(targetPlayer)
   if not table.find(Admins, targetPlayer.Name) then
     table.insert(Admins, targetPlayer.Name)
     table.insert(adminNotConnected, targetPlayer.Name)
-  else
+    -- Connect chat listener for new admin
+    connectChatListener(targetPlayer)
+  end
+end
+
+local function unadmin(targetPlayer)
+  local adminIndex = table.find(Admins, targetPlayer.Name)
+  if adminIndex then
+    table.remove(Admins, adminIndex)
+    local notConnectedIndex = table.find(adminNotConnected, targetPlayer.Name)
+    if notConnectedIndex then
+      table.remove(adminNotConnected, notConnectedIndex)
+    end
   end
 end
 
@@ -793,9 +786,37 @@ local function connectChatListener(playerpower)
         local targetPlayerforadmin = findPlayerByName(adminargs)
 
         if targetPlayerforadmin then
-          admin(targetPlayerforadmin)
+          if targetPlayerforadmin.Name == owner then
+            if index == channel then
+              chatMessage("Cannot admin the owner - they already have full permissions!")
+            end
+          else
+            admin(targetPlayerforadmin)
+            if index == channel then
+              chatMessage(targetPlayerforadmin.Name .. ' is now an admin.')
+            end
+          end
+        else
           if index == channel then
-            chatMessage(targetPlayerforadmin.Name .. ' is now an admin.')
+            chatMessage("Player not found.")
+          end
+        end
+        wait(2)
+
+      elseif command:sub(1, 8) == "unadmin " and table.find(bots, displayName) and cmdunadmin then
+        local adminargs = command:sub(9)
+        local targetPlayerforadmin = findPlayerByName(adminargs)
+
+        if targetPlayerforadmin then
+          if targetPlayerforadmin.Name == owner then
+            if index == channel then
+              chatMessage("Cannot remove admin from the owner!")
+            end
+          else
+            unadmin(targetPlayerforadmin)
+            if index == channel then
+              chatMessage(targetPlayerforadmin.Name .. ' is no longer an admin.')
+            end
           end
         else
           if index == channel then
@@ -933,13 +954,13 @@ local function connectChatListener(playerpower)
         chatMessage("/e dance 4")
         wait(2)
 
-    elseif command:sub(1, 5) == "help" and table.find(bots, displayName) and cmdhelp then --max character per message is 155
+     elseif command:sub(1, 5) == "help" and table.find(bots, displayName) and cmdhelp then
     if index == channel then
         chatMessage("available commands:")
         chatMessage(";status ;index ;follow [plr] ;quit ;dance <number> ;undance ;reset ;jump ;say <sentence> ;unfollow ;orbit [plr] <radius> <speed>")
         chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
         chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;align ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
-        chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;help")
+        chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;unadmin [plr] ;arch <number> ;stalk [plr] ;unstalk ;help")
         end
     wait(2)
 
