@@ -67,11 +67,11 @@ local stalkbool = nil
 local Admins = {}
 
 --version of the script
-print("Asu's bot controller VERSION: 0.2.1")
+print("Death's bot controller VERSION: 0.1.0")
 
 --print cmds in console
 if printcmd then
-print("Asu's Bot Controller")
+print("Death's Bot Controller")
 print("-------------------------------------------------------------------")
 print("args:")
 print("[plr] = player (you don't need to put the full username or display name of someone to make it work)")
