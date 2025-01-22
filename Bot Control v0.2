@@ -9,7 +9,10 @@ local printcmd = getgenv().printcmd
 local versionfromconfig = getgenv().version
 
 -- cmd, bool and stuff
-local cmdunadmin = true
+local cmdwhitelist = true
+local cmdunwhitelist = true
+local whitelist = {}
+local whitelistNotConnected = {}
 local cmdstatus = true
 local cmdindex = true
 local cmdfollow = true
@@ -108,7 +111,6 @@ print(";unworm                              |  stop the worm/train/snake formati
 print(";spin <number>                       |  make bots spin")
 print(";unspin                              |  make bots stop spinning")
 print(";admin [plr]                         |  give admin to someone, users with admin permission will be allowed to control the bots")
-print(";unadmin [plr]                       |  unadmin someone, users with admin permission will be removed and cannot control the bots")
 print(";arch <number>                       |  make a half-circle with the bots")
 print(";stalk [plr]                         |  follow someone and walk around them")
 print(";unstalk                             |  stop following someone and walking around them")
@@ -750,24 +752,33 @@ local function stalkPlayer(targetPlayer)
   end
 end
 
--- ;admin and ;unadmin
+-- ;whitelist
+local function whitelist(targetPlayer)
+  if not table.find(whitelist, targetPlayer.Name) then
+    table.insert(whitelist, targetPlayer.Name)
+    table.insert(whitelistNotConnected, targetPlayer.Name)
+  else
+  end
+end
+
+-- ;unwhitelist
+local function unwhitelist(targetPlayer)
+  local whitelistIndex = table.find(whitelist, targetPlayer.Name)
+  if whitelistIndex then
+    table.remove(whitelist, whitelistIndex)
+    local notConnectedIndex = table.find(whitelistNotConnected, targetPlayer.Name)
+    if notConnectedIndex then
+      table.remove(whitelistNotConnected, notConnectedIndex)
+    end
+  end
+end
+
+-- ;admin
 local function admin(targetPlayer)
   if not table.find(Admins, targetPlayer.Name) then
     table.insert(Admins, targetPlayer.Name)
     table.insert(adminNotConnected, targetPlayer.Name)
-    -- Connect chat listener for new admin
-    connectChatListener(targetPlayer)
-  end
-end
-
-local function unadmin(targetPlayer)
-  local adminIndex = table.find(Admins, targetPlayer.Name)
-  if adminIndex then
-    table.remove(Admins, adminIndex)
-    local notConnectedIndex = table.find(adminNotConnected, targetPlayer.Name)
-    if notConnectedIndex then
-      table.remove(adminNotConnected, notConnectedIndex)
-    end
+  else
   end
 end
 
@@ -779,6 +790,51 @@ local function connectChatListener(playerpower)
       local command = message:sub(#prefix + 1)
       if command == "status" and cmdstatus and table.find(bots, displayName) then
         chatMessage(displayName .. " (Bot " .. index .. ") is active!")
+        wait(2)
+
+      elseif command:sub(1, 10) == "whitelist " and table.find(bots, displayName) and cmdwhitelist then
+        local whitelistargs = command:sub(11)
+        local targetPlayerforwhitelist = findPlayerByName(whitelistargs)
+
+        if targetPlayerforwhitelist then
+          if targetPlayerforwhitelist.Name == owner then
+            if index == channel then
+              chatMessage("Cannot whitelist the owner - they already have full permissions!")
+            end
+          else
+            whitelist(targetPlayerforwhitelist)
+            if index == channel then
+              chatMessage("⭐ " .. targetPlayerforwhitelist.Name .. ' has been whitelisted!')
+              chatMessage("They can now control the bots.")
+            end
+          end
+        else
+          if index == channel then
+            chatMessage("Player not found.")
+          end
+        end
+        wait(2)
+
+      elseif command:sub(1, 12) == "unwhitelist " and table.find(bots, displayName) and cmdunwhitelist then
+        local whitelistargs = command:sub(13)
+        local targetPlayerforwhitelist = findPlayerByName(whitelistargs)
+
+        if targetPlayerforwhitelist then
+          if targetPlayerforwhitelist.Name == owner then
+            if index == channel then
+              chatMessage("Cannot remove whitelist from the owner!")
+            end
+          else
+            unwhitelist(targetPlayerforwhitelist)
+            if index == channel then
+              chatMessage("❌ " .. targetPlayerforwhitelist.Name .. ' is no longer whitelisted.')
+            end
+          end
+        else
+          if index == channel then
+            chatMessage("Player not found.")
+          end
+        end
         wait(2)
 
       elseif command:sub(1, 6) == "admin " and table.find(bots, displayName) and cmdadmin then
@@ -793,29 +849,8 @@ local function connectChatListener(playerpower)
           else
             admin(targetPlayerforadmin)
             if index == channel then
-              chatMessage(targetPlayerforadmin.Name .. ' is now an admin.')
-            end
-          end
-        else
-          if index == channel then
-            chatMessage("Player not found.")
-          end
-        end
-        wait(2)
-
-      elseif command:sub(1, 8) == "unadmin " and table.find(bots, displayName) and cmdunadmin then
-        local adminargs = command:sub(9)
-        local targetPlayerforadmin = findPlayerByName(adminargs)
-
-        if targetPlayerforadmin then
-          if targetPlayerforadmin.Name == owner then
-            if index == channel then
-              chatMessage("Cannot remove admin from the owner!")
-            end
-          else
-            unadmin(targetPlayerforadmin)
-            if index == channel then
-              chatMessage(targetPlayerforadmin.Name .. ' is no longer an admin.')
+              chatMessage("👑 " .. targetPlayerforadmin.Name .. ' is now an admin!')
+              chatMessage("They can now control the bots and manage other users.")
             end
           end
         else
@@ -960,7 +995,7 @@ local function connectChatListener(playerpower)
         chatMessage(";status ;index ;follow [plr] ;quit ;dance <number> ;undance ;reset ;jump ;say <sentence> ;unfollow ;orbit [plr] <radius> <speed>")
         chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
         chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;align ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
-        chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;unadmin [plr] ;arch <number> ;stalk [plr] ;unstalk ;help")
+        chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;unadmin [plr] ;whitelist [plr] ;unwhitelist [plr] ;arch <number> ;stalk [plr] ;unstalk ;help")
         end
     wait(2)
 
@@ -1292,7 +1327,7 @@ end
 
 --listen to admins
 game.Players.PlayerAdded:Connect(function(player)
-if table.find(Admins, player.Name) then
+if table.find(Admins, player.Name) or table.find(Whitelisted, player.Name) then
   connectChatListener(player)
 end
 end)
