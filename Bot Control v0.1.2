@@ -1,12 +1,21 @@
+--Configuration
+getgenv().Use_Displayname = true -- if true, put accounts displayname for bots | if false use the username of accounts
+getgenv().bots = {"Red", "Purple", "Blue"} --bots
+getgenv().owner = "JokerMadBoss" --Owner (USER NAME, DO NOT PUT DISPLAYNAME)
+getgenv().nbbot = 3 -- Number of bots you want to use
+getgenv().prefix = ";" -- Prefix
+getgenv().botrender = true -- when true, bots use less CPU
+getgenv().printcmd = true -- if true, displays all commands available in the console
+
 --get configs
-local Use_Displayname = getgenv().Use_Displayname or false -- Added default value
-local bots = getgenv().bots or {} -- Added default value
-local owner = getgenv().owner or "" -- Added default value
-local nbbot = getgenv().nbbot or 0 -- Added default value
-local prefix = getgenv().prefix or ";" -- Added default value
-local botrender = getgenv().botrender or false -- Added default value
-local printcmd = getgenv().printcmd or false -- Added default value
-local versionfromconfig = getgenv().version or "0.2.1" -- Added default value
+local Use_Displayname = getgenv().Use_Displayname
+local bots = getgenv().bots
+local owner = getgenv().owner
+local nbbot = getgenv().nbbot
+local prefix = getgenv().prefix
+local botrender = getgenv().botrender
+local printcmd = getgenv().printcmd
+local versionfromconfig = getgenv().version
 
 -- cmd, bool and stuff
 local cmdstatus = true
@@ -46,7 +55,7 @@ local cmdhelp = true
 local cmdtower = true
 local cmduntower = true
 local cmdfix = true
-local cmdunadmin = true
+local cmdfireworks = true
 
 local towerbool = nil
 local followbool = nil
@@ -68,11 +77,11 @@ local stalkbool = nil
 local Admins = {}
 
 --version of the script
-print("Asu's bot controller VERSION: 0.2.1")
+print("Death's bot controller VERSION: 0.1.0")
 
 --print cmds in console
 if printcmd then
-print("Asu's Bot Controller")
+print("Death's Bot Controller")
 print("-------------------------------------------------------------------")
 print("args:")
 print("[plr] = player (you don't need to put the full username or display name of someone to make it work)")
@@ -108,7 +117,6 @@ print(";unworm                              |  stop the worm/train/snake formati
 print(";spin <number>                       |  make bots spin")
 print(";unspin                              |  make bots stop spinning")
 print(";admin [plr]                         |  give admin to someone, users with admin permission will be allowed to control the bots")
-print(";unadmin [plr]                       |  remove admin from someone (cannot remove owner)")
 print(";arch <number>                       |  make a half-circle with the bots")
 print(";stalk [plr]                         |  follow someone and walk around them")
 print(";unstalk                             |  stop following someone and walking around them")
@@ -116,6 +124,7 @@ print(";help                                |  chat all available commands")
 print(";tower [plr]                         |  makes a tower of bots")
 print(";untower                             |  undo the tower")
 print(";fix                                 |  try to fix the bot if glitched")
+print(";fireworks [plr]                     |  launch bots in the air and make them explode")
 end
 
 -- Services
@@ -368,6 +377,51 @@ local function goto(targetPlayer)
     if localHumanoidRootPart then
       removeVelocity()
       localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
+    end
+  end
+end
+
+-- ;fireworks
+local function fireworks(targetPlayer)
+  if player and player.Character then
+    local humanoid = player.Character:FindFirstChild("Humanoid")
+    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    
+    if humanoid and humanoidRootPart then
+      -- Only teleport if target player is provided
+      if targetPlayer and targetPlayer.Character then
+        local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if targetHumanoidRootPart then
+          removeVelocity()
+          humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
+        end
+      end
+      
+      -- Apply firework effects
+      local Spin = Instance.new("BodyAngularVelocity")
+      Spin.Name = "Spinning"
+      Spin.Parent = humanoidRootPart
+      Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+      Spin.AngularVelocity = Vector3.new(0, math.random(30, 60), 0)
+      
+      local Velocity = Instance.new("BodyVelocity")
+      Velocity.Name = "Upward"
+      Velocity.Parent = humanoidRootPart
+      Velocity.MaxForce = Vector3.new(0, math.huge, 0)
+      Velocity.Velocity = Vector3.new(0, math.random(80, 125), 0)
+      
+      -- Set timer to kill character
+      task.delay(2, function()
+        if humanoid then
+          if Spin then
+            Spin:Destroy()
+          end
+          if Velocity then
+            Velocity:Destroy()
+          end
+          humanoid.Health = 0
+        end
+      end)
     end
   end
 end
@@ -747,33 +801,511 @@ local function admin(targetPlayer)
   end
 end
 
--- ;unadmin
-local function unadmin(targetPlayer)
-  if targetPlayer.Name ~= owner then
-    local adminIndex = table.find(Admins, targetPlayer.Name)
-    if adminIndex then
-      table.remove(Admins, adminIndex)
-      local notConnectedIndex = table.find(adminNotConnected, targetPlayer.Name)
-      if notConnectedIndex then
-        table.remove(adminNotConnected, notConnectedIndex)
-      end
-    end
-  end
-end
-
 -- check chat for cmds
 local function connectChatListener(playerpower)
   playerpower.Chatted:Connect(function(message)
   if playerpower.Name == owner or table.find(Admins, playerpower.Name) then
-    if message:sub(1, 5) == ";fix " then
-      local targetName = message:sub(6)
-      local targetPlayer = game.Players:FindFirstChild(targetName)
-      if targetPlayer then
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-          player.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+    if message:sub(1, #prefix) == prefix then
+      local command = message:sub(#prefix + 1)
+      if command == "status" and cmdstatus and table.find(bots, displayName) then
+        chatMessage(displayName .. " (Bot " .. index .. ") is active!")
+        wait(2)
+
+      elseif command:sub(1, 6) == "admin " and table.find(bots, displayName) and cmdadmin then
+        local adminargs = command:sub(7)
+        local targetPlayerforadmin = findPlayerByName(adminargs)
+
+        if targetPlayerforadmin then
+          admin(targetPlayerforadmin)
+          if index == channel then
+            chatMessage(targetPlayerforadmin.Name .. ' is now an admin.')
+          end
+        else
+          if index == channel then
+            chatMessage("Player not found.")
+          end
+        end
+        wait(2)
+
+      elseif command == "quit" and table.find(bots, displayName) and cmdquit then
+        cmdstatus = false
+        cmdindex = false
+        cmdfollow = false
+        cmdquit = false
+        cmddance = false
+        cmdundance = false
+        cmdreset = false
+        cmdjump = false
+        cmdsay = false
+        cmdunfollow = false
+        followbool = false
+        cmdreset = false
+        cmdorbit = false
+        orbitbool = false
+        cmdunorbit = false
+        cmdgoto = false
+        cmdalign = false
+        cmdws = false
+        booljump = false
+        cmdloopjump = false
+        cmdunloopjump = false
+        cmdcircle = false
+        cmdchannel = false
+        orbitbool = false
+        orbitbool5 = false
+        orbitbool2 = false
+        orbitbool3 = false
+        orbitbool4 = false
+        orbitbool6 = false
+        wormbool = false
+        cmdworm = false
+        cmdunworm = false
+        cmdspin = false
+        cmdunspin = false
+        boolspin = false
+        cmdadmin = false
+        adminbool = false
+        cmdarch = false
+        cmdorbit2 = false
+        cmdorbit3 = false
+        cmdorbit4 = false
+        cmdorbit5 = false
+        cmdorbit6 = false
+        cmdstalk = false
+        stalkbool = false
+        cmdunstalk = false
+        cmdhelp = false
+        towerbool = false
+        cmdtower = false
+        cmduntower = false
+        cmdfix = false
+        Admins = {}
+        adminNotConnected = {}
+        chatMessage("quit")
+        wait(2)
+
+
+      elseif command == "index" and cmdindex and table.find(bots, displayName) then
+        chatMessage(displayName .. " index is (" .. index .. ")")
+        wait(2)
+
+      elseif command:sub(1, 8) == "channel " and cmdchannel and table.find(bots, displayName) then
+        local chnl = tonumber(command:sub(9))
+
+        if chnl > nbbot or chnl < 1 then
+          if index == channel then
+            chatMessage("Error: channel must be between 1 and " .. nbbot)
+          end
+        else
+          channel = chnl
+          if index == channel then
+            chatMessage("Channel is now: " .. channel)
+          end
+        end
+        wait(2)
+
+      elseif command:sub(1, 15) == "unloopjump" and cmdunloopjump and table.find(bots, displayName) then
+        booljump = false
+        wait(2)
+      
+      elseif command:sub(1, 8) == "untower" and cmduntower and table.find(bots, displayName) then
+          towerbool = false
+          wait(2)
+
+      elseif command == "loopjump" and cmdloopjump and table.find(bots, displayName) then
+        booljump = true
+        while booljump do
+          player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+          wait(0.8)
+        end
+        wait(2)
+
+      elseif command:sub(1, 6) == "align " and cmdalign and table.find(bots, displayName) then
+        disablebool()
+        local playerName = command:sub(7)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          align(targetPlayer)
+          wait(2)
+        else
+          chatMessage("Player not found: " .. playerName)
+        end
+          align(targetPlayer)
+          if index == channel then
+            chatMessage("yes sir!")
+          end
+          wait(2)
+
+      elseif command:sub(1, 7) == "dance" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance 1" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance1")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance 2" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance2")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance 3" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance3")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance 4" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance 4")
+        wait(2)
+
+    elseif command:sub(1, 5) == "help" and table.find(bots, displayName) and cmdhelp then --max character per message is 155
+    if index == channel then
+        chatMessage("available commands:")
+        chatMessage(";status ;index ;follow [plr] ;quit ;dance <number> ;undance ;reset ;jump ;say <sentence> ;unfollow ;orbit [plr] <radius> <speed>")
+        chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
+        chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;align ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
+        chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;help ;firework")
+        end
+    wait(2)
+
+      elseif command:sub(1, 5) == "spin " and table.find(bots, displayName) and cmdspin then
+        local spinarg = tonumber(command:sub(6))
+        spin(spinarg)
+        boolspin = true
+        wait(2)
+
+      elseif command:sub(1, 6) == "unspin" and table.find(bots, displayName) and cmdunspin then
+        boolspin = false
+        wait(2)
+
+      elseif command:sub(1, 3) == "ws " and table.find(bots, displayName) and cmdws then
+        local wsarg = tonumber(command:sub(4))
+        if wsarg then
+          player.Character.Humanoid.WalkSpeed = wsarg
+          wait(2)
+        else
+        end
+
+      elseif command:sub(1, 7) == "undance" and table.find(bots, displayName) and cmddance then
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        wait(2)
+
+      elseif command:sub(1, 7) == "circle " and table.find(bots, displayName) and cmdcircle then
+        disablebool()
+        local circlearg = tonumber(command:sub(8)) or 8
+        tpcircle(circlearg)
+        wait(2)
+
+      elseif command:sub(1, 5) == "arch " and table.find(bots, displayName) and cmdarch then
+        disablebool()
+        local archarg = tonumber(command:sub(6)) or 8
+        tparch(archarg)
+        wait(2)
+
+      elseif command:sub(1, 4) == "say " and table.find(bots, displayName) and cmdsay then
+        local msgcontent = command:sub(5)
+        chatMessage(msgcontent)
+        wait(2)
+
+      elseif command:sub(1, 4) == "fix" and table.find(bots, displayName) and cmdfix then
+        fix()
+        chatmessage("Bot number "..index.."is fixed")
+        wait(2)
+
+      elseif command:sub(1, 4) == "jump" and table.find(bots, displayName) and cmdjump then
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        wait(2)
+
+      elseif command:sub(1, 9) == "firework " and table.find(bots, displayName) and cmdfireworks then
+        disablebool()
+        local playerName = command:sub(10)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          fireworks(targetPlayer)
+        else
+          fireworks()
+        end
+        wait(2)
+
+    elseif command:sub(1, 9) == "unorbit" and table.find(bots, displayName) and cmdunorbit then
+        orbitbool = false
+        orbitbool2 = false
+        orbitbool3 = false
+        orbitbool4 = false
+        orbitbool5 = false
+        orbitbool6 = false
+
+        if index == channel then
+          chatMessage("stopped orbiting")
+        end
+        game.Workspace.Gravity = 196.2
+        wait(2)
+
+    elseif command:sub(1, 5) == "goto " and table.find(bots, displayName) and cmdgoto then
+      disablebool()
+        local playerName = command:sub(6)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          goto(targetPlayer)
+          wait(2)
+        else
+          chatMessage("Player not found: " .. playerName)
+        end
+
+    elseif command:sub(1, 6) == "tower " and table.find(bots, displayName) and cmdtower then
+      disablebool()
+        local playerName = command:sub(7)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          tower(targetPlayer)
+          wait(2)
+        else
+          chatMessage("Player not found: " .. playerName)
+        end
+
+      elseif command:sub(1, 9) == "unfollow" and table.find(bots, displayName) and cmdunfollow then
+        followbool = false
+        if index == channel then
+          chatMessage("stopped following")
+        end
+        wait(2)
+
+    elseif command:sub(1, 6) == "unworm" and table.find(bots, displayName) and cmdunworm then
+        wormbool = false
+        if index == channel then
+          chatMessage("stopped worm")
+        end
+        wait(2)
+
+    elseif command:sub(1, 6) == "orbit " and table.find(bots, displayName) and cmdorbit then
+      disablebool()
+        orbitbool = false
+        local args = command:split(" ")
+        local playerName = args[2] 
+        local r = tonumber(args[3])
+        local speed = tonumber(args[4])
+
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          orbitbool = true
+
+          if index == channel then
+            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
+          end
+          orbitPlayer(targetPlayer, speed, r)
+
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
+        end
+
+    elseif command:sub(1, 7) == "orbit2 " and table.find(bots, displayName) and cmdorbit2 then
+      disablebool()
+        orbitbool2 = false
+        local args = command:split(" ")
+        local playerName = args[2]
+        local r = tonumber(args[3])
+        local speed = tonumber(args[4])
+
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          orbitbool2 = true 
+
+          if index == channel then
+            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
+          end
+          orbitPlayer2(targetPlayer, speed, r)
+
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
+        end
+
+    elseif command:sub(1, 7) == "orbit3 " and table.find(bots, displayName) and cmdorbit3 then
+      disablebool()
+        orbitbool3 = false
+        local args = command:split(" ")
+        local playerName = args[2]
+        local r = tonumber(args[3])
+        local speed = tonumber(args[4])
+
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          orbitbool3 = true
+
+          if index == channel then
+            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
+          end
+          orbitPlayer3(targetPlayer, speed, r)
+
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
+        end
+    elseif command:sub(1, 7) == "orbit4 " and table.find(bots, displayName) and cmdorbit4 then
+      disablebool()
+        orbitbool4 = false
+        local args = command:split(" ")
+        local playerName = args[2]
+        local r = tonumber(args[3])
+        local speed = tonumber(args[4])
+
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          orbitbool4 = true
+
+          if index == channel then
+            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
+          end
+          orbitPlayer4(targetPlayer, speed, r)
+
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
+        end
+
+    elseif command:sub(1, 7) == "orbit6 " and table.find(bots, displayName) and cmdorbit6 then
+      disablebool()
+        orbitbool6 = false
+        local args = command:split(" ")
+        local playerName = args[2]
+        local r = tonumber(args[3])
+        local speed = tonumber(args[4])
+
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          orbitbool6 = true 
+
+          if index == channel then
+            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
+          end
+          orbitPlayer6(targetPlayer, speed, r)
+
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
+        end
+
+    elseif command:sub(1, 7) == "orbit5 " and table.find(bots, displayName) and cmdorbit5 then
+      disablebool()
+        orbitbool5 = false
+        local args = command:split(" ")
+        local playerName = args[2]
+        local r = tonumber(args[3])
+        local speed = tonumber(args[4])
+
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          orbitbool5 = true
+
+          if index == channel then
+            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
+          end
+
+          orbitPlayer5(targetPlayer, speed, r)
+
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
+        end
+
+    elseif command:sub(1, 6) == "reset" and table.find(bots, displayName) and cmdreset then
+      disablebool()
+        player.Character:BreakJoints()
+        game.Workspace.Gravity = 196.2
+        wait(2)
+
+    elseif command:sub(1, 5) == "worm " and table.find(bots, displayName) and cmdworm then
+      disablebool()
+        local playerName = command:sub(6) -- Obtenir le nom du joueur à suivre
+        local targetPlayer = findPlayerByName(playerName)
+        wormbool = false
+        worm(targetPlayer)
+        wait(2)
+
+    elseif command:sub(1, 7) == "unstalk" and table.find(bots, displayName) and cmdunstalk then
+        stalkbool = false
+        if index == channel then
+          chatMessage("Bots stopped stalking")
+        end
+        wait(2)
+
+    elseif command:sub(1, 6) == "stalk " and table.find(bots, displayName) and cmdstalk then
+      disablebool()
+        stalkbool = false
+        local playerName = command:sub(7)
+        local targetPlayer = findPlayerByName(playerName)
+        stalkbool = true
+        if targetPlayer then
+          if index == channel then
+            chatMessage("Bots are now stalking " .. targetPlayer.Name .. ".")
+          end
+          stalkPlayer(targetPlayer)
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
+        end
+
+    elseif command:sub(1, 7) == "follow " and table.find(bots, displayName) and cmdfollow then
+      disablebool()
+        followbool = false
+        local playerName = command:sub(8)
+        local targetPlayer = findPlayerByName(playerName)
+        followbool = true
+        if targetPlayer then
+          if index == channel then
+            chatMessage("Bots are now following " .. targetPlayer.Name .. ".")
+          end
+          followPlayer(targetPlayer)
+          wait(2)
+        else
+          if index == channel then
+            chatMessage("Player not found: " .. playerName)
+          end
         end
       end
     end
   end
-end)
+ end)
 end
+
+--listen to players
+player.Chatted:Connect(function(message)
+
+end)
+
+--listen to owner
+if ownerPlayer then
+  connectChatListener(ownerPlayer)
+end
+
+--listen to admins
+while adminbool do
+  for _, adminName in pairs(adminNotConnected) do
+    local adminPlayer = game.Players:FindFirstChild(adminName)
+    if adminPlayer then
+      connectChatListener(adminPlayer)
+      table.remove(adminNotConnected, table.find(adminNotConnected, adminName))
+    end
+  end
+  wait(2)
+end
+
+--listen to admins
+game.Players.PlayerAdded:Connect(function(player)
+if table.find(Admins, player.Name) then
+  connectChatListener(player)
+end
+end)
