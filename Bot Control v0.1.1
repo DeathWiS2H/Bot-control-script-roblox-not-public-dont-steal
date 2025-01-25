@@ -1,3 +1,12 @@
+--Configuration
+getgenv().Use_Displayname = true -- if true, put accounts displayname for bots | if false use the username of accounts
+getgenv().bots = {"Red", "Purple", "Blue"} --bots
+getgenv().owner = "JokerMadBoss" --Owner (USER NAME, DO NOT PUT DISPLAYNAME)
+getgenv().nbbot = 3 -- Number of bots you want to use
+getgenv().prefix = ";" -- Prefix
+getgenv().botrender = true -- when true, bots use less CPU
+getgenv().printcmd = true -- if true, displays all commands available in the console
+
 --get configs
 local Use_Displayname = getgenv().Use_Displayname
 local bots = getgenv().bots
@@ -46,6 +55,7 @@ local cmdhelp = true
 local cmdtower = true
 local cmduntower = true
 local cmdfix = true
+local cmdfireworks = true
 
 local towerbool = nil
 local followbool = nil
@@ -114,6 +124,7 @@ print(";help                                |  chat all available commands")
 print(";tower [plr]                         |  makes a tower of bots")
 print(";untower                             |  undo the tower")
 print(";fix                                 |  try to fix the bot if glitched")
+print(";fireworks                           |  launch bots in the air and make them explode")
 end
 
 -- Services
@@ -366,6 +377,41 @@ local function goto(targetPlayer)
     if localHumanoidRootPart then
       removeVelocity()
       localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
+    end
+  end
+end
+
+-- ;fireworks
+local function fireworks()
+  if player and player.Character then
+    local humanoid = player.Character:FindFirstChild("Humanoid")
+    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    
+    if humanoid and humanoidRootPart then
+      local Spin = Instance.new("BodyAngularVelocity")
+      Spin.Name = "Spinning"
+      Spin.Parent = humanoidRootPart
+      Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+      Spin.AngularVelocity = Vector3.new(0, 30, 0)
+      
+      local Velocity = Instance.new("BodyVelocity")
+      Velocity.Name = "Upward"
+      Velocity.Parent = humanoidRootPart
+      Velocity.MaxForce = Vector3.new(0, math.huge, 0)
+      Velocity.Velocity = Vector3.new(0, 100, 0)
+      
+      -- Set timer to kill character
+      task.delay(2, function()
+        if humanoid then
+          if Spin then
+            Spin:Destroy()
+          end
+          if Velocity then
+            Velocity:Destroy()
+          end
+          humanoid.Health = 0
+        end
+      end)
     end
   end
 end
@@ -741,8 +787,7 @@ local function admin(targetPlayer)
   if not table.find(Admins, targetPlayer.Name) then
     table.insert(Admins, targetPlayer.Name)
     table.insert(adminNotConnected, targetPlayer.Name)
-    -- Connect chat listener for the new admin
-    connectChatListener(targetPlayer)
+  else
   end
 end
 
@@ -907,7 +952,7 @@ local function connectChatListener(playerpower)
         chatMessage(";status ;index ;follow [plr] ;quit ;dance <number> ;undance ;reset ;jump ;say <sentence> ;unfollow ;orbit [plr] <radius> <speed>")
         chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
         chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;align ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
-        chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;help")
+        chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;help ;firework")
         end
     wait(2)
 
@@ -955,8 +1000,13 @@ local function connectChatListener(playerpower)
         chatmessage("Bot number "..index.."is fixed")
         wait(2)
 
-      elseif command:sub(1, 7) == "jump" and table.find(bots, displayName) and cmdjump then
+      adelseif command:sub(1, 7) == "jump" and table.find(bots, displayName) and cmdjump then
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        wait(2)
+
+      elseif command == "firework" and table.find(bots, displayName) and cmdfireworks then
+        disablebool()
+        fireworks()
         wait(2)
 
     elseif command:sub(1, 9) == "unorbit" and table.find(bots, displayName) and cmdunorbit then
@@ -1226,33 +1276,6 @@ if ownerPlayer then
 end
 
 --listen to admins
-local function addAdmin(adminName)
-  if not table.find(Admins, adminName) then
-    table.insert(Admins, adminName)
-    local adminPlayer = game.Players:FindFirstChild(adminName)
-    if adminPlayer then
-      connectChatListener(adminPlayer)
-    else
-      table.insert(adminNotConnected, adminName)
-    end
-  end
-end
-
-local function removeAdmin(adminName)
-  local index = table.find(Admins, adminName)
-  if index then
-    table.remove(Admins, index)
-  end
-end
-
---check for admins joining
-game.Players.PlayerAdded:Connect(function(player)
-  if table.find(Admins, player.Name) then
-    connectChatListener(player)
-  end
-end)
-
---check for existing admins
 while adminbool do
   for _, adminName in pairs(adminNotConnected) do
     local adminPlayer = game.Players:FindFirstChild(adminName)
@@ -1263,3 +1286,10 @@ while adminbool do
   end
   wait(2)
 end
+
+--listen to admins
+game.Players.PlayerAdded:Connect(function(player)
+if table.find(Admins, player.Name) then
+  connectChatListener(player)
+end
+end)
