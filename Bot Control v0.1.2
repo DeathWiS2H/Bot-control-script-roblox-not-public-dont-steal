@@ -388,27 +388,18 @@ local function fireworks(targetPlayer)
     local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
     
     if humanoid and humanoidRootPart then
-      -- Only teleport if target player is provided
-      if targetPlayer and targetPlayer.Character then
-        local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if targetHumanoidRootPart then
-          removeVelocity()
-          humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
-        end
-      end
-      
       -- Apply firework effects
       local Spin = Instance.new("BodyAngularVelocity")
       Spin.Name = "Spinning"
       Spin.Parent = humanoidRootPart
       Spin.MaxTorque = Vector3.new(0, math.huge, 0)
-      Spin.AngularVelocity = Vector3.new(0, math.random(30, 60), 0)
+      Spin.AngularVelocity = Vector3.new(0, 45, 0)
       
       local Velocity = Instance.new("BodyVelocity")
       Velocity.Name = "Upward"
       Velocity.Parent = humanoidRootPart
       Velocity.MaxForce = Vector3.new(0, math.huge, 0)
-      Velocity.Velocity = Vector3.new(0, math.random(80, 125), 0)
+      Velocity.Velocity = Vector3.new(0, 25, 0)
       
       -- Set timer to kill character
       task.delay(2, function()
@@ -422,6 +413,16 @@ local function fireworks(targetPlayer)
           humanoid.Health = 0
         end
       end)
+      
+      -- Only teleport if target player is specified
+      if targetPlayer then
+        if targetPlayer.Character then
+          local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+          if targetHumanoidRootPart then
+            humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
+          end
+        end
+      end
     end
   end
 end
@@ -1014,11 +1015,11 @@ local function connectChatListener(playerpower)
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         wait(2)
 
-      elseif command:sub(1, 9) == "firework " and table.find(bots, displayName) and cmdfireworks then
+      elseif command:sub(1, 8) == "firework" and table.find(bots, displayName) and cmdfireworks then
         disablebool()
         local playerName = command:sub(10)
         local targetPlayer = findPlayerByName(playerName)
-        if targetPlayer then
+        if command:sub(9,9) == " " and targetPlayer then
           fireworks(targetPlayer)
         else
           fireworks()
