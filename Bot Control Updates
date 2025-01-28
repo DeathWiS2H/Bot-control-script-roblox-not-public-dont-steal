@@ -3,4 +3,4 @@ v0.1.1 - Added Fireworks
 v0.1.2 - Added Fireworks (plr) if left alone it will still do firework
 v0.1.3 - Added Explosion
 v0.1.4 - Added Explosion (plr) if left alone it will still do explosion | Flings People
-v0.1.5 -
+v0.1.5 - Replaced Explosion with --;fling [plr] and ;unfling | Flings people 
