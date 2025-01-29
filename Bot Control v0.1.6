@@ -474,10 +474,7 @@ local function explode(targetPlayer)
         if targetPlayer.Character then
           local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
           if targetHumanoidRootPart then
-            local radius = 12 -- Same default as circle command
-            local angle = math.random() * math.pi * 2
-            local offset = Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
-            humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + offset
+            humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 3, 0) -- Offset 3 studs up to be above head
           end
         end
       end
