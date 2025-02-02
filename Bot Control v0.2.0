@@ -62,6 +62,7 @@ local cmdunfling = true
 local cmdexplode = true
 local cmdelevator = true
 local cmdunelevator = true
+local cmdgojo = true
 
 local towerbool = nil
 local followbool = nil
@@ -83,6 +84,7 @@ local adminbool = nil
 local stalkbool = nil
 local flingbool = nil
 local elevatorbool = nil
+local gojobool = nil
 local Admins = {}
 
 --version of the script
@@ -97,49 +99,49 @@ print("[plr] = player (you don't need to put the full username or display name o
 print("<number> = need to be a number to make it work")
 print("(string) = word or a sentence")
 print("-------------------------------------------------------------------")
-print(";status                              |  Check if bots are active")
-print(";index                               |  Show bots' index")
-print(";follow [plr]                        |  Follow someone")
-print(";quit                                |  Disconnect admins and owner from the script")
-print(";dance <number>                      |  Make bots dance")
-print(";undance                             |  Make bots stop dancing")
-print(";reset                               |  Make bots reset")
-print(";jump                                |  Make bots jump")
-print(";say (sentence)                      |  Make bots say something")
-print(";unfollow                            |  Unfollow the player that the bots are following")
-print(";orbit [plr] <radius> <speed>        |  Orbit around someone V1 (normal orbit)")
-print(";orbit2 [plr] <radius> <speed>       |  Orbit around someone V2 (cooler)")
-print(";orbit3 [plr] <radius> <speed>       |  Orbit around someone V3")
-print(";orbit4 [plr] <radius> <speed>       |  Orbit around someone V4")
-print(";orbit5 [plr] <radius> <speed>       |  Orbit around someone V5")
-print(";orbit6 [plr] <radius> <speed>       |  Orbit around someone V6 (chaotic)")
-print(";unorbit                             |  Stop bots from orbiting")
-print(";goto [plr]                          |  Teleport bots to a player")
-print(";left [plr]                          |  Make a line going leftside of the player with the bots")
-print(";right [plr]                         |  Make a line going rightside of the player with the bots")
-print(";ws <number>                         |  Change bots walk speed")
-print(";loopjump                            |  Make bots jump in a loop")
-print(";unloopjump                          |  Stop the jump loop")
-print(";circle <number>                     |  Make bots form a circle around you")
-print(";channel <number>                    |  Change the bot that says the messages")
-print(";worm [plr]                          |  Make a worm/train/snake formation with bots")
-print(";unworm                              |  Stop the worm/train/snake formation")
-print(";spin <number>                       |  Make bots spin")
-print(";unspin                              |  Make bots stop spinning")
-print(";admin [plr]                         |  Give admin to someone, users with admin permission will be allowed to control the bots")
-print(";arch <number>                       |  Make a half-circle with the bots")
-print(";stalk [plr]                         |  Follow someone and walk around them")
-print(";unstalk                             |  Stop following someone and walking around them")
-print(";help                                |  Chat all available commands")
-print(";tower [plr]                         |  Makes a tower of bots stacked on player")
-print(";untower                             |  Undo the tower")
-print(";fix                                 |  Try to fix the bot if glitched")
-print(";fireworks [plr]                     |  Launch bots in the air and make them explode")
-print(";explode [plr]                       |  Teleports to player and make them explode")
-print(";fling [plr]                         |  Flings the player")
-print(";unfling                             |  Stop bots from flinging")
-print(";elevator [plr]                      |  Make bots form a elevator going upward")
-print(";unelevator                          |  Stop the elevator")
+print(";status                              |  check if bots are active")
+print(";index                               |  show bots' index")
+print(";follow [plr]                        |  follow someone")
+print(";quit                                |  disconnect admins and owner from the script")
+print(";dance <number>                      |  make bots dance")
+print(";undance                             |  make bots stop dancing")
+print(";reset                               |  make bots reset")
+print(";jump                                |  make bots jump")
+print(";say (sentence)                      |  make bots say something")
+print(";unfollow                            |  unfollow the player that the bots are following")
+print(";orbit [plr] <radius> <speed>        |  orbit around someone V1 (normal orbit)")
+print(";orbit2 [plr] <radius> <speed>       |  orbit around someone V2 (cooler)")
+print(";orbit3 [plr] <radius> <speed>       |  orbit around someone V3")
+print(";orbit4 [plr] <radius> <speed>       |  orbit around someone V4")
+print(";orbit5 [plr] <radius> <speed>       |  orbit around someone V5")
+print(";orbit6 [plr] <radius> <speed>       |  orbit around someone V6 (chaotic)")
+print(";unorbit                             |  stop bots from orbiting")
+print(";goto [plr]                          |  teleport bots to a player")
+print(";left [plr]                         |  make a line with the bots")
+print(";right [plr]                         |  make a line with the bots")
+print(";ws <number>                         |  change bots' walk speed")
+print(";loopjump                            |  make bots jump in a loop")
+print(";unloopjump                          |  stop the jump loop")
+print(";circle <number>                     |  make bots form a circle around you")
+print(";channel <number>                    |  change the bot that says the messages")
+print(";worm [plr]                          |  make a worm/train/snake formation with bots")
+print(";unworm                              |  stop the worm/train/snake formation")
+print(";spin <number>                       |  make bots spin")
+print(";unspin                              |  make bots stop spinning")
+print(";admin [plr]                         |  give admin to someone, users with admin permission will be allowed to control the bots")
+print(";arch <number>                       |  make a half-circle with the bots")
+print(";stalk [plr]                         |  follow someone and walk around them")
+print(";unstalk                             |  stop following someone and walking around them")
+print(";help                                |  chat all available commands")
+print(";tower [plr]                         |  makes a tower of bots")
+print(";untower                             |  undo the tower")
+print(";fix                                 |  try to fix the bot if glitched")
+print(";fireworks [plr]                     |  launch bots in the air and make them explode")
+print(";explode [plr]                       |  launch bots in the air and make them explode")
+print(";fling [plr]                         |  launch bots in the air and make them fling")
+print(";unfling                             |  stop bots from flinging")
+print(";elevator [plr]                      |  make bots form a tower")
+print(";unelevator                          |  stop the tower")
 end
 
 -- Services
@@ -209,10 +211,8 @@ end
 -- make life easy, with this you don't have to type someone's whole name
 local function findPlayerByName(partialName)
   if partialName:lower() == "me" then
-    return game.Players:FindFirstChild()
+    return game.Players:FindFirstChild(owner)
   end
-  
--- owner
 
   if partialName:lower() == "random" then
     local players = game.Players:GetPlayers()
@@ -296,7 +296,6 @@ elevatorbool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
-
 -- ;circle
 local function tpcircle(distance)
   if distance == 0 then
@@ -598,6 +597,70 @@ local function unfling()
       end
     end
   end
+end
+
+-- ;gojo
+local function gojo(targetPlayer)
+  if not targetPlayer or not targetPlayer.Character then
+      return
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return
+  end
+
+  -- Bot positioning logic
+  local displayName = player.DisplayName
+  local botIndex = table.find(bots, displayName)
+  
+  if not botIndex then 
+      return 
+  end
+
+  -- Precise offset calculations
+  local offset
+  if botIndex == 1 then  -- bot1: left by 10, behind by 3
+      offset = Vector3.new(-10, 0, -3)
+  elseif botIndex == 2 then  -- bot2: behind the player by 3
+      offset = Vector3.new(0, 0, -3)
+  elseif botIndex == 3 then  -- bot3: right by 10, behind by 3
+      offset = Vector3.new(10, 0, -3)
+  end
+
+  -- Continuous positioning mechanism
+  local gojoConnection
+  gojoConnection = RunService.Heartbeat:Connect(function()
+      if not player or not player.Character then
+          gojoConnection:Disconnect()
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          -- Calculate absolute position based on target's current position and rotation
+          local targetCFrame = targetHumanoidRootPart.CFrame
+          local rotatedOffset = targetCFrame.RightVector * offset.X + 
+                                 targetCFrame.UpVector * offset.Y + 
+                                 targetCFrame.LookVector * offset.Z
+          
+          -- Calculate the exact desired position
+          local desiredPosition = targetCFrame.Position + rotatedOffset
+          
+          -- Set the bot's position precisely
+          localHumanoidRootPart.CFrame = CFrame.new(desiredPosition) * 
+                                         targetCFrame.Rotation
+          
+          -- Remove velocity to prevent drifting
+          removeVelocity()
+      else
+          gojoConnection:Disconnect()
+      end
+  end)
+
+  return gojoConnection
 end
 
 -- ;elevator
@@ -1129,6 +1192,7 @@ local function connectChatListener(playerpower)
         flingbool = false
         cmdexplode = false
         elevatorbool = false
+        gojobool = false
         Admins = {}
         adminNotConnected = {}
         chatMessage("Ended Script.")
@@ -1263,6 +1327,20 @@ local function connectChatListener(playerpower)
       elseif command:sub(1, 4) == "jump" and table.find(bots, displayName) and cmdjump then
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         wait(2)
+
+      elseif command:sub(1, 5) == "gojo " and table.find(bots, displayName) then
+        disablebool()
+        local playerName = command:sub(6)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+            if index == channel then
+                chatMessage("Bots are now in Gojo formation around " .. targetPlayer.Name)
+            end
+            gojo(targetPlayer)
+            wait(2)
+        else
+            chatMessage("Player not found: " .. playerName)
+        end
 
       elseif command:sub(1, 9) == "elevator " and table.find(bots, displayName) and cmdelevator then
         disablebool()
