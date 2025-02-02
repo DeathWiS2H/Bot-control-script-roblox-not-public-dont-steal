@@ -117,7 +117,7 @@ print(";orbit5 [plr] <radius> <speed>       |  orbit around someone V5")
 print(";orbit6 [plr] <radius> <speed>       |  orbit around someone V6 (chaotic)")
 print(";unorbit                             |  stop bots from orbiting")
 print(";goto [plr]                          |  teleport bots to a player")
-print(";left [plr]                         |  make a line with the bots")
+print(";left [plr]                          |  make a line with the bots")
 print(";right [plr]                         |  make a line with the bots")
 print(";ws <number>                         |  change bots' walk speed")
 print(";loopjump                            |  make bots jump in a loop")
@@ -142,6 +142,7 @@ print(";fling [plr]                         |  launch bots in the air and make t
 print(";unfling                             |  stop bots from flinging")
 print(";elevator [plr]                      |  make bots form a tower")
 print(";unelevator                          |  stop the tower")
+print(";gojo [plr]                          |  stop the tower")
 end
 
 -- Services
@@ -618,23 +619,19 @@ local function gojo(targetPlayer)
       return 
   end
 
-  -- Dialogue for bots
-  if botIndex == 1 then
-      -- Bot 1 dialogue
-      chatMessage("Cursed Technique Reversal: 🔴")
-  elseif botIndex == 3 then
-      -- Bot 3 dialogue
-      chatMessage("Cursed Technique Lapse: 🔵")
-  end
-
-  -- Precise offset calculations with movement towards middle
+  -- Precise offset calculations with movement towards middle and vertical alignment
   local offset
   local movementProgress = 0  -- Track movement progress
   if botIndex == 1 then  -- bot1: starts left, moves to middle
       offset = Vector3.new(-10, 0, -3)
+  elseif botIndex == 2 then  -- bot2: starts underneath, rises to front of player
+      offset = Vector3.new(0, -10, 3)  -- Start 10 units underneath
   elseif botIndex == 3 then  -- bot3: starts right, moves to middle
       offset = Vector3.new(10, 0, -3)
   end
+
+  -- Flag to track when bot1 and bot3 reach middle
+  local middleReached = false
 
   -- Continuous positioning mechanism
   local gojoConnection
@@ -660,7 +657,15 @@ local function gojo(targetPlayer)
                   offset.Y,
                   offset.Z
               )
-              movementProgress = math.min(movementProgress + 0.01, 1)
+              movementProgress = math.min(movementProgress + 0.0175, 1)
+
+              -- When bot1 reaches middle, teleport to front
+              if movementProgress >= 1 then
+                  middleReached = true
+                  finalOffset = Vector3.new(0, 0, 3)
+                  disablebool()
+                  player.Character:BreakJoints()
+              end
           elseif botIndex == 3 then
               -- Interpolate from right (10) to middle (0)
               finalOffset = Vector3.new(
@@ -668,7 +673,23 @@ local function gojo(targetPlayer)
                   offset.Y,
                   offset.Z
               )
-              movementProgress = math.min(movementProgress + 0.01, 1)
+              movementProgress = math.min(movementProgress + 0.0175, 1)
+
+              -- When bot3 reaches middle, teleport to front
+              if movementProgress >= 1 then
+                  middleReached = true
+                  finalOffset = Vector3.new(0, 0, 3)
+                  disablebool()
+                  player.Character:BreakJoints()
+              end
+          elseif botIndex == 2 then
+              -- Smoothly rise from underneath to ground level
+              finalOffset = Vector3.new(
+                  offset.X,
+                  offset.Y + (10 * movementProgress),  -- Rise from -10 to 0
+                  offset.Z
+              )
+              movementProgress = math.min(movementProgress + 0.008, 1)
           end
 
           -- Calculate rotated offset
@@ -685,6 +706,11 @@ local function gojo(targetPlayer)
           
           -- Remove velocity to prevent drifting
           removeVelocity()
+
+          -- Disconnect if middle is reached for bot1 and bot3
+          if middleReached and (botIndex == 1 or botIndex == 3) then
+              gojoConnection:Disconnect()
+          end
       else
           gojoConnection:Disconnect()
       end
@@ -1223,6 +1249,8 @@ local function connectChatListener(playerpower)
         cmdexplode = false
         elevatorbool = false
         gojobool = false
+        cmdfireworks = false
+        cmdgojo = false
         Admins = {}
         adminNotConnected = {}
         chatMessage("Ended Script.")
