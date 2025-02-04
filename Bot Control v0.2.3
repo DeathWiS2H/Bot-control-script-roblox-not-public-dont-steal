@@ -87,10 +87,12 @@ local flingbool = nil
 local elevatorbool = nil
 local gojobool = nil
 local bridgebool = nil
+local bridgeConnection = nil
 local Admins = {}
 
 --version of the script
 print("Death's bot controller VERSION: 0.2.3")
+
 
 --print cmds in console
 if printcmd then
@@ -805,23 +807,32 @@ local function unelevator()
   elevatorbool = false
 end
 
--- ;bridge
+--- ;bridge
 local function bridge(targetPlayer)
+  -- Stop any existing bridge connection
+  if bridgeConnection then
+      bridgeConnection:Disconnect()
+      bridgeConnection = nil
+  end
+
   if not targetPlayer or not targetPlayer.Character then
-      return
+      return nil
   end
 
   local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
   if not targetHumanoidRootPart then
-      return
+      return nil
   end
 
+  -- Set bridge boolean to true
+  bridgebool = true
+  
   -- Get the bot's index to determine position
   local displayName = player.DisplayName
   local botIndex = table.find(bots, displayName)
 
   if not botIndex then 
-      return 
+      return nil
   end
 
   -- Dynamic forward distance calculation
@@ -829,10 +840,13 @@ local function bridge(targetPlayer)
   local forwardDistance = baseForwardDistance * (botIndex * 2)  -- Increases by 3 for each bot
 
   -- Continuous positioning mechanism
-  local bridgeConnection
   bridgeConnection = RunService.Heartbeat:Connect(function()
-      if not player or not player.Character then
-          bridgeConnection:Disconnect()
+      -- Check if bridge should continue
+      if not bridgebool or not player or not player.Character then
+          if bridgeConnection then
+              bridgeConnection:Disconnect()
+              bridgeConnection = nil
+          end
           return
       end
 
@@ -858,7 +872,11 @@ local function bridge(targetPlayer)
           -- Remove velocity to prevent drifting
           removeVelocity()
       else
-          bridgeConnection:Disconnect()
+          -- Disconnect if target or bot is missing
+          if bridgeConnection then
+              bridgeConnection:Disconnect()
+              bridgeConnection = nil
+          end
       end
   end)
 
@@ -867,7 +885,11 @@ end
 
 -- ;unbridge
 local function unbridge()
-  bridgebool = false
+  -- Disconnect the bridge connection if it exists
+  if bridgeConnection then
+      bridgeConnection:Disconnect()
+      bridgeConnection = nil
+  end
 end
 
 -- ;tower
