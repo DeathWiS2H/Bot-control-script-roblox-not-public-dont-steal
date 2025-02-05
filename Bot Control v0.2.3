@@ -1098,7 +1098,6 @@ local function orbitPlayer3(targetPlayer, speed, r)
     return
   end
 
-  removeVelocity()
   local rotation = indexcircle
   local orbitConnection
   orbitConnection = RunService.Heartbeat:Connect(function()
@@ -1107,8 +1106,9 @@ local function orbitPlayer3(targetPlayer, speed, r)
     return
   end
 
+  removeVelocity()
   local newCFrame = CFrame.new(targetHumanoidRootPart.Position)
-  * CFrame.Angles(math.rad(rotation), math.rad(rotation), math.rad(rotation))
+  * CFrame.Angles(0, math.rad(rotation), 90) -- if you are bored try to mess with values
   * CFrame.new(r, 0, 0)
   playerHumanoidRootPart.CFrame = newCFrame
   local lookAtCFrame = CFrame.new(playerHumanoidRootPart.Position, targetHumanoidRootPart.Position)
