@@ -65,6 +65,7 @@ local cmdelevator = true
 local cmdunelevator = true
 local cmdgojo = true
 local cmdbridge = true
+local cmdmeteor = true
 
 local towerbool = nil
 local followbool = nil
@@ -149,8 +150,9 @@ print(";unfling                             |  Stop bots from flinging")
 print(";elevator [plr]                      |  Make bots form a platform which rises upward")
 print(";unelevator                          |  Stop the elevator")
 print(";gojo [plr]                          |  Make bots do the hollow purple sequence")
-print(";bridge [plr]                        |  Make bots form a bridge infront of playe")
+print(";bridge [plr]                        |  Make bots form a bridge infront of player")
 print(";unbridge                            |  Stop the bridge")
+print(";meteor [plr]                        |  Bots teleport above, descend, and explode on impact")
 end
 
 -- Services
@@ -613,8 +615,8 @@ local function unfling()
   end
 end
 
--- ;airstrike
-local function airstrike(targetPlayer)
+-- ;meteor
+local function meteor(targetPlayer)
   if not targetPlayer or not targetPlayer.Character then
       return
   end
@@ -631,25 +633,33 @@ local function airstrike(targetPlayer)
   -- Calculate spawn position using trigonometry to create a circular spawn point
   local spawnOffset = Vector3.new(
       math.cos(randomAngle) * randomDistance, 
-      300,  -- Spawn 200 studs high
+      150,  -- Spawn 200 studs high
       math.sin(randomAngle) * randomDistance
   )
 
   -- Spawn position calculation relative to target player
   local spawnPosition = targetHumanoidRootPart.Position + spawnOffset
 
+  local player = Players.LocalPlayer
   if player and player.Character then
       local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
       if humanoidRootPart then
           -- Teleport to calculated spawn position
           humanoidRootPart.CFrame = CFrame.new(spawnPosition)
 
+          local function removeVelocity()
+              local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+              if humanoidRootPart then
+                  humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+              end
+          end
+
           removeVelocity()
 
-          local airstrikeConnection
-          airstrikeConnection = RunService.Heartbeat:Connect(function()
+          local meteorConnection
+          meteorConnection = RunService.Heartbeat:Connect(function()
               if not player or not player.Character then
-                  airstrikeConnection:Disconnect()
+                  meteorConnection:Disconnect()
                   return
               end
 
@@ -696,15 +706,15 @@ local function airstrike(targetPlayer)
 
               if raycastResult and raycastResult.Distance <= 5 then
                   -- Stop following and spin
-                  airstrikeConnection:Disconnect()
+                  meteorConnection:Disconnect()
 
                   local spinVelocity = Instance.new("BodyAngularVelocity")
-                  spinVelocity.AngularVelocity = Vector3.new(0, 45, 0)
+                  spinVelocity.AngularVelocity = Vector3.new(0, math.random(20, 20), 0)  -- Randomize spin speed between 500 and 1500
                   spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
                   spinVelocity.Parent = humanoidRootPart
 
                   -- Break joints after a short delay
-                  task.delay(0.3, function()
+                  task.delay(0.16, function()
                       player.Character:BreakJoints()
                   end)
               end
@@ -1513,6 +1523,7 @@ local function connectChatListener(playerpower)
             cmdgojo = false
             cmdunbridge = false
             cmdfireworks = false
+            cmdmeteor = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -1603,7 +1614,7 @@ local function connectChatListener(playerpower)
             chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
             chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
-            chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr]")
+            chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;meteor [plr]")
         end
         wait(2)
 
@@ -1679,15 +1690,15 @@ local function connectChatListener(playerpower)
         end
         wait(2)
 
-      elseif command:sub(1, 9) == "airstrike" and table.find(bots, displayName) then
+      elseif command:sub(1, 7) == "meteor " and table.find(bots, displayName) and cmdmeteor then
         disablebool()
-        local playerName = command:sub(11)
+        local playerName = command:sub(8)
         local targetPlayer = findPlayerByName(playerName)
         if targetPlayer then
             if index == channel then
-                chatMessage("Airstrike initiated on " .. targetPlayer.Name)
+                chatMessage("Meteor strike initiated on " .. targetPlayer.Name)
             end
-            airstrike(targetPlayer)
+            meteor(targetPlayer)
             wait(2)
         else
             chatMessage("Player not found: " .. playerName)
