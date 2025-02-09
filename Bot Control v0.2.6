@@ -672,12 +672,12 @@ local function meteor(targetPlayer)
                   meteorConnection:Disconnect()
 
                   local spinVelocity = Instance.new("BodyAngularVelocity")
-                  spinVelocity.AngularVelocity = Vector3.new(0, 50, 0)  -- Fixed spin speed
+                  spinVelocity.AngularVelocity = Vector3.new(0, 125, 0)  -- Fixed spin speed
                   spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
                   spinVelocity.Parent = humanoidRootPart
 
                   -- Break joints after a short delay
-                  task.delay(0.15, function()
+                  task.delay(0.12, function()
                       player.Character:BreakJoints()
                   end)
               end
