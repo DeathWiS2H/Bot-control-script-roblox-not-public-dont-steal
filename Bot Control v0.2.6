@@ -616,7 +616,6 @@ local function unfling()
 end
 
 -- ;nuke
--- ;nuke
 local function nuke(targetPlayer)
   if not targetPlayer or not targetPlayer.Character then
       return
@@ -639,7 +638,7 @@ local function nuke(targetPlayer)
 
           local nukeConnection
           nukeConnection = RunService.Heartbeat:Connect(function()
-              if not player or not player.Character then
+              if not player or not player.Character or not targetPlayer.Character then
                   nukeConnection:Disconnect()
                   return
               end
@@ -669,9 +668,6 @@ local function nuke(targetPlayer)
               )
 
               if raycastResult and raycastResult.Distance <= 1 then
-                  -- Stop following
-                  nukeConnection:Disconnect()
-
                   -- Teleport directly onto the target player
                   humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
 
@@ -680,10 +676,16 @@ local function nuke(targetPlayer)
                   spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
                   spinVelocity.Parent = humanoidRootPart
 
-                  -- Break joints after a short delay
-                  task.delay(0.2, function()
+                  -- Check if we're on top of the target
+                  local distanceToTarget = (humanoidRootPart.Position - targetHumanoidRootPart.Position).Magnitude
+                  if distanceToTarget <= 1 then
+                      -- Break joints
+                      wait(0.25)
                       player.Character:BreakJoints()
-                  end)
+                      
+                      -- Disconnect the connection
+                      nukeConnection:Disconnect()
+                  end
               end
           end)
       end
