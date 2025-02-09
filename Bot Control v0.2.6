@@ -65,7 +65,7 @@ local cmdelevator = true
 local cmdunelevator = true
 local cmdgojo = true
 local cmdbridge = true
-local cmdmeteor = true
+local cmdnuke = true
 
 local towerbool = nil
 local followbool = nil
@@ -152,7 +152,7 @@ print(";unelevator                          |  Stop the elevator")
 print(";gojo [plr]                          |  Make bots do the hollow purple sequence")
 print(";bridge [plr]                        |  Make bots form a bridge infront of player")
 print(";unbridge                            |  Stop the bridge")
-print(";meteor [plr]                        |  Bots teleport above, descend, and explode on impact")
+print(";nuke [plr]                          |  Bots teleport above, descend, and explode on impact")
 end
 
 -- Services
@@ -615,8 +615,9 @@ local function unfling()
   end
 end
 
--- ;meteor
-local function meteor(targetPlayer)
+-- ;nuke
+-- ;nuke
+local function nuke(targetPlayer)
   if not targetPlayer or not targetPlayer.Character then
       return
   end
@@ -636,10 +637,10 @@ local function meteor(targetPlayer)
           -- Teleport to spawn position and set orientation to 90 degrees towards ground
           humanoidRootPart.CFrame = CFrame.new(spawnPosition) * CFrame.Angles(math.rad(90), 0, 0)
 
-          local meteorConnection
-          meteorConnection = RunService.Heartbeat:Connect(function()
+          local nukeConnection
+          nukeConnection = RunService.Heartbeat:Connect(function()
               if not player or not player.Character then
-                  meteorConnection:Disconnect()
+                  nukeConnection:Disconnect()
                   return
               end
 
@@ -667,17 +668,22 @@ local function meteor(targetPlayer)
                   raycastParams
               )
 
-              if raycastResult and raycastResult.Distance <= 8 then
-                  -- Stop following and spin
-                  meteorConnection:Disconnect()
+              if raycastResult and raycastResult.Distance <= 2 then
+                  -- Stop following
+                  nukeConnection:Disconnect()
+
+                  -- Teleport directly onto the target player
+                  humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
 
                   local spinVelocity = Instance.new("BodyAngularVelocity")
                   spinVelocity.AngularVelocity = Vector3.new(0, 125, 0)  -- Fixed spin speed
                   spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
                   spinVelocity.Parent = humanoidRootPart
 
+                  humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
+                  humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
                   -- Break joints after a short delay
-                  task.delay(0.12, function()
+                  task.delay(0.2, function()
                       player.Character:BreakJoints()
                   end)
               end
@@ -1486,7 +1492,7 @@ local function connectChatListener(playerpower)
             cmdgojo = false
             cmdunbridge = false
             cmdfireworks = false
-            cmdmeteor = false
+            cmdnuke = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -1577,7 +1583,7 @@ local function connectChatListener(playerpower)
             chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
             chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
-            chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;meteor [plr]")
+            chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr]")
         end
         wait(2)
 
@@ -1653,15 +1659,15 @@ local function connectChatListener(playerpower)
         end
         wait(2)
 
-      elseif command:sub(1, 7) == "meteor " and table.find(bots, displayName) and cmdmeteor then
+      elseif command:sub(1, 5) == "nuke " and table.find(bots, displayName) and cmdnuke then
         disablebool()
-        local playerName = command:sub(8)
+        local playerName = command:sub(6)
         local targetPlayer = findPlayerByName(playerName)
         if targetPlayer then
             if index == channel then
-                chatMessage("Meteor strike initiated on " .. targetPlayer.Name)
+                chatMessage("Nuke strike initiated on " .. targetPlayer.Name)
             end
-            meteor(targetPlayer)
+            nuke(targetPlayer)
             wait(2)
         else
             chatMessage("Player not found: " .. playerName)
