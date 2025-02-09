@@ -626,35 +626,15 @@ local function meteor(targetPlayer)
       return
   end
 
-  -- Improved spawn calculation to ensure spawning 200 studs away from the player
-  local randomAngle = math.rad(math.random(0, 360))
-  local randomDistance = 10000  -- 200 studs away from player
-  
-  -- Calculate spawn position using trigonometry to create a circular spawn point
-  local spawnOffset = Vector3.new(
-      math.cos(randomAngle) * randomDistance, 
-      150,  -- Spawn 200 studs high
-      math.sin(randomAngle) * randomDistance
-  )
-
-  -- Spawn position calculation relative to target player
-  local spawnPosition = targetHumanoidRootPart.Position + spawnOffset
+  -- Spawn directly above the player at a fixed height
+  local spawnPosition = targetHumanoidRootPart.Position + Vector3.new(0, 300, 0)
 
   local player = Players.LocalPlayer
   if player and player.Character then
       local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
       if humanoidRootPart then
-          -- Teleport to calculated spawn position
-          humanoidRootPart.CFrame = CFrame.new(spawnPosition)
-
-          local function removeVelocity()
-              local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-              if humanoidRootPart then
-                  humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-              end
-          end
-
-          removeVelocity()
+          -- Teleport to spawn position and set orientation to 90 degrees towards ground
+          humanoidRootPart.CFrame = CFrame.new(spawnPosition) * CFrame.Angles(math.rad(90), 0, 0)
 
           local meteorConnection
           meteorConnection = RunService.Heartbeat:Connect(function()
@@ -666,34 +646,17 @@ local function meteor(targetPlayer)
               local targetPosition = targetHumanoidRootPart.Position
               local currentPosition = humanoidRootPart.Position
 
-              -- Check if bot is directly above the target player horizontally
-              local horizontalDistanceToTarget = Vector3.new(
-                  targetPosition.X - currentPosition.X, 
-                  0, 
-                  targetPosition.Z - currentPosition.Z
-              ).Magnitude
+              -- Continuously update horizontal position to follow target
+              local newPosition = Vector3.new(
+                  targetPosition.X, 
+                  currentPosition.Y - 1,  -- Slow descent
+                  targetPosition.Z
+              )
 
-              if horizontalDistanceToTarget < 10 then
-                  -- If close horizontally, start descending
-                  local newPosition = Vector3.new(
-                      targetPosition.X, 
-                      currentPosition.Y, 
-                      targetPosition.Z
-                  )
+              -- Maintain 90-degree angle towards ground while following
+              humanoidRootPart.CFrame = CFrame.new(newPosition) * CFrame.Angles(math.rad(90), 0, 0)
 
-                  humanoidRootPart.CFrame = CFrame.new(newPosition, targetPosition)
-              else
-                  -- Continue moving horizontally above the target
-                  local newPosition = Vector3.new(
-                      targetPosition.X, 
-                      currentPosition.Y, 
-                      targetPosition.Z
-                  )
-
-                  humanoidRootPart.CFrame = CFrame.new(newPosition, targetPosition)
-              end
-
-              -- Check if bot is close to ground (5 studs above)
+              -- Check if bot is close to ground
               local raycastParams = RaycastParams.new()
               raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
               raycastParams.FilterDescendantsInstances = {player.Character}
@@ -704,17 +667,17 @@ local function meteor(targetPlayer)
                   raycastParams
               )
 
-              if raycastResult and raycastResult.Distance <= 5 then
+              if raycastResult and raycastResult.Distance <= 8 then
                   -- Stop following and spin
                   meteorConnection:Disconnect()
 
                   local spinVelocity = Instance.new("BodyAngularVelocity")
-                  spinVelocity.AngularVelocity = Vector3.new(0, math.random(20, 20), 0)  -- Randomize spin speed between 500 and 1500
+                  spinVelocity.AngularVelocity = Vector3.new(0, 50, 0)  -- Fixed spin speed
                   spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
                   spinVelocity.Parent = humanoidRootPart
 
                   -- Break joints after a short delay
-                  task.delay(0.16, function()
+                  task.delay(0.15, function()
                       player.Character:BreakJoints()
                   end)
               end
