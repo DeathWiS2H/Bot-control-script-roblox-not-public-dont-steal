@@ -668,7 +668,7 @@ local function nuke(targetPlayer)
                   raycastParams
               )
 
-              if raycastResult and raycastResult.Distance <= 2 then
+              if raycastResult and raycastResult.Distance <= 1 then
                   -- Stop following
                   nukeConnection:Disconnect()
 
@@ -680,8 +680,6 @@ local function nuke(targetPlayer)
                   spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
                   spinVelocity.Parent = humanoidRootPart
 
-                  humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
-                  humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
                   -- Break joints after a short delay
                   task.delay(0.2, function()
                       player.Character:BreakJoints()
