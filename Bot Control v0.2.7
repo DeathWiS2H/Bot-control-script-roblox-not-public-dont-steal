@@ -66,6 +66,8 @@ local cmdunelevator = true
 local cmdgojo = true
 local cmdbridge = true
 local cmdnuke = true
+local cmdsit = true
+local cmdunsit = true
 
 local towerbool = nil
 local followbool = nil
@@ -132,6 +134,8 @@ if printcmd then
   print(";unbridge                            | Remove the bridge")
   print(";worm [plr]                          | Bots form a moving train/snake formation")
   print(";unworm                              | Stop the train formation")
+  print(";sit                                 | Bots sit")
+  print(";unsit                               | Bots stop sitting")
   -- Orbit & Motion Effects
   print(";orbit [plr] <radius> <speed>        | Bots orbit a player (V1 - Basic)")
   print(";orbit2 [plr] <radius> <speed>       | Bots orbit a player (V2 - Enhanced)")
@@ -422,6 +426,22 @@ local function right(targetPlayer)
       local offset = targetHumanoidRootPart.CFrame.RightVector * 5 * index  -- POSITIVE IS RIGHT, change this if you want it to go left
       localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + offset
     end
+  end
+end
+
+-- ;sit
+local function sit(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid.Sit = true
+  end
+end
+
+-- ;unsit
+local function unsit(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid.Sit = false
   end
 end
 
@@ -1599,6 +1619,20 @@ local function connectChatListener(playerpower)
         local spinarg = tonumber(command:sub(6))
         spin(spinarg)
         boolspin = true
+        wait(2)
+
+      elseif command == "sit" and table.find(bots, displayName) and cmdsit then
+        sit()
+        if index == channel then
+            chatMessage("Bots are now sitting")
+        end
+        wait(2)
+    
+    elseif command == "unsit" and table.find(bots, displayName) then
+        unsit()
+        if index == channel then
+            chatMessage("Bots are now standing")
+        end
         wait(2)
 
       elseif command:sub(1, 6) == "unspin" and table.find(bots, displayName) and cmdunspin then
