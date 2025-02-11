@@ -66,7 +66,6 @@ local cmdunelevator = true
 local cmdgojo = true
 local cmdbridge = true
 local cmdnuke = true
-local cmdmine = true
 
 local towerbool = nil
 local followbool = nil
@@ -94,67 +93,72 @@ local bridgeConnection = nil
 local Admins = {}
 
 --version of the script
-print("Death's bot controller VERSION: 0.2.3")
+print("Death's bot controller VERSION: 0.2.6")
 
-
---print cmds in console
 if printcmd then
-print("Death's Bot Controller")
-print("-------------------------------------------------------------------")
-print("args:")
-print("[plr] = player (you don't need to put the full username or display name of someone to make it work)")
-print("<number> = need to be a number to make it work")
-print("(string) = word or a sentence")
-print("-------------------------------------------------------------------")
-print(";status                              |  Check if bots are active")
-print(";index                               |  Show bots' index")
-print(";follow [plr]                        |  Follow someone")
-print(";quit                                |  Disconnect admins and owner from the script")
-print(";dance <number>                      |  Make bots dance")
-print(";undance                             |  Make bots stop dancing")
-print(";reset                               |  Make bots reset")
-print(";jump                                |  Make bots jump")
-print(";say (sentence)                      |  Make bots say something")
-print(";unfollow                            |  Unfollow the player that the bots are following")
-print(";orbit [plr] <radius> <speed>        |  Orbit around someone V1 (normal orbit)")
-print(";orbit2 [plr] <radius> <speed>       |  Orbit around someone V2 (cooler)")
-print(";orbit3 [plr] <radius> <speed>       |  Orbit around someone V3")
-print(";orbit4 [plr] <radius> <speed>       |  Orbit around someone V4")
-print(";orbit5 [plr] <radius> <speed>       |  Orbit around someone V5")
-print(";orbit6 [plr] <radius> <speed>       |  Orbit around someone V6 (chaotic)")
-print(";unorbit                             |  Stop bots from orbiting")
-print(";goto [plr]                          |  Teleport bots to a player")
-print(";left [plr]                          |  Make a line with the bots going left")
-print(";right [plr]                         |  Make a line with the bots going right")
-print(";ws <number>                         |  Change bots' walk speed")
-print(";loopjump                            |  Make bots jump in a loop")
-print(";unloopjump                          |  Stop the jump loop")
-print(";circle <number>                     |  Make bots form a circle around you")
-print(";channel <number>                    |  Change the bot that says the messages")
-print(";worm [plr]                          |  Make a worm/train/snake formation with bots")
-print(";unworm                              |  Stop the worm/train/snake formation")
-print(";spin <number>                       |  Make bots spin")
-print(";unspin                              |  Make bots stop spinning")
-print(";admin [plr]                         |  Give admin to someone, users with admin permission can control the bots")
-print(";unadmin [plr]                       |  Removes admin from someone, users cannot control the bots anymore")
-print(";arch <number>                       |  Make a half-circle with the bots")
-print(";stalk [plr]                         |  Follow someone and walk around them")
-print(";unstalk                             |  Stop following someone and walking around them")
-print(";cmds                                |  Chat all available commands")
-print(";tower [plr]                         |  Makes a tower of bots")
-print(";untower                             |  Undo the tower")
-print(";fix                                 |  Try to fix the bot if glitched")
-print(";fireworks [plr]                     |  Launch bots in the air and make them explode")
-print(";explode [plr]                       |  Teleports bots at the player and make them explode")
-print(";fling [plr]                         |  Teleports bots at the player and fling them")
-print(";unfling                             |  Stop bots from flinging")
-print(";elevator [plr]                      |  Make bots form a platform which rises upward")
-print(";unelevator                          |  Stop the elevator")
-print(";gojo [plr]                          |  Make bots do the hollow purple sequence")
-print(";bridge [plr]                        |  Make bots form a bridge infront of player")
-print(";unbridge                            |  Stop the bridge")
-print(";nuke [plr]                          |  Bots teleport above, descend, and explode on impact")
-print(";mine [plr]                          |  Bots teleport below, and explode when touched")
+  print("Death's Bot Controller - Command List")
+  print("-------------------------------------------------------------------")
+  print("Arguments Guide:")
+  print("[plr]       - Target player (partial username or display name works)")
+  print("<number>    - A numerical value required for certain commands")
+  print("(string)    - A word or phrase")
+  print("-------------------------------------------------------------------")
+
+  print(";status                              | Check if bots are active")
+  print(";index                               | Display all bot indexes")
+  print(";follow [plr]                        | Bots follow a player")
+  print(";unfollow                            | Bots stop following the target")
+  print(";quit                                | Disconnects admins/owner from the script")
+  print(";dance <number>                      | Bots perform a dance")
+  print(";undance                             | Bots stop dancing")
+  print(";reset                               | Bots reset themselves")
+  print(";jump                                | Bots jump once")
+  print(";loopjump                            | Bots continuously jump")
+  print(";unloopjump                          | Stop continuous jumping")
+  print(";say (sentence)                      | Bots say a message in chat")
+  print(";ws <number>                         | Change bots' walk speed")
+  print(";channel <number>                    | Select which bot speaks in chat")
+  -- Positioning & Formation Commands
+  print(";goto [plr]                          | Bots teleport to a player")
+  print(";left [plr]                          | Bots form a line to the left")
+  print(";right [plr]                         | Bots form a line to the right")
+  print(";circle <number>                     | Bots create a circle around you")
+  print(";arch <number>                       | Bots form a half-circle")
+  print(";stalk [plr]                         | Bots follow and walk around a player")
+  print(";unstalk                             | Stop stalking the player")
+  print(";tower [plr]                         | Bots stack into a tower")
+  print(";untower                             | Dismantle the tower")
+  print(";bridge [plr]                        | Bots form a bridge in front of a player")
+  print(";unbridge                            | Remove the bridge")
+  print(";worm [plr]                          | Bots form a moving train/snake formation")
+  print(";unworm                              | Stop the train formation")
+  -- Orbit & Motion Effects
+  print(";orbit [plr] <radius> <speed>        | Bots orbit a player (V1 - Basic)")
+  print(";orbit2 [plr] <radius> <speed>       | Bots orbit a player (V2 - Enhanced)")
+  print(";orbit3 [plr] <radius> <speed>       | Bots orbit a player (V3)")
+  print(";orbit4 [plr] <radius> <speed>       | Bots orbit a player (V4)")
+  print(";orbit5 [plr] <radius> <speed>       | Bots orbit a player (V5)")
+  print(";orbit6 [plr] <radius> <speed>       | Bots orbit a player (V6 - Chaotic)")
+  print(";unorbit                             | Stop bots from orbiting")
+  print(";spin <number>                       | Bots start spinning")
+  print(";unspin                              | Bots stop spinning")
+  -- Admin Commands
+  print(";admin [plr]                         | Grant admin permissions to a player")
+  print(";unadmin [plr]                       | Remove admin permissions")
+  print(";cmds                                | Display available commands in chat")
+  -- Special Effects & Attacks
+  print(";fling [plr]                         | Bots teleport to a player and fling them")
+  print(";unfling                             | Stop bots from flinging")
+  print(";fireworks [plr]                     | Bots launch into the air and explode")
+  print(";explode [plr]                       | Bots teleport to a player and explode")
+  print(";nuke [plr]                          | Bots descend from above and explode on impact")
+  print(";mine [plr]                          | Bots appear underground and explode on contact")
+  print(";elevator [plr]                      | Bots create a rising platform under a player")
+  print(";unelevator                          | Stop the elevator effect")
+  print(";gojo [plr]                          | Bots perform the Hollow Purple sequence")
+  -- Utility & Fix Commands
+  print(";fix                                 | Attempt to fix a bot if glitched")
+  print("-------------------------------------------------------------------")
 end
 
 -- Services
@@ -499,16 +503,16 @@ local function explode(targetPlayer)
       Spin.Name = "Spinning"
       Spin.Parent = humanoidRootPart
       Spin.MaxTorque = Vector3.new(0, math.huge, 0)
-      Spin.AngularVelocity = Vector3.new(0, 105, 0)
+      Spin.AngularVelocity = Vector3.new(0, 135, 0)
       
       local Velocity = Instance.new("BodyVelocity")
       Velocity.Name = "Upward"
       Velocity.Parent = humanoidRootPart
       Velocity.MaxForce = Vector3.new(0, math.huge, 0)
-      Velocity.Velocity = Vector3.new(0, 0, 0)
+      Velocity.Velocity = Vector3.new(0, 10, 0)
       
       -- Set timer to kill character
-      task.delay(1, function()
+      task.delay(0.2, function()
         if humanoid then
           if Spin then
             Spin:Destroy()
@@ -525,7 +529,7 @@ local function explode(targetPlayer)
         if targetPlayer.Character then
           local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
           if targetHumanoidRootPart then
-            humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 3, 0) -- Offset 3 studs up to be above head
+            humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
           end
         end
       end
@@ -890,51 +894,7 @@ local function unelevator()
   elevatorbool = false
 end
 
--- ;mine 
-local function mine(targetPlayer)
-  if not targetPlayer or not targetPlayer.Character then
-      return
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-      return
-  end
-
-  -- Disable other commands
-  disablebool()
-
-  local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-  local humanoid = player.Character:FindFirstChild("Humanoid")
-
-  if humanoidRootPart and humanoid then
-      -- Permanently keep the player underground
-      local undergroundOffset = Vector3.new(0, -4, 0)  -- Deeper underground
-      local newPosition = targetHumanoidRootPart.Position + undergroundOffset
-
-      -- Change humanoid state to prevent falling animation
-      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-
-      -- Continuously update position to ensure staying underground
-      local connection
-      connection = RunService.Heartbeat:Connect(function()
-          if humanoidRootPart and humanoidRootPart.Parent then
-              humanoidRootPart.CFrame = CFrame.new(newPosition)
-              humanoidRootPart.Velocity = Vector3.new(0, 0, 0)  -- Prevent movement
-              
-              -- Ensure humanoid stays in physics state
-              humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-          else
-              -- Disconnect if character is destroyed
-              if connection then
-                  connection:Disconnect()
-              end
-          end
-      end)
-  end
-end
-
--- ;bridge
+--- ;bridge
 local function bridge(targetPlayer)
   -- Stop any existing bridge connection
   if bridgeConnection then
@@ -1416,6 +1376,7 @@ local function connectChatListener(playerpower)
                     
                     if index == 1 then
                         chatMessage(targetPlayerforadmin.Name .. ' is now an admin.')
+                        wait(1)
                         chatMessage("Type ;cmds for a list of commands")
                     end
                 else
@@ -1531,6 +1492,7 @@ local function connectChatListener(playerpower)
             cmdfling = false
             flingbool = false
             cmdexplode = false
+            cmdelevator = false
             elevatorbool = false
             gojobool = false
             cmdbridge = false
@@ -1539,7 +1501,6 @@ local function connectChatListener(playerpower)
             cmdunbridge = false
             cmdfireworks = false
             cmdnuke = false
-            cmdmine = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -1715,20 +1676,6 @@ local function connectChatListener(playerpower)
                 chatMessage("Nuke strike initiated on " .. targetPlayer.Name)
             end
             nuke(targetPlayer)
-            wait(2)
-        else
-            chatMessage("Player not found: " .. playerName)
-        end
-
-      elseif command:sub(1, 5) == "mine " and table.find(bots, displayName) and cmdmine then
-        disablebool()
-        local playerName = command:sub(6)
-        local targetPlayer = findPlayerByName(playerName)
-        if targetPlayer then
-            if index == channel then
-                chatMessage("Deploying mine near " .. targetPlayer.Name)
-            end
-            mine(targetPlayer)
             wait(2)
         else
             chatMessage("Player not found: " .. playerName)
