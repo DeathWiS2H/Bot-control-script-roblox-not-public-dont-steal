@@ -68,6 +68,7 @@ local cmdbridge = true
 local cmdnuke = true
 local cmdsit = true
 local cmdunsit = true
+local cmdgravity = true
 
 local towerbool = nil
 local followbool = nil
@@ -120,6 +121,7 @@ if printcmd then
   print(";say (sentence)                      | Bots say a message in chat")
   print(";ws <number>                         | Change bots' walk speed")
   print(";channel <number>                    | Select which bot speaks in chat")
+  print(";gravity <number>                    | Bots change gravity")
   -- Positioning & Formation Commands
   print(";goto [plr]                          | Bots teleport to a player")
   print(";left [plr]                          | Bots form a line to the left")
@@ -716,6 +718,13 @@ local function nuke(targetPlayer)
           end)
       end
   end
+end
+
+-- ;gravity
+local function setGravity(gravityValue)
+  gravityValue = tonumber(gravityValue) or 196.2
+  
+  game.Workspace.Gravity = gravityValue
 end
 
 -- ;gojo
@@ -1521,6 +1530,8 @@ local function connectChatListener(playerpower)
             cmdunbridge = false
             cmdfireworks = false
             cmdnuke = false
+            cmdgravity = false
+            cmdsit = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -1605,13 +1616,12 @@ local function connectChatListener(playerpower)
         wait(2)
       
       elseif command:sub(1, 5) == "cmds" and table.find(bots, displayName) and cmdcmds then
-        -- Ensure only bot1 (index 1) responds
         if index == 1 then
             chatMessage(";status ;index ;follow [plr] ;quit ;dance <number> ;undance ;reset ;jump ;say <sentence> ;unfollow ;orbit [plr] <radius> <speed>")
             chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
             chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
-            chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr]")
+            chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
         end
         wait(2)
 
@@ -1714,6 +1724,13 @@ local function connectChatListener(playerpower)
         else
             chatMessage("Player not found: " .. playerName)
         end
+
+      elseif command:sub(1, 7) == "gravity" and table.find(bots, displayName) then
+        local args = command:split(" ")
+        local gravityValue = args[2]
+
+        setGravity(gravityValue)
+        wait(2)
 
       elseif command:sub(1, 5) == "gojo " and table.find(bots, displayName) and cmdgojo then
         disablebool()
