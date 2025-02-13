@@ -553,7 +553,6 @@ local function trampoline(targetPlayer)
   return trampolineConnection
 end
 
--- ;ladder
 local function ladder(targetPlayer)
   -- Stop any existing ladder connection
   if ladderConnection then
@@ -585,6 +584,9 @@ local function ladder(targetPlayer)
   local verticalSpacing = 3  -- Space between bots vertically
   local verticalOffset = (botIndex - 1) * verticalSpacing
 
+  -- Distance in front of the player (adjust this value to control proximity)
+  local frontOffset = 1  -- Adjust this value to control how far in front the bot stands
+
   -- Continuous positioning mechanism
   ladderConnection = RunService.Heartbeat:Connect(function()
       -- Check if ladder should continue
@@ -600,16 +602,21 @@ local function ladder(targetPlayer)
       local localHumanoid = player.Character:FindFirstChild("Humanoid")
 
       if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
-          -- Get target's current position
+          -- Get target's current position and rotation
           local targetCFrame = targetHumanoidRootPart.CFrame
 
-          -- Compute final position directly above the target
-          local desiredPosition = targetCFrame.Position + Vector3.new(0, verticalOffset, 0)
+          -- Calculate position in front of the player
+          -- Use the target's forward vector to position the bot
+          local frontPosition = targetCFrame.Position + 
+                                (targetCFrame.LookVector * frontOffset) + 
+                                Vector3.new(0, verticalOffset, 0)
 
-          -- Create a CFrame that points upward
-          local rotatedCFrame = CFrame.new(desiredPosition) * CFrame.Angles(math.rad(90), 0, 0)
+          -- Create a CFrame that matches the target's rotation and points upward
+          local rotatedCFrame = CFrame.new(frontPosition) * 
+                                 targetCFrame.Rotation * 
+                                 CFrame.Angles(math.rad(90), 0, 0)
 
-          -- Set bot's CFrame vertically above the target
+          -- Set bot's CFrame in front of the target with the same rotation
           localHumanoidRootPart.CFrame = rotatedCFrame
 
           -- Remove velocity to prevent drifting
