@@ -1,3 +1,4 @@
+
 --Configuration
 getgenv().Use_Displayname = true -- if true, put accounts displayname for bots | if false use the username of accounts
 getgenv().bots = {"Red", "Purple", "Blue", "Green", "Orange"} --bots
@@ -614,7 +615,7 @@ local function ladder(targetPlayer)
           -- Create a CFrame that matches the target's rotation and points upward
           local rotatedCFrame = CFrame.new(frontPosition) * 
                                  targetCFrame.Rotation * 
-                                 CFrame.Angles(math.rad(90), 0, 0)
+                                 CFrame.Angles(math.rad(180), 0, 0)
 
           -- Set bot's CFrame in front of the target with the same rotation
           localHumanoidRootPart.CFrame = rotatedCFrame
