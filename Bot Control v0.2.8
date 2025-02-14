@@ -72,6 +72,9 @@ local cmdunsit = true
 local cmdgravity = true
 local cmdtrampoline = true
 local cmdladder = true
+local cmdmine = true
+local cmdragdoll = true
+local cmdunragdoll = true
 
 local towerbool = nil
 local followbool = nil
@@ -100,6 +103,7 @@ local trampolinebool = nil
 local trampolineConnection = nil
 local ladderbool = nil
 local ladderConnection = nil
+local minebool = nil
 local Admins = {}
 
 --version of the script
@@ -308,6 +312,7 @@ elevatorbool = false
 gojobool = false
 bridgebool = false
 trampolinebool = false
+minebool = false
 ladderbool = false
 end
 
@@ -332,6 +337,7 @@ gojobool = false
 bridgebool = false
 trampolinebool = false
 ladderbool = false
+minebool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -818,6 +824,22 @@ local function nuke(targetPlayer)
   end
 end
 
+-- ;ragdoll
+local function ragdoll(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  end
+end
+
+-- ;unragdoll
+local function unragdoll(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+  end
+end
+
 -- ;gravity
 local function setGravity(gravityValue)
   gravityValue = tonumber(gravityValue) or 196.2
@@ -947,6 +969,57 @@ local function gojo(targetPlayer)
   end)
 
   return gojoConnection
+end
+
+-- ;mine 
+local function mine(targetPlayer)
+  if not targetPlayer or not targetPlayer.Character then
+      return
+  end
+  
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return
+  end
+
+  local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+  local humanoid = player.Character:FindFirstChild("Humanoid")
+  
+  if humanoidRootPart and humanoid then
+      -- Prevent falling animation by setting humanoid state
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+      
+      -- Randomize teleport position
+      local function getRandomPosition()
+          local randomAngle = math.random() * 2 * math.pi
+          local randomRadius = math.random(5, 15)  -- Between 5 and 15 studs
+          
+          local offsetX = math.cos(randomAngle) * randomRadius
+          local offsetZ = math.sin(randomAngle) * randomRadius
+          
+          local newPosition = targetHumanoidRootPart.Position + Vector3.new(offsetX, 0, offsetZ)
+          
+          return newPosition
+      end
+      
+      -- Initial teleport
+      local newPosition = getRandomPosition()
+      humanoidRootPart.CFrame = CFrame.new(newPosition)
+      
+      -- Continuously update position 
+      local connection
+      connection = RunService.Heartbeat:Connect(function()
+          if humanoidRootPart and humanoidRootPart.Parent then
+              humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+              humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+          else
+              -- Cleanup if character is destroyed
+              if connection then
+                  connection:Disconnect()
+              end
+          end
+      end)
+  end
 end
 
 -- ;elevator
@@ -1635,6 +1708,10 @@ local function connectChatListener(playerpower)
             cmdtrampoline = false
             cmdladder = false
             ladderbool = false
+            minebool = false
+            cmdmine = false
+            cmdragdoll = false
+            cmdunragdoll = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -1725,7 +1802,7 @@ local function connectChatListener(playerpower)
             chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
             chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
-            chatMessage(";ladder (plr)")
+            chatMessage(";ladder (plr) ;ragdoll ;unragdoll")
         end
         wait(2)
 
@@ -1733,6 +1810,20 @@ local function connectChatListener(playerpower)
         local spinarg = tonumber(command:sub(6))
         spin(spinarg)
         boolspin = true
+        wait(2)
+
+      elseif command:sub(1, 8) == "ragdoll" and table.find(bots, displayName) and cmdragdoll then
+        ragdoll()
+        if index == channel then
+            chatMessage("Bots are now ragdolled")
+        end
+        wait(2)
+    
+      elseif command:sub(1, 10) == "unragdoll" and table.find(bots, displayName) and cmdunragdoll then
+        unragdoll()
+        if index == channel then
+            chatMessage("Bots are no longer ragdolled")
+        end
         wait(2)
 
       elseif command == "sit" and table.find(bots, displayName) and cmdsit then
@@ -1845,6 +1936,26 @@ local function connectChatListener(playerpower)
           chatMessage("Unbridged")
         end
         wait(2)
+
+      elseif command:sub(1, 5) == "mine " and table.find(bots, displayName) and cmdmine then
+        disablebool()
+        local playerName = command:sub(6)
+        local targetPlayer = findPlayerByName(playerName)
+        
+        if targetPlayer then
+            if index == channel then
+                chatMessage("Bots are now mining near " .. targetPlayer.Name)
+            end
+            mine(targetPlayer)
+            wait(2)
+        else
+            -- If no specific player is mentioned, use default mine behavior
+            if index == channel then
+                chatMessage("Bots are now mining")
+            end
+            mine()
+            wait(2)
+        end
 
       elseif command:sub(1, 5) == "nuke " and table.find(bots, displayName) and cmdnuke then
         disablebool()
