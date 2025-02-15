@@ -75,6 +75,8 @@ local cmdladder = true
 local cmdmine = true
 local cmdragdoll = true
 local cmdunragdoll = true
+local cmdquake = true
+local cmdunquake = true
 
 local towerbool = nil
 local followbool = nil
@@ -104,8 +106,8 @@ local trampolineConnection = nil
 local ladderbool = nil
 local ladderConnection = nil
 local minebool = nil
-local cmdquake = true
 local quakebool = false
+local quakeConnection = nil
 local Admins = {}
 
 --version of the script
@@ -317,6 +319,7 @@ bridgebool = false
 trampolinebool = false
 minebool = false
 ladderbool = false
+quakebool = false
 end
 
 -- ;fix
@@ -974,46 +977,56 @@ local function gojo(targetPlayer)
   return gojoConnection
 end
 
--- ;quake 
-local function quake(targetPlayer)
+-- ;quake
+local function quake(targetPlayer, radius)
+  -- Stop any existing quake connection
+  if quakeConnection then
+      quakeConnection:Disconnect()
+      quakeConnection = nil
+  end
+
+  radius = radius or 30   -- Default radius
+
   if not targetPlayer or not targetPlayer.Character then
-      return
+      return nil
   end
   
   local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
   if not targetHumanoidRootPart then
-      return
+      return nil
   end
 
   local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
   local humanoid = player.Character:FindFirstChild("Humanoid")
   
+  -- Set quake boolean to true
   quakebool = true
 
   if humanoidRootPart and humanoid then
-      -- Prevent falling animation by setting humanoid state
-      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-      
       -- Randomize teleport position
       local function getRandomPosition()
           local randomAngle = math.random() * 2 * math.pi
-          local randomRadius = math.random(5, 15)  -- Between 5 and 15 studs
+          local randomRadius = math.random(radius/2, radius)  -- Randomize within specified radius
           
           local offsetX = math.cos(randomAngle) * randomRadius
           local offsetZ = math.sin(randomAngle) * randomRadius
           
-          local newPosition = targetHumanoidRootPart.Position + Vector3.new(offsetX, -4, offsetZ)
+          local newPosition = targetHumanoidRootPart.Position + Vector3.new(offsetX, -0, offsetZ)
           
           return newPosition
       end
       
-      -- Initial teleport
-      local newPosition = getRandomPosition()
-      humanoidRootPart.CFrame = CFrame.new(newPosition)
-      
       -- Continuously update position and rotation
-      local connection
-      connection = RunService.Heartbeat:Connect(function()
+      quakeConnection = RunService.Heartbeat:Connect(function()
+          -- Check if quake should continue
+          if not quakebool or not player or not player.Character then
+              if quakeConnection then
+                  quakeConnection:Disconnect()
+                  quakeConnection = nil
+              end
+              return
+          end
+
           if humanoidRootPart and humanoidRootPart.Parent then
               humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
               humanoid:ChangeState(Enum.HumanoidStateType.Physics)
@@ -1026,15 +1039,20 @@ local function quake(targetPlayer)
               
               humanoidRootPart.CFrame = newCFrame
               
-              wait(1)  -- Small delay to prevent constant teleporting
+              wait(1)  -- Small delay between teleports
           else
               -- Cleanup if character is destroyed
-              if connection then
-                  connection:Disconnect()
+              if quakeConnection then
+                  quakeConnection:Disconnect()
+                  quakeConnection = nil
               end
           end
       end)
+
+      return quakeConnection
   end
+
+  return nil
 end
 
 -- ;mine 
@@ -1791,6 +1809,8 @@ local function connectChatListener(playerpower)
             cmdmine = false
             cmdragdoll = false
             cmdunragdoll = false
+            cmdquake = false
+            quakebool = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -2010,7 +2030,7 @@ local function connectChatListener(playerpower)
         wait(2)
 
       elseif command:sub(1, 7) == "unbridge" and table.find(bots, displayName) and cmdunbridge then
-        unbridge()
+        bridgebool = false
         if index == channel then
           chatMessage("Unbridged")
         end
@@ -2038,24 +2058,34 @@ local function connectChatListener(playerpower)
 
       elseif command:sub(1, 6) == "quake " and table.find(bots, displayName) and cmdquake then
         disablebool()
-        local playerName = command:sub(7)
+        local args = command:split(" ")
+        local playerName = args[2]
+        local radius = tonumber(args[3]) or 30  -- Default radius of 30
+        
         local targetPlayer = findPlayerByName(playerName)
         
         if targetPlayer then
             if index == channel then
-                chatMessage("Bots are now quaking near " .. targetPlayer.Name)
+                chatMessage("Bots are now quaking near " .. targetPlayer.Name .. " (Radius: " .. radius .. ")")
             end
-            quake(targetPlayer)
+            quake(targetPlayer, radius)
             wait(2)
         else
             -- If no specific player is mentioned, use default quake behavior
             if index == channel then
                 chatMessage("Bots are now quaking")
             end
-            quake()
+            quake(nil, radius)
             wait(2)
         end
 
+
+      elseif command:sub(1, 7) == "unquake" and table.find(bots, displayName) and cmdunqake then
+        quakebool = false
+        if index == channel then
+          chatMessage("Stopped quaking")
+        end
+        wait(2)
       elseif command:sub(1, 5) == "nuke " and table.find(bots, displayName) and cmdnuke then
         disablebool()
         local playerName = command:sub(6)
