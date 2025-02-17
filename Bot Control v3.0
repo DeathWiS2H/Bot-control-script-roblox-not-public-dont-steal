@@ -70,9 +70,9 @@ local cmdnuke = true
 local cmdsit = true
 local cmdunsit = true
 local cmdgravity = true
-local cmdtrampoline = true
 local cmdladder = true
 local cmdmine = true
+local cmdunmine = true
 local cmdragdoll = true
 local cmdunragdoll = true
 local cmdquake = true
@@ -104,18 +104,10 @@ local flingbool = nil
 local elevatorbool = nil
 local gojobool = nil
 local bridgebool = nil
-local bridgeConnection = nil
-local trampolinebool = nil
-local trampolineConnection = nil
 local ladderbool = nil
-local ladderConnection = nil
 local minebool = nil
 local quakebool = false
-local quakeConnection = nil
 local swordbool = nil
-local swordConnection = nil
-local launchbool = false
-local launchConnection = nil
 local Admins = {}
 
 --version of the script
@@ -156,7 +148,6 @@ if printcmd then
   print(";tower [plr]                         | Bots stack into a tower")
   print(";untower                             | Dismantle the tower")
   print(";bridge [plr]                        | Bots form a bridge in front of a player")
-  print(";trampoline [plr] NOT MADE           | Bots form a trampoline below the player")
   print(";unbridge                            | Remove the bridge")
   print(";worm [plr]                          | Bots form a moving train/snake formation")
   print(";unworm                              | Stop the train formation")
@@ -327,8 +318,8 @@ flingbool = false
 elevatorbool = false
 gojobool = false
 bridgebool = false
-trampolinebool = false
 minebool = false
+swordbool = false
 ladderbool = false
 quakebool = false
 launchbool = false
@@ -353,7 +344,6 @@ flingbool = false
 elevatorbool = false
 gojobool = false
 bridgebool = false
-trampolinebool = false
 ladderbool = false
 minebool = false
 launchbool = false
@@ -502,11 +492,6 @@ local function goto(targetPlayer)
       localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
     end
   end
-end
-
--- ;trampoline
-local function trampoline(targetPlayer)
-
 end
 
 -- ;ladder
@@ -1070,65 +1055,121 @@ end
 
 -- ;mine 
 local function mine(targetPlayer)
-  if not targetPlayer or not targetPlayer.Character then
-      return
-  end
-  
-  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-      return
-  end
+  -- Add a bool for the mine command
+  minebool = true
 
-  local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-  local humanoid = player.Character:FindFirstChild("Humanoid")
-  
-  if humanoidRootPart and humanoid then
-      -- Prevent falling animation by setting humanoid state
-      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  if not targetPlayer then
+      -- If no target player is specified, just teleport underground
+      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local humanoid = player.Character:FindFirstChild("Humanoid")
       
-      -- Randomize teleport position
-      local function getRandomPosition()
-          local randomAngle = math.random() * 2 * math.pi
-          local randomRadius = math.random(5, 15)  -- Between 5 and 15 studs
+      if humanoidRootPart and humanoid then
+          -- Prevent falling animation by setting humanoid state
+          humanoid:ChangeState(Enum.HumanoidStateType.Physics)
           
-          local offsetX = math.cos(randomAngle) * randomRadius
-          local offsetZ = math.sin(randomAngle) * randomRadius
+          -- Teleport underground at current location
+          local newPosition = humanoidRootPart.Position + Vector3.new(0, -4.2, 0)
           
-          local newPosition = targetHumanoidRootPart.Position + Vector3.new(offsetX, -4, offsetZ)
+          -- Create a CFrame at the underground position
+          local newCFrame = CFrame.new(newPosition)
           
-          return newPosition
+          -- Teleport and lock the bot in place
+          humanoidRootPart.CFrame = newCFrame
+          
+          -- Continuous position maintenance
+          local connection
+          connection = RunService.Heartbeat:Connect(function()
+              if not minebool then
+                  connection:Disconnect()
+                  return
+              end
+              
+              if humanoidRootPart and humanoidRootPart.Parent then
+                  -- Zero out velocity
+                  humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+                  
+                  -- Ensure physics state
+                  humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                  
+                  -- Maintain the exact underground position
+                  humanoidRootPart.CFrame = newCFrame
+              else
+                  -- Cleanup if character is destroyed
+                  if connection then
+                      connection:Disconnect()
+                  end
+              end
+          end)
+          
+          return connection
+      end
+  else
+      if not targetPlayer.Character then
+          return
       end
       
-      -- Initial teleport
-      local newPosition = getRandomPosition()
-      humanoidRootPart.CFrame = CFrame.new(newPosition)
+      local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+      if not targetHumanoidRootPart then
+          return
+      end
+
+      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local humanoid = player.Character:FindFirstChild("Humanoid")
       
-      -- Continuously update position and rotation
-      local connection
-      connection = RunService.Heartbeat:Connect(function()
-          if humanoidRootPart and humanoidRootPart.Parent then
-              humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-              humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+      if humanoidRootPart and humanoid then
+          -- Prevent falling animation by setting humanoid state
+          humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+          
+          -- Single teleport function
+          local function getTeleportPosition()
+              local randomAngle = math.random() * 2 * math.pi
+              local randomRadius = math.random(5, 15)  -- Between 5 and 15 studs
               
-              -- Continuously teleport to a new random position near the target
-              local newPosition = getRandomPosition()
+              local offsetX = math.cos(randomAngle) * randomRadius
+              local offsetZ = math.sin(randomAngle) * randomRadius
               
-              -- Calculate look direction
-              local lookDirection = (targetHumanoidRootPart.Position - newPosition).Unit
+              -- Teleport deeper underground
+              local newPosition = targetHumanoidRootPart.Position + Vector3.new(offsetX, -4.2, offsetZ)
               
-              -- Create a CFrame that looks at the target while maintaining the new position
-              local newCFrame = CFrame.new(newPosition, targetHumanoidRootPart.Position)
-              
-              humanoidRootPart.CFrame = newCFrame
-              
-              wait(1)  -- Small delay to prevent constant teleporting
-          else
-              -- Cleanup if character is destroyed
-              if connection then
-                  connection:Disconnect()
-              end
+              return newPosition
           end
-      end)
+          
+          -- Initial teleport
+          local newPosition = getTeleportPosition()
+          
+          -- Create a CFrame at the underground position (removed looking at target)
+          local newCFrame = CFrame.new(newPosition)
+          
+          -- Teleport and lock the bot in place
+          humanoidRootPart.CFrame = newCFrame
+          
+          -- Continuous position maintenance
+          local connection
+          connection = RunService.Heartbeat:Connect(function()
+              if not minebool then
+                  connection:Disconnect()
+                  return
+              end
+              
+              if humanoidRootPart and humanoidRootPart.Parent then
+                  -- Zero out velocity
+                  humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+                  
+                  -- Ensure physics state
+                  humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                  
+                  -- Maintain the exact underground position
+                  humanoidRootPart.CFrame = newCFrame
+              else
+                  -- Cleanup if character is destroyed
+                  if connection then
+                      connection:Disconnect()
+                  end
+              end
+          end)
+          
+          return connection
+      end
   end
 end
 
@@ -1232,9 +1273,18 @@ local function sword(targetPlayer)
       return nil
   end
 
-  -- Dynamic forward distance calculation
-  local baseForwardDistance = 2 -- Starting distance
-  local forwardDistance = baseForwardDistance * (botIndex * 2)  -- Increases by 3 for each bot
+  -- Dynamic distance calculation
+  local initialDistance = 20 -- First bot starts 10 studs away
+  local subsequentSpacing = 5 -- Spacing between subsequent bots
+
+  -- Calculate the bot's specific distance
+  local forwardDistance
+  if botIndex == 1 then
+      forwardDistance = initialDistance
+  else
+      -- Subsequent bots are placed incrementally further
+      forwardDistance = initialDistance + ((botIndex - 1) * subsequentSpacing)
+  end
 
   -- Continuous positioning mechanism
   swordConnection = RunService.Heartbeat:Connect(function()
@@ -1268,12 +1318,12 @@ local function sword(targetPlayer)
 
           -- Add velocity towards the target
           local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
-          local velocityMagnitude = -200  -- Adjust this value to control speed
+          local velocityMagnitude = -500  -- Adjust this value to control speed
           
           localHumanoidRootPart.Velocity = velocityDirection * velocityMagnitude
           
           -- Optional: Add some vertical velocity
-          localHumanoidRootPart.Velocity = localHumanoidRootPart.Velocity + Vector3.new(0, -200, 0)
+          localHumanoidRootPart.Velocity = localHumanoidRootPart.Velocity + Vector3.new(0, 0, 0)
       else
           -- Disconnect if target or bot is missing
           if swordConnection then
@@ -1284,115 +1334,6 @@ local function sword(targetPlayer)
   end)
 
   return swordConnection
-end
-
--- ;launch
-local function launch(targetPlayer)
-  -- Stop any existing launch connection
-  if launchConnection then
-      launchConnection:Disconnect()
-      launchConnection = nil
-  end
-
-  if not targetPlayer or not targetPlayer.Character then
-      return nil
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-      return nil
-  end
-
-  -- Set launch boolean to true
-  launchbool = true
-  
-  -- Get the bot's index to determine position
-  local displayName = player.DisplayName
-  local botIndex = table.find(bots, displayName)
-
-  if not botIndex then 
-      return nil
-  end
-
-  -- Dynamic positioning parameters
-  local baseForwardDistance = 10 -- Right in front of the player
-  local horizontalSpacing = 0 -- No horizontal spacing
-  local velocityMagnitude = -1000 -- Velocity magnitude for launch
-
-  -- Continuous positioning mechanism
-  launchConnection = RunService.Heartbeat:Connect(function()
-      -- Check if launch should continue
-      if not launchbool or not player or not player.Character then
-          if launchConnection then
-              launchConnection:Disconnect()
-              launchConnection = nil
-          end
-          return
-      end
-
-      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-      local localHumanoid = player.Character:FindFirstChild("Humanoid")
-
-      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
-          -- Get target's current position and rotation
-          local targetCFrame = targetHumanoidRootPart.CFrame
-
-          -- Compute final position right in front of the target
-          local desiredPosition = targetCFrame.Position + (targetCFrame.LookVector * baseForwardDistance)
-
-          -- Create CFrame that faces the target
-          local finalCFrame = CFrame.lookAt(desiredPosition, targetHumanoidRootPart.Position)
-
-          -- Set bot's CFrame
-          localHumanoidRootPart.CFrame = finalCFrame
-
-          -- Calculate velocity direction
-          local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
-
-          -- Apply velocity
-          localHumanoidRootPart.Velocity = velocityDirection * velocityMagnitude
-
-          -- Stay in position for 3 seconds
-          task.delay(3, function()
-              -- Stop updating position
-              if launchConnection then
-                  launchConnection:Disconnect()
-                  launchConnection = nil
-              end
-
-              -- Disable velocity after 5 seconds from initial launch
-              task.delay(3, function()
-                  -- Reset velocity to zero
-                  localHumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-              end)
-
-              -- Respawn after full 5 seconds
-              task.delay(1, function()
-                  -- Respawn the character
-                  if localHumanoid then
-                      localHumanoid.Health = 0
-                  end
-                  
-                  -- Disconnect the launch connection
-                  launchbool = false
-              end)
-          end)
-
-          -- Immediately disconnect the connection after setup
-          if launchConnection then
-              launchConnection:Disconnect()
-              launchConnection = nil
-          end
-      else
-          -- Disconnect if target or bot is missing
-          if launchConnection then
-              launchConnection:Disconnect()
-              launchConnection = nil
-          end
-      end
-  end)
-
-  return launchConnection
 end
 
 -- ;bridge
@@ -2004,9 +1945,6 @@ local function connectChatListener(playerpower)
             cmdnuke = false
             cmdgravity = false
             cmdsit = false
-            cmdtrampoline = false
-            trampolinebool = false
-            cmdtrampoline = false
             cmdladder = false
             ladderbool = false
             minebool = false
@@ -2018,9 +1956,6 @@ local function connectChatListener(playerpower)
             cmdsword = false
             cmdunsword = false
             swordbool = false
-            launchbool = false
-            cmdlaunch = false
-            cmdunlaunch = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -2191,37 +2126,29 @@ local function connectChatListener(playerpower)
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         wait(2)
 
-      elseif command:sub(1, 11) == "trampoline " and table.find(bots, displayName) and cmdtrampoline then
-        disablebool()
-        local playerName = command:sub(12)
-        local targetPlayer = findPlayerByName(playerName)
-        if targetPlayer then
-            if index == channel then
-                chatMessage("Launching bots towards " .. targetPlayer.Name)
-            end
-            trampoline(targetPlayer)
-            wait(2)
-        else
-            chatMessage("Player not found: " .. playerName)
-        end
-
-      elseif command:sub(1, 11) == "trampoline " and table.find(bots, displayName) and cmdtrampoline then
+      elseif command:sub(1, 5) == "fling" and table.find(bots, displayName) and cmdfling then
           disablebool()
-          local playerName = command:sub(12)
+          local playerName = command:sub(7)
           local targetPlayer = findPlayerByName(playerName)
           if targetPlayer then
-              if index == channel then
-                  chatMessage("Launching bots towards " .. targetPlayer.Name)
-              end
-              trampoline(targetPlayer)
-              wait(2)
+            if index == channel then
+              chatMessage("Bots are now flinging towards " .. targetPlayer.Name)
+            end
+            fling(targetPlayer)
+            wait(2)
           else
             if index == channel then
-              chatMessage("Player not found: " .. playerName)
+              chatMessage("Player not found for flinging.")
             end
           end
+        
+        elseif command == "unfling" and table.find(bots, displayName) and cmdunfling then
+          flingbool = false
+          if index == channel then
+            chatMessage("Unflinged")
+          end
           wait(2)
-
+          
         elseif command:sub(1, 5) == "sword" and table.find(bots, displayName) and cmdsword then
           disablebool()
           local targetName = command:sub(7)
@@ -2248,25 +2175,6 @@ local function connectChatListener(playerpower)
           if index == channel then
               chatMessage("Unsworded")
           end
-          wait(2)
-
-        elseif command:sub(1, 6) == "launch" and table.find(bots, displayName) and cmdlaunch then
-          disablebool()
-          if command:sub(7,7) == " " then
-            local playerName = command:sub(8)
-            local targetPlayer = findPlayerByName(playerName)
-            if targetPlayer then
-              launch(targetPlayer)
-            else
-              launch()
-            end
-          else
-            launch()
-          end
-          wait(2)
-        
-        elseif command:sub(1, 8) == "unlaunch" and table.find(bots, displayName) and cmdunlaunch then
-          unlaunch()
           wait(2)
 
         elseif command:sub(1, 6) == "bridge" and table.find(bots, displayName) and cmdbridge then
@@ -2317,6 +2225,13 @@ local function connectChatListener(playerpower)
             wait(2)
         end
 
+      elseif command == "unmine" and table.find(bots, displayName) and cmdunmine then
+        minebool = false
+        if index == channel then
+            chatMessage("Stopped mining")
+        end
+        wait(2)
+
       elseif command:sub(1, 6) == "quake " and table.find(bots, displayName) and cmdquake then
         disablebool()
         local args = command:split(" ")
@@ -2339,7 +2254,6 @@ local function connectChatListener(playerpower)
             quake(nil, radius)
             wait(2)
         end
-
 
       elseif command:sub(1, 7) == "unquake" and table.find(bots, displayName) and cmdunqake then
         quakebool = false
@@ -2434,28 +2348,6 @@ local function connectChatListener(playerpower)
           explode(targetPlayer)
         else
           explode()
-        end
-        wait(2)
-
-      elseif command:sub(1, 5) == "fling" and table.find(bots, displayName) and cmdfling then
-        disablebool()
-        if command:sub(6,6) == " " then
-          local playerName = command:sub(7)
-          local targetPlayer = findPlayerByName(playerName)
-          if targetPlayer then
-            fling(targetPlayer)
-          else
-            fling()
-          end
-        else
-          fling()
-        end
-        wait(2)
-
-      elseif command:sub(1, 7) == "unfling" and table.find(bots, displayName) and cmdunfling then
-        unfling()
-        if index == channel then
-          chatMessage("Stopped Flinging")
         end
         wait(2)
 
