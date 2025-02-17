@@ -779,80 +779,83 @@ local function unfling()
 end
 
 -- ;nuke
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
 local function nuke(targetPlayer)
-  if not targetPlayer or not targetPlayer.Character then
-      return
-  end
+    if not targetPlayer or not targetPlayer.Character then
+        return
+    end
 
-  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-      return
-  end
+    local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not targetHumanoidRootPart then
+        return
+    end
 
-  -- Spawn directly above the player at a fixed height
-  local spawnPosition = targetHumanoidRootPart.Position + Vector3.new(0, 300, 0)
+    -- Spawn directly above the player at a fixed height
+    local spawnPosition = targetHumanoidRootPart.Position + Vector3.new(0, 300, 0)
 
-  local player = Players.LocalPlayer
-  if player and player.Character then
-      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-      if humanoidRootPart then
-          -- Teleport to spawn position and set orientation to 90 degrees towards ground
-          humanoidRootPart.CFrame = CFrame.new(spawnPosition) * CFrame.Angles(math.rad(90), 0, 0)
+    local player = Players.LocalPlayer
+    if player and player.Character then
+        local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            -- Teleport to spawn position and set orientation to 90 degrees towards ground
+            humanoidRootPart.CFrame = CFrame.new(spawnPosition) * CFrame.Angles(math.rad(90), 0, 0)
 
-          local nukeConnection
-          nukeConnection = RunService.Heartbeat:Connect(function()
-              if not player or not player.Character or not targetPlayer.Character then
-                  nukeConnection:Disconnect()
-                  return
-              end
+            local nukeConnection
+            nukeConnection = RunService.Heartbeat:Connect(function()
+                if not player or not player.Character or not targetPlayer.Character then
+                    nukeConnection:Disconnect()
+                    return
+                end
 
-              local targetPosition = targetHumanoidRootPart.Position
-              local currentPosition = humanoidRootPart.Position
+                local targetPosition = targetHumanoidRootPart.Position
+                local currentPosition = humanoidRootPart.Position
 
-              -- Continuously update horizontal position to follow target
-              local newPosition = Vector3.new(
-                  targetPosition.X, 
-                  currentPosition.Y - 1,  -- Slow descent
-                  targetPosition.Z
-              )
+                -- Continuously update horizontal position to follow target
+                local newPosition = Vector3.new(
+                    targetPosition.X, 
+                    currentPosition.Y - 1,  -- Slow descent
+                    targetPosition.Z
+                )
 
-              -- Maintain 90-degree angle towards ground while following
-              humanoidRootPart.CFrame = CFrame.new(newPosition) * CFrame.Angles(math.rad(90), 0, 0)
+                -- Maintain 90-degree angle towards ground while following
+                humanoidRootPart.CFrame = CFrame.new(newPosition, targetPosition) * CFrame.Angles(math.rad(90), 0, 0)
 
-              -- Check if bot is close to ground
-              local raycastParams = RaycastParams.new()
-              raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-              raycastParams.FilterDescendantsInstances = {player.Character}
+                -- Check if bot is close to ground
+                local raycastParams = RaycastParams.new()
+                raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                raycastParams.FilterDescendantsInstances = {player.Character}
 
-              local raycastResult = workspace:Raycast(
-                  humanoidRootPart.Position, 
-                  Vector3.new(0, -10, 0), 
-                  raycastParams
-              )
+                local raycastResult = workspace:Raycast(
+                    humanoidRootPart.Position, 
+                    Vector3.new(0, -10, 0), 
+                    raycastParams
+                )
 
-              if raycastResult and raycastResult.Distance <= 1 then
-                  -- Teleport directly onto the target player
-                  humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
+                if raycastResult and raycastResult.Distance <= 1 then
+                    -- Teleport directly onto the target player
+                    humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0)
 
-                  local spinVelocity = Instance.new("BodyAngularVelocity")
-                  spinVelocity.AngularVelocity = Vector3.new(0, 125, 0)  -- Fixed spin speed
-                  spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
-                  spinVelocity.Parent = humanoidRootPart
+                    local spinVelocity = Instance.new("BodyAngularVelocity")
+                    spinVelocity.AngularVelocity = Vector3.new(0, 125, 0)  -- Fixed spin speed
+                    spinVelocity.MaxTorque = Vector3.new(0, math.huge, 0)
+                    spinVelocity.Parent = humanoidRootPart
 
-                  -- Check if we're on top of the target
-                  local distanceToTarget = (humanoidRootPart.Position - targetHumanoidRootPart.Position).Magnitude
-                  if distanceToTarget <= 1 then
-                      -- Break joints
-                      wait(0.25)
-                      player.Character:BreakJoints()
-                      
-                      -- Disconnect the connection
-                      nukeConnection:Disconnect()
-                  end
-              end
-          end)
-      end
-  end
+                    -- Check if we're on top of the target
+                    local distanceToTarget = (humanoidRootPart.Position - targetHumanoidRootPart.Position).Magnitude
+                    if distanceToTarget <= 1 then
+                        -- Break joints
+                        wait(0.25)
+                        player.Character:BreakJoints()
+                        
+                        -- Disconnect the connection
+                        nukeConnection:Disconnect()
+                    end
+                end
+            end)
+        end
+    end
 end
 
 -- ;ragdoll
