@@ -619,48 +619,73 @@ end
 
 -- ;explode
 local function explode(targetPlayer)
-  if player and player.Character then
-    local humanoid = player.Character:FindFirstChild("Humanoid")
-    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-    
-    if humanoid and humanoidRootPart then
-      -- Apply firework effects
-      local Spin = Instance.new("BodyAngularVelocity")
-      Spin.Name = "Spinning"
-      Spin.Parent = humanoidRootPart
-      Spin.MaxTorque = Vector3.new(0, math.huge, 0)
-      Spin.AngularVelocity = Vector3.new(0, 135, 0)
-      
-      local Velocity = Instance.new("BodyVelocity")
-      Velocity.Name = "Upward"
-      Velocity.Parent = humanoidRootPart
-      Velocity.MaxForce = Vector3.new(0, math.huge, 0)
-      Velocity.Velocity = Vector3.new(0, 10, 0)
-      
-      -- Set timer to kill character
-      task.delay(0.2, function()
-        if humanoid then
-          if Spin then
-            Spin:Destroy()
-          end
-          if Velocity then
-            Velocity:Destroy()
-          end
-          humanoid.Health = 0
-        end
-      end)
-      
-      -- Only teleport if target player is specified
-      if targetPlayer then
-        if targetPlayer.Character then
-          local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-          if targetHumanoidRootPart then
-            humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
-          end
-        end
+  if not targetPlayer or not targetPlayer.Character then return end
+  
+  local player = game.Players.LocalPlayer
+  if not player or not player.Character then return end
+  
+  local humanoid = player.Character:FindFirstChild("Humanoid")
+  local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+  
+  if not humanoid or not humanoidRootPart then return end
+  
+  -- Flag to control explosion sequence
+  local isExploding = true
+  
+  -- Create tracking connection
+  local explosionConnection
+  explosionConnection = game:GetService("RunService").Heartbeat:Connect(function()
+      if not isExploding then 
+          explosionConnection:Disconnect()
+          return 
       end
-    end
-  end
+      
+      -- Check if target player and their character exist
+      if targetPlayer and targetPlayer.Character then
+          local targetRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+          
+          if targetRootPart then
+              -- Continuously teleport on top of target
+              humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(0, -1, 0)
+              
+              -- Spin effect
+              local spin = Instance.new("BodyAngularVelocity")
+              spin.Name = "ExplodeSpin"
+              spin.Parent = humanoidRootPart
+              spin.MaxTorque = Vector3.new(0, math.huge, 0)
+              spin.AngularVelocity = Vector3.new(0, 135, 0)
+              
+              -- Upward velocity
+              local velocity = Instance.new("BodyVelocity")
+              velocity.Name = "ExplodeVelocity"
+              velocity.Parent = humanoidRootPart
+              velocity.MaxForce = Vector3.new(0, math.huge, 0)
+              velocity.Velocity = Vector3.new(0, 10, 0)
+          end
+      end
+  end)
+  
+  -- Kill character after a delay
+  task.delay(0.2, function()
+      isExploding = false
+      
+      -- Remove spin and velocity objects
+      local spin = humanoidRootPart:FindFirstChild("ExplodeSpin")
+      local velocity = humanoidRootPart:FindFirstChild("ExplodeVelocity")
+      
+      if spin then spin:Destroy() end
+      if velocity then velocity:Destroy() end
+      
+      -- Kill the character
+      if humanoid then
+          humanoid.Health = 0
+      end
+      
+      -- Disconnect the tracking connection
+      if explosionConnection then
+          explosionConnection:Disconnect()
+      end
+  end)
 end
 
 -- ;fling
