@@ -619,8 +619,6 @@ end
 
 -- ;explode
 local function explode(targetPlayer)
-  if not targetPlayer or not targetPlayer.Character then return end
-  
   local player = game.Players.LocalPlayer
   if not player or not player.Character then return end
   
@@ -640,33 +638,41 @@ local function explode(targetPlayer)
           return 
       end
       
-      -- Check if target player and their character exist
+      -- If target player is specified, track them
       if targetPlayer and targetPlayer.Character then
           local targetRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
           
           if targetRootPart then
               -- Continuously teleport on top of target
               humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(0, 0, 0)
-              
-              -- Spin effect
-              local spin = Instance.new("BodyAngularVelocity")
-              spin.Name = "ExplodeSpin"
-              spin.Parent = humanoidRootPart
-              spin.MaxTorque = Vector3.new(0, math.huge, 0)
-              spin.AngularVelocity = Vector3.new(0, 135, 0)
-              
-              -- Upward velocity
-              local velocity = Instance.new("BodyVelocity")
-              velocity.Name = "ExplodeVelocity"
-              velocity.Parent = humanoidRootPart
-              velocity.MaxForce = Vector3.new(0, math.huge, 0)
-              velocity.Velocity = Vector3.new(0, 10, 0)
           end
+      else
+          -- If no target, add random movement
+          local randomOffset = Vector3.new(
+              math.random(-0, 0),
+              math.random(0, 0),
+              math.random(-0, 0)
+          )
+          humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.new(randomOffset)
       end
+      
+      -- Spin effect
+      local spin = Instance.new("BodyAngularVelocity")
+      spin.Name = "ExplodeSpin"
+      spin.Parent = humanoidRootPart
+      spin.MaxTorque = Vector3.new(0, math.huge, 0)
+      spin.AngularVelocity = Vector3.new(0, 235, 0)
+      
+      -- Upward velocity
+      local velocity = Instance.new("BodyVelocity")
+      velocity.Name = "ExplodeVelocity"
+      velocity.Parent = humanoidRootPart
+      velocity.MaxForce = Vector3.new(0, math.huge, 0)
+      velocity.Velocity = Vector3.new(0, 20, 0)
   end)
   
   -- Kill character after a delay
-  task.delay(0.2, function()
+  task.delay(0.3, function()
       isExploding = false
       
       -- Remove spin and velocity objects
@@ -2282,6 +2288,7 @@ local function connectChatListener(playerpower)
           chatMessage("Stopped quaking")
         end
         wait(2)
+
       elseif command:sub(1, 5) == "nuke " and table.find(bots, displayName) and cmdnuke then
         disablebool()
         local playerName = command:sub(6)
@@ -2365,10 +2372,17 @@ local function connectChatListener(playerpower)
         disablebool()
         local playerName = command:sub(9)
         local targetPlayer = findPlayerByName(playerName)
+        
         if command:sub(8,8) == " " and targetPlayer then
-          explode(targetPlayer)
+            if index == channel then
+                chatMessage("Exploding " .. targetPlayer.Name)
+            end
+            explode(targetPlayer)
         else
-          explode()
+            if index == channel then
+                chatMessage("Exploding")
+            end
+            explode()
         end
         wait(2)
 
