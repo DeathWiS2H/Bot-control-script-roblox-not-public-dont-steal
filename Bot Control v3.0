@@ -79,8 +79,6 @@ local cmdquake = true
 local cmdunquake = true
 local cmdsword = true
 local cmdunsword = true
-local cmdlaunch = true
-local cmdunlaunch = true
 
 local towerbool = nil
 local followbool = nil
@@ -322,7 +320,6 @@ minebool = false
 swordbool = false
 ladderbool = false
 quakebool = false
-launchbool = false
 end
 
 -- ;fix
@@ -346,7 +343,6 @@ gojobool = false
 bridgebool = false
 ladderbool = false
 minebool = false
-launchbool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
