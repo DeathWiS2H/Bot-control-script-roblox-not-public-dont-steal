@@ -646,7 +646,7 @@ local function explode(targetPlayer)
           
           if targetRootPart then
               -- Continuously teleport on top of target
-              humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(0, -1, 0)
+              humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(0, 0, 0)
               
               -- Spin effect
               local spin = Instance.new("BodyAngularVelocity")
