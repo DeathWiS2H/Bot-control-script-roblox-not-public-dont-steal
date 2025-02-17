@@ -109,7 +109,7 @@ local swordbool = nil
 local Admins = {}
 
 --version of the script
-print("Death's bot controller VERSION: 0.2.6")
+print("Death's bot controller VERSION: 0.3.0")
 
 if printcmd then
   print("Death's Bot Controller - Command List")
@@ -159,6 +159,8 @@ if printcmd then
   print(";orbit5 [plr] <radius> <speed>       | Bots orbit a player (V5)")
   print(";orbit6 [plr] <radius> <speed>       | Bots orbit a player (V6 - Chaotic)")
   print(";unorbit                             | Stop bots from orbiting")
+  print(";quake [plr] <radius>                | Bots teleport randomly within a radius")
+  print(";unquake                             | Bots unquake")
   print(";spin <number>                       | Bots start spinning")
   print(";unspin                              | Bots stop spinning")
   -- Admin Commands
@@ -175,8 +177,6 @@ if printcmd then
   print(";unelevator                          | Stop the elevator effect")
   print(";ladder [plr]                        | Bots create a ladder infront a player")
   print(";gojo [plr]                          | Bots perform the Hollow Purple sequence")
-  print(";quake [plr] <radius>                | Bots teleport randomly within a radius")
-  print(";unquake                             | Bots unquake")
   print(";sword [plr]                         | Bots sword towards a player")
   print(";unsword                             | Stop bots from swording")
   -- Utility & Fix Commands
