@@ -1372,7 +1372,7 @@ end
 
 -- ;shotgun
 local function shotgun(targetPlayer, initialDistance)
-  -- Stop any existing sword connection
+  -- Stop any existing shotgun connection
   if shotgunConnection then
       shotgunConnection:Disconnect()
       shotgunConnection = nil
@@ -1387,7 +1387,7 @@ local function shotgun(targetPlayer, initialDistance)
       return nil
   end
 
-  -- Set sword boolean to true
+  -- Set shotgun boolean to true
   shotgunbool = true
   
   -- Get the bot's index to determine position
@@ -1410,9 +1410,23 @@ local function shotgun(targetPlayer, initialDistance)
       forwardDistance = initialDistance + ((botIndex - 1) * subsequentSpacing)
   end
 
+  -- Store initial velocity
+  local initialVelocity = Vector3.new(0, 0, 0)
+  local velocityTimer = nil
+  local stateChangeTimer = nil
+  local sitTimer = nil
+
+  -- Local function to sit the player
+  local function sit()
+      local localHumanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+      if localHumanoid then
+          localHumanoid.Sit = true
+      end
+  end
+
   -- Continuous positioning mechanism
   shotgunConnection = RunService.Heartbeat:Connect(function()
-      -- Check if sword should continue
+      -- Check if shotgun should continue
       if not shotgunbool or not player or not player.Character then
           if shotgunConnection then
               shotgunConnection:Disconnect()
@@ -1442,12 +1456,46 @@ local function shotgun(targetPlayer, initialDistance)
 
           -- Add velocity towards the target
           local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
-          local velocityMagnitude = -500  -- Adjust this value to control speed
+          local velocityMagnitude = -400  -- Adjust this value to control speed
           
-          localHumanoidRootPart.Velocity = velocityDirection * velocityMagnitude
+          local currentVelocity = velocityDirection * velocityMagnitude
+          localHumanoidRootPart.Velocity = currentVelocity
           
-          -- Optional: Add some vertical velocity
-          localHumanoidRootPart.Velocity = localHumanoidRootPart.Velocity + Vector3.new(0, 0, 0)
+          -- Store initial velocity for reset timer
+          if initialVelocity.Magnitude == 0 then
+              initialVelocity = currentVelocity
+          end
+
+          -- Timer to reset character while maintaining velocity
+          if not velocityTimer then
+              velocityTimer = task.delay(3, function()
+                  -- Reset character
+                  player.Character:BreakJoints()
+                  
+                  -- After a short delay, restore the initial velocity
+                  task.delay(0.1, function()
+                      if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                          player.Character:FindFirstChild("HumanoidRootPart").Velocity = initialVelocity
+                      end
+                  end)
+              end)
+          end
+
+          -- Add timer to sit the player after 2 seconds
+          if not sitTimer then
+              sitTimer = task.delay(2, function()
+                  sit()
+              end)
+          end
+
+          -- Add timer to change Humanoid state to Seated after 2 seconds
+          if not stateChangeTimer then
+              stateChangeTimer = task.delay(2, function()
+                  if localHumanoid then
+                      localHumanoid:ChangeState(Enum.HumanoidStateType.Seated)
+                  end
+              end)
+          end
       else
           -- Disconnect if target or bot is missing
           if shotgunConnection then
