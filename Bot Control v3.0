@@ -1399,7 +1399,7 @@ local function shotgun(targetPlayer, initialDistance)
   end
 
   -- Dynamic distance calculation
-  local subsequentSpacing = 2.1 -- Spacing between subsequent bots
+  local subsequentSpacing = 2.5 -- Spacing between subsequent bots
 
   -- Calculate the bot's specific distance
   local forwardDistance
@@ -1450,7 +1450,7 @@ local function shotgun(targetPlayer, initialDistance)
 
           -- Add velocity towards the target only when enabled
           local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
-          local velocityMagnitude = -300  -- Adjust this value to control speed
+          local velocityMagnitude = -400  -- Adjust this value to control speed
           
           -- Only apply velocity when flag is true
           if velocityEnabled then
@@ -1502,7 +1502,7 @@ local function shotgun(targetPlayer, initialDistance)
               unsitTimer = task.delay(2.5, function()
                   if localHumanoid then
                       localHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                      velocityEnabled = true  -- Enable velocity at 2.5 seconds
+                      velocityEnabled = true  -- Enable velocity at 2.7 seconds
                   end
               end)
           end
@@ -2358,7 +2358,7 @@ local function connectChatListener(playerpower)
           disablebool()
           local args = command:sub(9):split(" ")  -- Split the command into arguments
           local targetName = args[1]
-          local initialDistance = tonumber(args[2]) or 7  -- Default distance is 20 if not specified
+          local initialDistance = tonumber(args[2]) or 9  -- Default distance is 20 if not specified
       
           local targetPlayer = findPlayerByName(targetName)
       
