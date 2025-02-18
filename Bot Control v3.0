@@ -327,6 +327,7 @@ swordbool = false
 ladderbool = false
 quakebool = false
 shotgunbool = false
+gunbool = false
 end
 
 -- ;fix
@@ -351,6 +352,7 @@ bridgebool = false
 ladderbool = false
 minebool = false
 shotgunbool = false
+gunbool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -2273,6 +2275,9 @@ local function connectChatListener(playerpower)
             cmdshotgun = false
             cmdunshotgun = false
             shotgunbool = false
+            cmdgun = false
+            cmdungun = false
+            gunbool = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -2506,7 +2511,7 @@ local function connectChatListener(playerpower)
               end
           end
 
-        elseif command:sub(1, 9) == "unshotgun" and table.find(bots, displayName) then
+        elseif command:sub(1, 9) == "unshotgun" and table.find(bots, displayName) and cmdunshotgun then
           shotgunbool = false
           if shotgunConnection then
               shotgunConnection:Disconnect()
@@ -2537,7 +2542,7 @@ local function connectChatListener(playerpower)
               end
           end
         
-        elseif command:sub(1, 7) == "ungun" and table.find(bots, displayName) then
+        elseif command:sub(1, 7) == "ungun" and table.find(bots, displayName) and cmdungun then
           gunbool = false
           if gunConnection then
               gunConnection:Disconnect()
