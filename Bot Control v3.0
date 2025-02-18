@@ -1399,7 +1399,7 @@ local function shotgun(targetPlayer, initialDistance)
   end
 
   -- Dynamic distance calculation
-  local subsequentSpacing = 2 -- Spacing between subsequent bots
+  local subsequentSpacing = 2.1 -- Spacing between subsequent bots
 
   -- Calculate the bot's specific distance
   local forwardDistance
@@ -1415,14 +1415,8 @@ local function shotgun(targetPlayer, initialDistance)
   local velocityTimer = nil
   local stateChangeTimer = nil
   local sitTimer = nil
-
-  -- Local function to sit the player
-  local function sit()
-      local localHumanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-      if localHumanoid then
-          localHumanoid.Sit = true
-      end
-  end
+  local unsitTimer = nil
+  local velocityEnabled = false  -- New flag to control velocity
 
   -- Continuous positioning mechanism
   shotgunConnection = RunService.Heartbeat:Connect(function()
@@ -1454,16 +1448,22 @@ local function shotgun(targetPlayer, initialDistance)
           -- Set bot's CFrame to always face the target player but rotated upward
           localHumanoidRootPart.CFrame = rotatedCFrame
 
-          -- Add velocity towards the target
+          -- Add velocity towards the target only when enabled
           local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
-          local velocityMagnitude = -400  -- Adjust this value to control speed
+          local velocityMagnitude = -300  -- Adjust this value to control speed
           
-          local currentVelocity = velocityDirection * velocityMagnitude
-          localHumanoidRootPart.Velocity = currentVelocity
-          
-          -- Store initial velocity for reset timer
-          if initialVelocity.Magnitude == 0 then
-              initialVelocity = currentVelocity
+          -- Only apply velocity when flag is true
+          if velocityEnabled then
+              local currentVelocity = velocityDirection * velocityMagnitude
+              localHumanoidRootPart.Velocity = currentVelocity
+              
+              -- Store initial velocity for reset timer
+              if initialVelocity.Magnitude == 0 then
+                  initialVelocity = currentVelocity
+              end
+          else
+              -- Ensure no velocity when not enabled
+              localHumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
           end
 
           -- Timer to reset character while maintaining velocity
@@ -1472,12 +1472,12 @@ local function shotgun(targetPlayer, initialDistance)
                   -- Reset character
                   player.Character:BreakJoints()
                   
-                  -- After a short delay, restore the initial velocity
-                  task.delay(0.1, function()
-                      if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                          player.Character:FindFirstChild("HumanoidRootPart").Velocity = initialVelocity
-                      end
-                  end)
+                  -- Immediately end the shotgun process when bones break
+                  shotgunbool = false
+                  if shotgunConnection then
+                      shotgunConnection:Disconnect()
+                      shotgunConnection = nil
+                  end
               end)
           end
 
@@ -1493,6 +1493,16 @@ local function shotgun(targetPlayer, initialDistance)
               stateChangeTimer = task.delay(2, function()
                   if localHumanoid then
                       localHumanoid:ChangeState(Enum.HumanoidStateType.Seated)
+                  end
+              end)
+          end
+
+          -- Add timer to unsit the player and enable velocity after 2.5 seconds
+          if not unsitTimer then
+              unsitTimer = task.delay(2.5, function()
+                  if localHumanoid then
+                      localHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                      velocityEnabled = true  -- Enable velocity at 2.5 seconds
                   end
               end)
           end
@@ -2348,7 +2358,7 @@ local function connectChatListener(playerpower)
           disablebool()
           local args = command:sub(9):split(" ")  -- Split the command into arguments
           local targetName = args[1]
-          local initialDistance = tonumber(args[2]) or 10  -- Default distance is 20 if not specified
+          local initialDistance = tonumber(args[2]) or 7  -- Default distance is 20 if not specified
       
           local targetPlayer = findPlayerByName(targetName)
       
