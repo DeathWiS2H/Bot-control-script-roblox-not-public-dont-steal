@@ -1450,7 +1450,7 @@ local function shotgun(targetPlayer, initialDistance)
 
           -- Add velocity towards the target only when enabled
           local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
-          local velocityMagnitude = -400  -- Adjust this value to control speed
+          local velocityMagnitude = -500  -- Adjust this value to control speed
           
           -- Only apply velocity when flag is true
           if velocityEnabled then
