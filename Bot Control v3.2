@@ -361,6 +361,13 @@ ladderbool = false
 quakebool = false
 shotgunbool = false
 gunbool = false
+wavebool = false
+portalbool = false
+shieldbool = false
+swarmbool = false
+dnabool = false
+galaxybool = false
+tornadobool = false
 end
 
 -- ;fix
@@ -386,6 +393,13 @@ ladderbool = false
 minebool = false
 shotgunbool = false
 gunbool = false
+wavebool = false
+portalbool = false
+shieldbool = false
+swarmbool = false
+dnabool = false
+galaxybool = false
+tornadobool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -3097,7 +3111,7 @@ local function connectChatListener(playerpower)
 
     elseif command:sub(1, 5) == "worm " and table.find(bots, displayName) and cmdworm then
       disablebool()
-        local playerName = command:sub(6) -- Obtenir le nom du joueur à suivre
+        local playerName = command:sub(6)
         local targetPlayer = findPlayerByName(playerName)
         wormbool = false
         worm(targetPlayer)
@@ -3130,7 +3144,8 @@ local function connectChatListener(playerpower)
  
       elseif command:sub(1, 5) == "wave " and cmdwave then
         local targetName = command:sub(6)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
+        wave(targetPlayer)
         if target then
             wavebool = true
             chatMessage("Bots are now in wave formation around " .. targetName)
@@ -3146,7 +3161,7 @@ local function connectChatListener(playerpower)
 
       elseif command:sub(1, 7) == "portal " and cmdportal then
         local targetName = command:sub(8)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
         if target then
             portalbool = true
             chatMessage("Bots are creating a portal around " .. targetName)
@@ -3161,7 +3176,7 @@ local function connectChatListener(playerpower)
 
       elseif command:sub(1, 7) == "shield " and cmdshield then
         local targetName = command:sub(8)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
         if target then
             shieldbool = true
             chatMessage("Bots are forming a shield around " .. targetName)
@@ -3169,6 +3184,7 @@ local function connectChatListener(playerpower)
             chatMessage("Player not found")
         end
         wait(2)
+
       elseif command == "unshield" and cmdunshield then
         shieldbool = false
         chatMessage("Shield formation disabled")
@@ -3176,7 +3192,7 @@ local function connectChatListener(playerpower)
       
       elseif command:sub(1, 6) == "swarm " and cmdswarm then
         local targetName = command:sub(7)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
         if target then
             swarmbool = true
             chatMessage("Bots are swarming " .. targetName)
@@ -3191,7 +3207,7 @@ local function connectChatListener(playerpower)
       
       elseif command:sub(1, 4) == "dna " and cmddna then
         local targetName = command:sub(5)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
         if target then
             dnabool = true
             chatMessage("Bots are forming a DNA helix around " .. targetName)
@@ -3206,7 +3222,7 @@ local function connectChatListener(playerpower)
 
       elseif command:sub(1, 7) == "galaxy " and cmdgalaxy then
         local targetName = command:sub(8)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
         if target then
             galaxybool = true
             chatMessage("Bots are forming a galaxy around " .. targetName)
@@ -3221,7 +3237,7 @@ local function connectChatListener(playerpower)
 
       elseif command:sub(1, 7) == "meteor " and cmdmeteor then
         local targetName = command:sub(8)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
         if target then
             -- Each bot becomes a meteor
             if index then
@@ -3263,7 +3279,7 @@ local function connectChatListener(playerpower)
 
       elseif command:sub(1, 8) == "tornado " and cmdtornado then
         local targetName = command:sub(9)
-        local target = Players:FindFirstChild(targetName)
+        local target = findPlayerByName(playerName)
         if target then
             tornadobool = true
             chatMessage("Bots are forming a tornado around " .. targetName)
