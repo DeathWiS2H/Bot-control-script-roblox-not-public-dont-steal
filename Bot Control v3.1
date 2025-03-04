@@ -3127,161 +3127,154 @@ local function connectChatListener(playerpower)
             chatMessage("Player not found: " .. playerName)
           end
         end
+ 
+      elseif command:sub(1, 5) == "wave " and cmdwave then
+        local targetName = command:sub(6)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            wavebool = true
+            chatMessage("Bots are now in wave formation around " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
+      elseif command == "unwave" and cmdunwave then
+        wavebool = false
+        chatMessage("Wave formation disabled")
+        wait(2)
 
-        -- Wave Formation
-elseif command:sub(1, 5) == "wave " and cmdwave then
-  local targetName = command:sub(6)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      wavebool = true
-      chatMessage("Bots are now in wave formation around " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-elseif command == "unwave" and cmdunwave then
-  wavebool = false
-  chatMessage("Wave formation disabled")
-  wait(2)
 
--- Portal Effect
-elseif command:sub(1, 7) == "portal " and cmdportal then
-  local targetName = command:sub(8)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      portalbool = true
-      chatMessage("Bots are creating a portal around " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-elseif command == "unportal" and cmdunportal then
-  portalbool = false
-  chatMessage("Portal formation disabled")
-  wait(2)
+      elseif command:sub(1, 7) == "portal " and cmdportal then
+        local targetName = command:sub(8)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            portalbool = true
+            chatMessage("Bots are creating a portal around " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
+      elseif command == "unportal" and cmdunportal then
+        portalbool = false
+        chatMessage("Portal formation disabled")
+        wait(2)
 
--- Shield Wall
-elseif command:sub(1, 7) == "shield " and cmdshield then
-  local targetName = command:sub(8)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      shieldbool = true
-      chatMessage("Bots are forming a shield around " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-elseif command == "unshield" and cmdunshield then
-  shieldbool = false
-  chatMessage("Shield formation disabled")
-  wait(2)
+      elseif command:sub(1, 7) == "shield " and cmdshield then
+        local targetName = command:sub(8)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            shieldbool = true
+            chatMessage("Bots are forming a shield around " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
+      elseif command == "unshield" and cmdunshield then
+        shieldbool = false
+        chatMessage("Shield formation disabled")
+        wait(2)
+      
+      elseif command:sub(1, 6) == "swarm " and cmdswarm then
+        local targetName = command:sub(7)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            swarmbool = true
+            chatMessage("Bots are swarming " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
+      elseif command == "unswarm" and cmdunswarm then
+        swarmbool = false
+        chatMessage("Swarm attack disabled")
+        wait(2)
+      
+      elseif command:sub(1, 4) == "dna " and cmddna then
+        local targetName = command:sub(5)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            dnabool = true
+            chatMessage("Bots are forming a DNA helix around " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
+      elseif command == "undna" and cmdundna then
+        dnabool = false
+        chatMessage("DNA formation disabled")
+        wait(2)
 
--- Swarm Attack
-elseif command:sub(1, 6) == "swarm " and cmdswarm then
-  local targetName = command:sub(7)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      swarmbool = true
-      chatMessage("Bots are swarming " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-elseif command == "unswarm" and cmdunswarm then
-  swarmbool = false
-  chatMessage("Swarm attack disabled")
-  wait(2)
+      elseif command:sub(1, 7) == "galaxy " and cmdgalaxy then
+        local targetName = command:sub(8)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            galaxybool = true
+            chatMessage("Bots are forming a galaxy around " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
+      elseif command == "ungalaxy" and cmdungalaxy then
+        galaxybool = false
+        chatMessage("Galaxy formation disabled")
+        wait(2)
 
--- DNA Helix
-elseif command:sub(1, 4) == "dna " and cmddna then
-  local targetName = command:sub(5)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      dnabool = true
-      chatMessage("Bots are forming a DNA helix around " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-elseif command == "undna" and cmdundna then
-  dnabool = false
-  chatMessage("DNA formation disabled")
-  wait(2)
+      elseif command:sub(1, 7) == "meteor " and cmdmeteor then
+        local targetName = command:sub(8)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            -- Each bot becomes a meteor
+            if index then
+                spawn(function()
+                    -- Get random starting positions
+                    local angle = math.random(0, 360) * (math.pi/180)
+                    local distance = 20 * math.sqrt(math.random())
+                    local xOffset = math.cos(angle) * distance
+                    local zOffset = math.sin(angle) * distance
+                    
+                    -- Start high in the air
+                    local startPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 100, zOffset)
+                    local endPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
+                    
+                    -- Teleport to starting position
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(startPos)
+                    wait(index * 0.2) -- Stagger the meteors
+                    
+                    -- Fall down
+                    local fallTime = 2
+                    local startTime = tick()
+                    local elapsed = 0
+                    
+                    while elapsed < fallTime do
+                        elapsed = tick() - startTime
+                        local progress = elapsed / fallTime
+                        local currentPos = startPos:Lerp(endPos, progress)
+                        
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(currentPos)
+                        wait(0.01)
+                    end
+                end)
+            end
+            chatMessage("Meteor shower launched at " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
 
--- Galaxy Formation
-elseif command:sub(1, 7) == "galaxy " and cmdgalaxy then
-  local targetName = command:sub(8)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      galaxybool = true
-      chatMessage("Bots are forming a galaxy around " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-elseif command == "ungalaxy" and cmdungalaxy then
-  galaxybool = false
-  chatMessage("Galaxy formation disabled")
-  wait(2)
-
--- Meteor Shower
-elseif command:sub(1, 7) == "meteor " and cmdmeteor then
-  local targetName = command:sub(8)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      -- Each bot becomes a meteor
-      if index then
-          spawn(function()
-              -- Get random starting positions
-              local angle = math.random(0, 360) * (math.pi/180)
-              local distance = 20 * math.sqrt(math.random())
-              local xOffset = math.cos(angle) * distance
-              local zOffset = math.sin(angle) * distance
-              
-              -- Start high in the air
-              local startPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 100, zOffset)
-              local endPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
-              
-              -- Teleport to starting position
-              game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(startPos)
-              wait(index * 0.2) -- Stagger the meteors
-              
-              -- Fall down
-              local fallTime = 2
-              local startTime = tick()
-              local elapsed = 0
-              
-              while elapsed < fallTime do
-                  elapsed = tick() - startTime
-                  local progress = elapsed / fallTime
-                  local currentPos = startPos:Lerp(endPos, progress)
-                  
-                  game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(currentPos)
-                  wait(0.01)
-              end
-          end)
-      end
-      chatMessage("Meteor shower launched at " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-
--- Tornado
-elseif command:sub(1, 8) == "tornado " and cmdtornado then
-  local targetName = command:sub(9)
-  local target = Players:FindFirstChild(targetName)
-  if target then
-      tornadobool = true
-      chatMessage("Bots are forming a tornado around " .. targetName)
-  else
-      chatMessage("Player not found")
-  end
-  wait(2)
-elseif command == "untornado" and cmduntornado then
-  tornadobool = false
-  chatMessage("Tornado disabled")
-  wait(2)
+      elseif command:sub(1, 8) == "tornado " and cmdtornado then
+        local targetName = command:sub(9)
+        local target = Players:FindFirstChild(targetName)
+        if target then
+            tornadobool = true
+            chatMessage("Bots are forming a tornado around " .. targetName)
+        else
+            chatMessage("Player not found")
+        end
+        wait(2)
+      elseif command == "untornado" and cmduntornado then
+        tornadobool = false
+        chatMessage("Tornado disabled")
+        wait(2)
 
     elseif command:sub(1, 7) == "follow " and table.find(bots, displayName) and cmdfollow then
       disablebool()
