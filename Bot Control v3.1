@@ -7,377 +7,15 @@ getgenv().prefix = ";" -- Prefix
 getgenv().botrender = true -- when true, bots use less CPU
 getgenv().printcmd = true -- if true, displays all commands available in the console
 
+--get configs | Important
 local Use_Displayname = getgenv().Use_Displayname
 local bots = getgenv().bots
 local owner = getgenv().owner
 local nbbot = getgenv().nbbot
 local prefix = getgenv().prefix
 local botrender = getgenv().botrender
-
--- Create UI container
-local BotCommanderUI = {}
-
--- Create the main UI frame
-BotCommanderUI.createUI = function()
-    -- Basic UI framework from Infinite Yield
-    local PARENT = game:GetService("CoreGui")
-    local main = Instance.new("ScreenGui")
-    main.Name = "BotCommanderUI"
-    
-    -- Main content frame
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Name = "Content"
-    mainFrame.BackgroundColor3 = Color3.fromRGB(36, 36, 37)
-    mainFrame.BorderSizePixel = 0
-    mainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
-    mainFrame.Size = UDim2.new(0, 500, 0, 300)
-    mainFrame.Parent = main
-    mainFrame.Active = true
-    mainFrame.Draggable = true
-    
-    -- Top bar for title and close button
-    local topBar = Instance.new("Frame")
-    topBar.Name = "TopBar"
-    topBar.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
-    topBar.BorderSizePixel = 0
-    topBar.Size = UDim2.new(1, 0, 0, 30)
-    topBar.Parent = mainFrame
-    
-    -- Title for the UI
-    local title = Instance.new("TextLabel")
-    title.Name = "Title"
-    title.BackgroundTransparency = 1
-    title.Font = Enum.Font.SourceSansBold
-    title.Text = "Death's Bot Commander"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextSize = 18
-    title.Size = UDim2.new(1, -30, 1, 0)
-    title.Parent = topBar
-    
-    -- Close button
-    local closeButton = Instance.new("TextButton")
-    closeButton.Name = "Close"
-    closeButton.BackgroundTransparency = 1
-    closeButton.Position = UDim2.new(1, -30, 0, 0)
-    closeButton.Size = UDim2.new(0, 30, 1, 0)
-    closeButton.Font = Enum.Font.SourceSansBold
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeButton.TextSize = 20
-    closeButton.Parent = topBar
-    
-    -- Command input box (similar to Infinite Yield)
-    local cmdBox = Instance.new("Frame")
-    cmdBox.Name = "CommandBox"
-    cmdBox.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
-    cmdBox.BorderSizePixel = 0
-    cmdBox.Position = UDim2.new(0, 0, 0, 30)
-    cmdBox.Size = UDim2.new(1, 0, 0, 30)
-    cmdBox.Parent = mainFrame
-    
-    -- Command text box
-    local cmdInput = Instance.new("TextBox")
-    cmdInput.Name = "CommandInput"
-    cmdInput.BackgroundTransparency = 1
-    cmdInput.Position = UDim2.new(0, 10, 0, 0)
-    cmdInput.Size = UDim2.new(1, -20, 1, 0)
-    cmdInput.Font = Enum.Font.SourceSans
-    cmdInput.PlaceholderText = "Enter command here (e.g. ;follow username)"
-    cmdInput.Text = ""
-    cmdInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-    cmdInput.TextSize = 16
-    cmdInput.TextXAlignment = Enum.TextXAlignment.Left
-    cmdInput.ClearTextOnFocus = false
-    cmdInput.Parent = cmdBox
-    
-    -- Command output frame
-    local outputFrame = Instance.new("Frame")
-    outputFrame.Name = "OutputFrame"
-    outputFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 31)
-    outputFrame.BorderSizePixel = 0
-    outputFrame.Position = UDim2.new(0, 0, 0, 60)
-    outputFrame.Size = UDim2.new(1, 0, 0, 120)
-    outputFrame.Parent = mainFrame
-    
-    -- Scrolling frame for command output
-    local outputScrollFrame = Instance.new("ScrollingFrame")
-    outputScrollFrame.Name = "OutputScrollFrame"
-    outputScrollFrame.BackgroundTransparency = 1
-    outputScrollFrame.Position = UDim2.new(0, 5, 0, 5)
-    outputScrollFrame.Size = UDim2.new(1, -10, 1, -10)
-    outputScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    outputScrollFrame.ScrollBarThickness = 6
-    outputScrollFrame.Parent = outputFrame
-    
-    -- Command history list
-    local cmdHistory = Instance.new("TextLabel")
-    cmdHistory.Name = "CmdHistory"
-    cmdHistory.BackgroundTransparency = 1
-    cmdHistory.Position = UDim2.new(0, 0, 0, 0)
-    cmdHistory.Size = UDim2.new(1, 0, 1, 0)
-    cmdHistory.Font = Enum.Font.SourceSans
-    cmdHistory.Text = "Command history will appear here..."
-    cmdHistory.TextColor3 = Color3.fromRGB(200, 200, 200)
-    cmdHistory.TextSize = 14
-    cmdHistory.TextXAlignment = Enum.TextXAlignment.Left
-    cmdHistory.TextYAlignment = Enum.TextYAlignment.Top
-    cmdHistory.Parent = outputScrollFrame
-    
-    -- Player list section
-    local playerListFrame = Instance.new("Frame")
-    playerListFrame.Name = "PlayerListFrame"
-    playerListFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 31)
-    playerListFrame.BorderSizePixel = 0
-    playerListFrame.Position = UDim2.new(0, 0, 0, 180)
-    playerListFrame.Size = UDim2.new(1, 0, 0, 120)
-    playerListFrame.Parent = mainFrame
-    
-    -- Player list header
-    local playerListHeader = Instance.new("TextLabel")
-    playerListHeader.Name = "PlayerListHeader"
-    playerListHeader.BackgroundColor3 = Color3.fromRGB(46, 46, 47)
-    playerListHeader.BorderSizePixel = 0
-    playerListHeader.Size = UDim2.new(1, 0, 0, 20)
-    playerListHeader.Font = Enum.Font.SourceSansBold
-    playerListHeader.Text = "Players in Server"
-    playerListHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
-    playerListHeader.TextSize = 14
-    playerListHeader.Parent = playerListFrame
-    
-    -- Scrolling frame for player list
-    local playerScrollFrame = Instance.new("ScrollingFrame")
-    playerScrollFrame.Name = "PlayerScrollFrame"
-    playerScrollFrame.BackgroundTransparency = 1
-    playerScrollFrame.Position = UDim2.new(0, 5, 0, 25)
-    playerScrollFrame.Size = UDim2.new(1, -10, 1, -25)
-    playerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    playerScrollFrame.ScrollBarThickness = 6
-    playerScrollFrame.Parent = playerListFrame
-    
-    -- Add player list layout
-    local playerListLayout = Instance.new("UIListLayout")
-    playerListLayout.Name = "PlayerListLayout"
-    playerListLayout.Padding = UDim.new(0, 2)
-    playerListLayout.Parent = playerScrollFrame
-    
-    -- Store references to UI elements
-    BotCommanderUI.gui = main
-    BotCommanderUI.mainFrame = mainFrame
-    BotCommanderUI.cmdInput = cmdInput
-    BotCommanderUI.cmdHistory = cmdHistory
-    BotCommanderUI.playerScrollFrame = playerScrollFrame
-    
-    -- Variables for tracking
-    BotCommanderUI.selectedPlayers = {}
-    BotCommanderUI.historyList = {}
-    
-    -- Close button functionality
-    closeButton.MouseButton1Click:Connect(function()
-        main.Enabled = false
-    end)
-    
-    -- Make UI visible
-    main.Parent = PARENT
-    return main
-end
-
--- Function to add command to history
-BotCommanderUI.addToHistory = function(cmd)
-    table.insert(BotCommanderUI.historyList, 1, cmd)
-    -- Limit history to 50 items
-    if #BotCommanderUI.historyList > 50 then
-        table.remove(BotCommanderUI.historyList, 51)
-    end
-    
-    -- Update history display
-    local historyText = ""
-    for i = 1, math.min(15, #BotCommanderUI.historyList) do
-        historyText = historyText .. BotCommanderUI.historyList[i] .. "\n"
-    end
-    BotCommanderUI.cmdHistory.Text = historyText
-end
-
--- Function to execute a command
-BotCommanderUI.executeCommand = function(cmd)
-    -- Strip prefix if included
-    if cmd:sub(1, #prefix) == prefix then
-        cmd = cmd:sub(#prefix + 1)
-    end
-    
-    -- Add to history with prefix
-    BotCommanderUI.addToHistory(prefix .. cmd)
-    
-    -- Send command through chat
-    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(prefix .. cmd, "All")
-end
-
--- Function to create a player button
-BotCommanderUI.createPlayerButton = function(player)
-    local playerButton = Instance.new("TextButton")
-    playerButton.Name = player.Name
-    playerButton.Size = UDim2.new(1, -10, 0, 25)
-    playerButton.BackgroundColor3 = Color3.fromRGB(40, 40, 41)
-    playerButton.BorderSizePixel = 0
-    playerButton.Font = Enum.Font.SourceSans
-    
-    -- Display name or username based on configuration
-    local displayText = Use_Displayname and player.DisplayName or player.Name
-    playerButton.Text = displayText
-    
-    playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    playerButton.TextSize = 14
-    playerButton.TextXAlignment = Enum.TextXAlignment.Left
-    playerButton.Parent = BotCommanderUI.playerScrollFrame
-    
-    -- Check if it's a bot account
-    local isBot = false
-    for _, botName in pairs(bots) do
-        if (Use_Displayname and player.DisplayName == botName) or player.Name == botName then
-            isBot = true
-            playerButton.BackgroundColor3 = Color3.fromRGB(40, 80, 40) -- Green tint for bots
-            playerButton.Text = "🤖 " .. displayText
-            break
-        end
-    end
-    
-    -- Selection state
-    local selected = false
-    
-    -- Click handler
-    playerButton.MouseButton1Click:Connect(function()
-        selected = not selected
-        
-        if selected then
-            -- Add to selected list
-            table.insert(BotCommanderUI.selectedPlayers, player.Name)
-            playerButton.BackgroundColor3 = isBot and Color3.fromRGB(60, 120, 60) or Color3.fromRGB(60, 60, 120)
-        else
-            -- Remove from selected list
-            for i, name in ipairs(BotCommanderUI.selectedPlayers) do
-                if name == player.Name then
-                    table.remove(BotCommanderUI.selectedPlayers, i)
-                    break
-                end
-            end
-            playerButton.BackgroundColor3 = isBot and Color3.fromRGB(40, 80, 40) or Color3.fromRGB(40, 40, 41)
-        end
-    end)
-    
-    return playerButton
-end
-
--- Function to refresh player list
-BotCommanderUI.refreshPlayerList = function()
-    -- Clear existing buttons
-    for _, child in pairs(BotCommanderUI.playerScrollFrame:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
-        end
-    end
-    
-    -- Add all players in server
-    local canvasSize = 0
-    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-        local button = BotCommanderUI.createPlayerButton(player)
-        canvasSize = canvasSize + button.Size.Y.Offset + 2 -- Add padding
-    end
-    
-    -- Update canvas size
-    BotCommanderUI.playerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, canvasSize)
-end
-
--- Initialize the UI
-BotCommanderUI.init = function()
-    BotCommanderUI.createUI()
-    BotCommanderUI.refreshPlayerList()
-    
-    -- Command input handling
-    BotCommanderUI.cmdInput.FocusLost:Connect(function(enterPressed)
-        if enterPressed and BotCommanderUI.cmdInput.Text ~= "" then
-            local cmd = BotCommanderUI.cmdInput.Text
-            
-            -- Check if command has player parameters and selected players exist
-            if #BotCommanderUI.selectedPlayers > 0 then
-                -- Common commands that take player arguments
-                local playerCommands = {
-                    "follow", "goto", "orbit", "orbit2", "orbit3", "orbit4", "orbit5", "orbit6",
-                    "stalk", "tower", "bridge", "worm", "explode", "fling", "fireworks",
-                    "nuke", "elevator", "ladder", "gojo", "sword", "shotgun", "gun"
-                }
-                
-                -- Check if it's a command that should target players
-                local isPlayerCommand = false
-                for _, playerCmd in ipairs(playerCommands) do
-                    if cmd:lower():find("^" .. playerCmd) then
-                        isPlayerCommand = true
-                        break
-                    end
-                end
-                
-                if isPlayerCommand then
-                    -- Execute command for each selected player
-                    for _, playerName in ipairs(BotCommanderUI.selectedPlayers) do
-                        local fullCmd = cmd .. " " .. playerName
-                        BotCommanderUI.executeCommand(fullCmd)
-                    end
-                else
-                    -- Just execute the command as is
-                    BotCommanderUI.executeCommand(cmd)
-                end
-            else
-                -- No players selected, execute command as is
-                BotCommanderUI.executeCommand(cmd)
-            end
-            
-            -- Clear input box
-            BotCommanderUI.cmdInput.Text = ""
-        end
-    end)
-    
-    -- Set up player events
-    game:GetService("Players").PlayerAdded:Connect(function()
-        wait(1)
-        BotCommanderUI.refreshPlayerList()
-    end)
-    
-    game:GetService("Players").PlayerRemoving:Connect(function()
-        wait(1)
-        BotCommanderUI.refreshPlayerList()
-    end)
-    
-    -- Helpful starting message
-    BotCommanderUI.addToHistory("Bot Commander UI Loaded!")
-    BotCommanderUI.addToHistory("Type commands without the prefix: " .. prefix)
-    BotCommanderUI.addToHistory("Click on players to target them with commands")
-    BotCommanderUI.addToHistory("--------------------------------------------")
-end
-
--- Create a toggle function
-BotCommanderUI.toggle = function()
-    if BotCommanderUI.gui then
-        BotCommanderUI.gui.Enabled = not BotCommanderUI.gui.Enabled
-    else
-        BotCommanderUI.init()
-    end
-end
-
--- Add a keybind to toggle the UI
-local UserInputService = game:GetService("UserInputService")
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.RightControl then
-        BotCommanderUI.toggle()
-    end
-end)
-
--- Initialize the UI
-BotCommanderUI.init()
-
--- Notification
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "Bot Commander",
-    Text = "UI loaded! Press Right Ctrl to toggle",
-    Duration = 5
-})
+local printcmd = getgenv().printcmd
+local versionfromconfig = getgenv().version
 
 -- cmd, bool and stuff
 local cmdstatus = true
@@ -445,6 +83,22 @@ local cmdshotgun = true
 local cmdunshotgun = true
 local cmdgun = true
 local cmdungun = true
+local cmdwave = true
+local cmdunwave = true 
+local cmdportal = true
+local cmdunportal = true
+local cmdshield = true
+local cmdunshield = true
+local cmdswarm = true
+local cmdunswarm = true
+local cmddna = true
+local cmdundna = true
+local cmdgalaxy = true
+local cmdungalaxy = true
+local cmdmeteor = true
+local cmdtornado = true
+local cmduntornado = true
+
 
 local towerbool = nil
 local followbool = nil
@@ -474,6 +128,13 @@ local quakebool = false
 local swordbool = nil
 local shotgunbool = nil
 local gunbool = nil
+local wavebool = nil
+local portalbool = nil
+local shieldbool = nil
+local swarmbool = nil
+local dnabool = nil
+local galaxybool = nil
+local tornadobool = nil
 local Admins = {}
 
 --version of the script
@@ -551,7 +212,6 @@ if printcmd then
   print(";fix                                 | Attempt to fix a bot if glitched")
   print("-------------------------------------------------------------------")
 end
-
 
 -- Services
 local Players = game:GetService("Players")
@@ -2781,6 +2441,323 @@ local function connectChatListener(playerpower)
         else
         end
 
+      elseif command:sub(1, 5) == "wave " and cmdwave and table.find(bots, displayName) then
+        local targetName = command:sub(6)
+        local target = findPlayer(targetName)
+        if target then
+            wavebool = true
+            local amplitude = 5
+            local frequency = 0.5
+            
+            spawn(function()
+                local startTime = tick()
+                while wavebool do
+                    for i = 1, nbbot do
+                        if i == index then
+                            local t = (tick() - startTime) + (i * frequency / nbbot)
+                            local yOffset = amplitude * math.sin(t * frequency)
+                            local position = target.Character.HumanoidRootPart.Position + Vector3.new(i * 2 - nbbot, yOffset, 0)
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position)
+                        end
+                    end
+                    wait(0.01)
+                end
+            end)
+        end
+        wait(2)
+        
+      elseif command == "unwave" and cmdunwave and table.find(bots, displayName) then
+        wavebool = false
+        wait(2)
+    
+      elseif command:sub(1, 7) == "portal " and cmdportal and table.find(bots, displayName) then
+        local targetName = command:sub(8)
+        local target = findPlayer(targetName)
+        if target then
+            portalbool = true
+            local radius = 6
+            
+            spawn(function()
+                local startTime = tick()
+                while portalbool do
+                    for i = 1, nbbot do
+                        if i == index then
+                            local angle = ((i-1) / nbbot) * 2 * math.pi
+                            local rotSpeed = 0.5
+                            local currentAngle = angle + (tick() - startTime) * rotSpeed
+                            
+                            local xOffset = radius * math.cos(currentAngle)
+                            local zOffset = radius * math.sin(currentAngle)
+                            
+                            local position = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, target.Character.HumanoidRootPart.Position)
+                        end
+                    end
+                    wait(0.01)
+                end
+            end)
+        end
+        wait(2)
+        
+      elseif command == "unportal" and cmdunportal and table.find(bots, displayName) then
+        portalbool = false
+        wait(2)
+    
+      elseif command:sub(1, 7) == "shield " and cmdshield and table.find(bots, displayName) then
+        local targetName = command:sub(8)
+        local target = findPlayer(targetName)
+        if target then
+            shieldbool = true
+            
+            spawn(function()
+                while shieldbool do
+                    for i = 1, nbbot do
+                        if i == index then
+                            local angle = ((i-1) / nbbot) * 2 * math.pi
+                            local radius = 5
+                            
+                            local xOffset = radius * math.cos(angle)
+                            local zOffset = radius * math.sin(angle)
+                            
+                            local targetPos = target.Character.HumanoidRootPart.Position
+                            local position = targetPos + Vector3.new(xOffset, 0, zOffset)
+                            
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+                            
+                            -- Try to block attacks
+                            local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+                            if humanoid then
+                                humanoid:MoveTo(position)
+                            end
+                        end
+                    end
+                    wait(0.1)
+                end
+            end)
+        end
+        wait(2)
+        
+      elseif command == "unshield" and cmdunshield and table.find(bots, displayName) then
+        shieldbool = false
+        wait(2)
+    
+      elseif command:sub(1, 6) == "swarm " and cmdswarm and table.find(bots, displayName) then
+        local targetName = command:sub(7)
+        local target = findPlayer(targetName)
+        if target then
+            swarmbool = true
+            
+            spawn(function()
+                while swarmbool and target and target.Character do
+                    for i = 1, nbbot do
+                        if i == index then
+                            local randomOffset = Vector3.new(
+                                math.random(-3, 3), 
+                                math.random(-1, 3), 
+                                math.random(-3, 3)
+                            )
+                            
+                            local targetPos = target.Character.HumanoidRootPart.Position
+                            local position = targetPos + randomOffset
+                            
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+                            
+                            -- Try to attack
+                            local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+                            if humanoid then
+                                humanoid:MoveTo(targetPos)
+                            end
+                        end
+                    end
+                    wait(0.2)
+                end
+            end)
+        end
+        wait(2)
+        
+      elseif command == "unswarm" and cmdunswarm and table.find(bots, displayName) then
+        swarmbool = false
+        wait(2)
+    
+      elseif command:sub(1, 4) == "dna " and cmddna and table.find(bots, displayName) then
+        local targetName = command:sub(5)
+        local target = findPlayer(targetName)
+        if target then
+            dnabool = true
+            local radius = 4
+            local height = 10
+            local speed = 0.5
+            
+            spawn(function()
+                local startTime = tick()
+                while dnabool do
+                    for i = 1, nbbot do
+                        if i == index then
+                            local t = (tick() - startTime) * speed
+                            local angle = ((i-1) / nbbot) * math.pi * 2 + t
+                            
+                            -- Calculate strand position (alternating between two strands)
+                            local strandOffset = (i % 2 == 0) and 0 or math.pi
+                            local xOffset = radius * math.cos(angle + strandOffset)
+                            local zOffset = radius * math.sin(angle + strandOffset)
+                            
+                            -- Calculate vertical position for helix
+                            local yPosition = ((angle / (math.pi * 2)) % 1) * height
+                            
+                            local targetPos = target.Character.HumanoidRootPart.Position
+                            local position = targetPos + Vector3.new(xOffset, yPosition - height/2, zOffset)
+                            
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+                        end
+                    end
+                    wait(0.01)
+                end
+            end)
+        end
+        wait(2)
+        
+      elseif command == "undna" and cmdundna and table.find(bots, displayName) then
+        dnabool = false
+        wait(2)
+    
+      elseif command:sub(1, 7) == "galaxy " and cmdgalaxy and table.find(bots, displayName) then
+        local targetName = command:sub(8)
+        local target = findPlayer(targetName)
+        if target then
+            galaxybool = true
+            local baseRadius = 10
+            local height = 3
+            local rotationSpeed = 0.3
+            
+            spawn(function()
+                local startTime = tick()
+                while galaxybool do
+                    for i = 1, nbbot do
+                        if i == index then
+                            -- Calculate spiral parameters
+                            local botProgress = i / nbbot
+                            local spiralRadius = baseRadius * (0.3 + 0.7 * botProgress)
+                            local t = (tick() - startTime) * rotationSpeed
+                            
+                            -- Add a rotation that's faster toward the center
+                            local angle = t * (1 + (1 - botProgress) * 2) + botProgress * math.pi * 4
+                            
+                            -- Create spiral effect
+                            local xOffset = spiralRadius * math.cos(angle)
+                            local zOffset = spiralRadius * math.sin(angle)
+                            
+                            -- Add some height variation
+                            local yOffset = math.sin(angle * 0.5) * height * botProgress
+                            
+                            local targetPos = target.Character.HumanoidRootPart.Position
+                            local position = targetPos + Vector3.new(xOffset, yOffset, zOffset)
+                            
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+                        end
+                    end
+                    wait(0.01)
+                end
+            end)
+        end
+        wait(2)
+        
+      elseif command == "ungalaxy" and cmdungalaxy and table.find(bots, displayName) then
+        galaxybool = false
+        wait(2)
+    
+      elseif command:sub(1, 7) == "meteor " and cmdmeteor and table.find(bots, displayName) then
+        local targetName = command:sub(8)
+        local target = findPlayer(targetName)
+        if target then
+            local maxHeight = 100
+            local radius = 20
+            
+            -- Each bot becomes a meteor
+            if index <= nbbot then
+                spawn(function()
+                    -- Get random starting positions
+                    local angle = math.random(0, 360) * (math.pi/180)
+                    local distance = radius * math.sqrt(math.random())
+                    local xOffset = math.cos(angle) * distance
+                    local zOffset = math.sin(angle) * distance
+                    
+                    -- Start high in the air
+                    local startPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, maxHeight, zOffset)
+                    local endPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
+                    
+                    -- Teleport to starting position
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(startPos)
+                    wait(index * 0.2) -- Stagger the meteors
+                    
+                    -- Fall down
+                    local fallTime = 2
+                    local startTime = tick()
+                    local elapsed = 0
+                    
+                    while elapsed < fallTime do
+                        elapsed = tick() - startTime
+                        local progress = elapsed / fallTime
+                        local currentPos = startPos:Lerp(endPos, progress)
+                        
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(currentPos)
+                        wait(0.01)
+                    end
+                    
+                    -- Optional: Create explosion effect on impact
+                    local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0 -- "Explode" the bot
+                    end
+                end)
+            end
+        end
+        wait(2)
+  
+      elseif command:sub(1, 8) == "tornado " and cmdtornado and table.find(bots, displayName) then
+        local targetName = command:sub(9)
+        local target = findPlayer(targetName)
+        if target then
+            tornadobool = true
+            local baseRadius = 5
+            local maxHeight = 20
+            
+            spawn(function()
+                local startTime = tick()
+                while tornadobool do
+                    for i = 1, nbbot do
+                        if i == index then
+                            local t = tick() - startTime
+                            
+                            -- Calculate position in the tornado
+                            local heightFactor = i / nbbot
+                            local currentHeight = heightFactor * maxHeight
+                            
+                            -- Make radius smaller as we go higher
+                            local currentRadius = baseRadius * (1 - heightFactor * 0.8)
+                            
+                            -- Rotation speed increases with height
+                            local rotationSpeed = 2 + heightFactor * 3
+                            local angle = t * rotationSpeed
+                            
+                            local xOffset = currentRadius * math.cos(angle)
+                            local zOffset = currentRadius * math.sin(angle)
+                            
+                            local targetPos = target.Character.HumanoidRootPart.Position
+                            local position = targetPos + Vector3.new(xOffset, currentHeight, zOffset)
+                            
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, position + Vector3.new(math.cos(angle + math.pi/2), 0, math.sin(angle + math.pi/2)))
+                        end
+                    end
+                    wait(0.01)
+                end
+            end)
+        end
+        wait(2)
+        
+      elseif command == "untornado" and cmduntornado and table.find(bots, displayName) then
+        tornadobool = false
+        wait(2)
+    
       elseif command:sub(1, 7) == "undance" and table.find(bots, displayName) and cmddance then
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         wait(2)
