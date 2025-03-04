@@ -99,7 +99,6 @@ local cmdmeteor = true
 local cmdtornado = true
 local cmduntornado = true
 
-
 local towerbool = nil
 local followbool = nil
 local orbitbool = nil
@@ -164,7 +163,6 @@ if printcmd then
   print(";ws <number>                         | Change bots' walk speed")
   print(";channel <number>                    | Select which bot speaks in chat")
   print(";gravity <number>                    | Bots change gravity")
-  -- Positioning & Formation Commands
   print(";goto [plr]                          | Bots teleport to a player")
   print(";left [plr]                          | Bots form a line to the left")
   print(";right [plr]                         | Bots form a line to the right")
@@ -180,7 +178,6 @@ if printcmd then
   print(";unworm                              | Stop the train formation")
   print(";sit                                 | Bots sit")
   print(";unsit                               | Bots stop sitting")
-  -- Orbit & Motion Effects
   print(";orbit [plr] <radius> <speed>        | Bots orbit a player (V1 - Basic)")
   print(";orbit2 [plr] <radius> <speed>       | Bots orbit a player (V2 - Enhanced)")
   print(";orbit3 [plr] <radius> <speed>       | Bots orbit a player (V3)")
@@ -192,11 +189,9 @@ if printcmd then
   print(";unquake                             | Bots unquake")
   print(";spin <number>                       | Bots start spinning")
   print(";unspin                              | Bots stop spinning")
-  -- Admin Commands
   print(";admin [plr]                         | Grant admin permissions to a player")
   print(";unadmin [plr]                       | Remove admin permissions")
   print(";cmds                                | Display available commands in chat")
-  -- Special Effects & Attacks
   print(";fling [plr]                         | Bots teleport to a player and fling them")
   print(";unfling                             | Stop bots from flinging")
   print(";fireworks [plr]                     | Bots launch into the air and explode")
@@ -208,7 +203,22 @@ if printcmd then
   print(";gojo [plr]                          | Bots perform the Hollow Purple sequence")
   print(";sword [plr]                         | Bots sword towards a player")
   print(";unsword                             | Stop bots from swording")
-  -- Utility & Fix Commands
+  print(";wave [plr]                          | Bots form a wave formation")
+  print(";unwave                              | Disable wave formation")
+  print(";portal [plr]                        | Bots create a spinning portal")
+  print(";unportal                            | Disable portal effect")
+  print(";shield [plr]                        | Bots create a protective shield")
+  print(";unshield                            | Disable shield formation")
+  print(";swarm [plr]                         | Bots swarm around a player")
+  print(";unswarm                             | Disable swarm attack")
+  print(";dna [plr]                           | Bots form a DNA helix")
+  print(";undna                               | Disable DNA formation")
+  print(";galaxy [plr]                        | Bots form a galaxy spiral")
+  print(";ungalaxy                            | Disable galaxy formation")
+  print(";meteor [plr]                        | Bots create a meteor shower")
+  print(";tornado [plr]                       | Bots form a tornado")
+  print(";untornado                           | Disable tornado formation")
+
   print(";fix                                 | Attempt to fix a bot if glitched")
   print("-------------------------------------------------------------------")
 end
@@ -2422,7 +2432,7 @@ local function connectChatListener(playerpower)
         end
         wait(2)
     
-    elseif command == "unsit" and table.find(bots, displayName) then
+      elseif command == "unsit" and table.find(bots, displayName) then
         unsit()
         if index == channel then
             chatMessage("Bots are now standing")
@@ -2441,323 +2451,6 @@ local function connectChatListener(playerpower)
         else
         end
 
-      elseif command:sub(1, 5) == "wave " and cmdwave and table.find(bots, displayName) then
-        local targetName = command:sub(6)
-        local target = findPlayer(targetName)
-        if target then
-            wavebool = true
-            local amplitude = 5
-            local frequency = 0.5
-            
-            spawn(function()
-                local startTime = tick()
-                while wavebool do
-                    for i = 1, nbbot do
-                        if i == index then
-                            local t = (tick() - startTime) + (i * frequency / nbbot)
-                            local yOffset = amplitude * math.sin(t * frequency)
-                            local position = target.Character.HumanoidRootPart.Position + Vector3.new(i * 2 - nbbot, yOffset, 0)
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position)
-                        end
-                    end
-                    wait(0.01)
-                end
-            end)
-        end
-        wait(2)
-        
-      elseif command == "unwave" and cmdunwave and table.find(bots, displayName) then
-        wavebool = false
-        wait(2)
-    
-      elseif command:sub(1, 7) == "portal " and cmdportal and table.find(bots, displayName) then
-        local targetName = command:sub(8)
-        local target = findPlayer(targetName)
-        if target then
-            portalbool = true
-            local radius = 6
-            
-            spawn(function()
-                local startTime = tick()
-                while portalbool do
-                    for i = 1, nbbot do
-                        if i == index then
-                            local angle = ((i-1) / nbbot) * 2 * math.pi
-                            local rotSpeed = 0.5
-                            local currentAngle = angle + (tick() - startTime) * rotSpeed
-                            
-                            local xOffset = radius * math.cos(currentAngle)
-                            local zOffset = radius * math.sin(currentAngle)
-                            
-                            local position = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, target.Character.HumanoidRootPart.Position)
-                        end
-                    end
-                    wait(0.01)
-                end
-            end)
-        end
-        wait(2)
-        
-      elseif command == "unportal" and cmdunportal and table.find(bots, displayName) then
-        portalbool = false
-        wait(2)
-    
-      elseif command:sub(1, 7) == "shield " and cmdshield and table.find(bots, displayName) then
-        local targetName = command:sub(8)
-        local target = findPlayer(targetName)
-        if target then
-            shieldbool = true
-            
-            spawn(function()
-                while shieldbool do
-                    for i = 1, nbbot do
-                        if i == index then
-                            local angle = ((i-1) / nbbot) * 2 * math.pi
-                            local radius = 5
-                            
-                            local xOffset = radius * math.cos(angle)
-                            local zOffset = radius * math.sin(angle)
-                            
-                            local targetPos = target.Character.HumanoidRootPart.Position
-                            local position = targetPos + Vector3.new(xOffset, 0, zOffset)
-                            
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
-                            
-                            -- Try to block attacks
-                            local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-                            if humanoid then
-                                humanoid:MoveTo(position)
-                            end
-                        end
-                    end
-                    wait(0.1)
-                end
-            end)
-        end
-        wait(2)
-        
-      elseif command == "unshield" and cmdunshield and table.find(bots, displayName) then
-        shieldbool = false
-        wait(2)
-    
-      elseif command:sub(1, 6) == "swarm " and cmdswarm and table.find(bots, displayName) then
-        local targetName = command:sub(7)
-        local target = findPlayer(targetName)
-        if target then
-            swarmbool = true
-            
-            spawn(function()
-                while swarmbool and target and target.Character do
-                    for i = 1, nbbot do
-                        if i == index then
-                            local randomOffset = Vector3.new(
-                                math.random(-3, 3), 
-                                math.random(-1, 3), 
-                                math.random(-3, 3)
-                            )
-                            
-                            local targetPos = target.Character.HumanoidRootPart.Position
-                            local position = targetPos + randomOffset
-                            
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
-                            
-                            -- Try to attack
-                            local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-                            if humanoid then
-                                humanoid:MoveTo(targetPos)
-                            end
-                        end
-                    end
-                    wait(0.2)
-                end
-            end)
-        end
-        wait(2)
-        
-      elseif command == "unswarm" and cmdunswarm and table.find(bots, displayName) then
-        swarmbool = false
-        wait(2)
-    
-      elseif command:sub(1, 4) == "dna " and cmddna and table.find(bots, displayName) then
-        local targetName = command:sub(5)
-        local target = findPlayer(targetName)
-        if target then
-            dnabool = true
-            local radius = 4
-            local height = 10
-            local speed = 0.5
-            
-            spawn(function()
-                local startTime = tick()
-                while dnabool do
-                    for i = 1, nbbot do
-                        if i == index then
-                            local t = (tick() - startTime) * speed
-                            local angle = ((i-1) / nbbot) * math.pi * 2 + t
-                            
-                            -- Calculate strand position (alternating between two strands)
-                            local strandOffset = (i % 2 == 0) and 0 or math.pi
-                            local xOffset = radius * math.cos(angle + strandOffset)
-                            local zOffset = radius * math.sin(angle + strandOffset)
-                            
-                            -- Calculate vertical position for helix
-                            local yPosition = ((angle / (math.pi * 2)) % 1) * height
-                            
-                            local targetPos = target.Character.HumanoidRootPart.Position
-                            local position = targetPos + Vector3.new(xOffset, yPosition - height/2, zOffset)
-                            
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
-                        end
-                    end
-                    wait(0.01)
-                end
-            end)
-        end
-        wait(2)
-        
-      elseif command == "undna" and cmdundna and table.find(bots, displayName) then
-        dnabool = false
-        wait(2)
-    
-      elseif command:sub(1, 7) == "galaxy " and cmdgalaxy and table.find(bots, displayName) then
-        local targetName = command:sub(8)
-        local target = findPlayer(targetName)
-        if target then
-            galaxybool = true
-            local baseRadius = 10
-            local height = 3
-            local rotationSpeed = 0.3
-            
-            spawn(function()
-                local startTime = tick()
-                while galaxybool do
-                    for i = 1, nbbot do
-                        if i == index then
-                            -- Calculate spiral parameters
-                            local botProgress = i / nbbot
-                            local spiralRadius = baseRadius * (0.3 + 0.7 * botProgress)
-                            local t = (tick() - startTime) * rotationSpeed
-                            
-                            -- Add a rotation that's faster toward the center
-                            local angle = t * (1 + (1 - botProgress) * 2) + botProgress * math.pi * 4
-                            
-                            -- Create spiral effect
-                            local xOffset = spiralRadius * math.cos(angle)
-                            local zOffset = spiralRadius * math.sin(angle)
-                            
-                            -- Add some height variation
-                            local yOffset = math.sin(angle * 0.5) * height * botProgress
-                            
-                            local targetPos = target.Character.HumanoidRootPart.Position
-                            local position = targetPos + Vector3.new(xOffset, yOffset, zOffset)
-                            
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
-                        end
-                    end
-                    wait(0.01)
-                end
-            end)
-        end
-        wait(2)
-        
-      elseif command == "ungalaxy" and cmdungalaxy and table.find(bots, displayName) then
-        galaxybool = false
-        wait(2)
-    
-      elseif command:sub(1, 7) == "meteor " and cmdmeteor and table.find(bots, displayName) then
-        local targetName = command:sub(8)
-        local target = findPlayer(targetName)
-        if target then
-            local maxHeight = 100
-            local radius = 20
-            
-            -- Each bot becomes a meteor
-            if index <= nbbot then
-                spawn(function()
-                    -- Get random starting positions
-                    local angle = math.random(0, 360) * (math.pi/180)
-                    local distance = radius * math.sqrt(math.random())
-                    local xOffset = math.cos(angle) * distance
-                    local zOffset = math.sin(angle) * distance
-                    
-                    -- Start high in the air
-                    local startPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, maxHeight, zOffset)
-                    local endPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
-                    
-                    -- Teleport to starting position
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(startPos)
-                    wait(index * 0.2) -- Stagger the meteors
-                    
-                    -- Fall down
-                    local fallTime = 2
-                    local startTime = tick()
-                    local elapsed = 0
-                    
-                    while elapsed < fallTime do
-                        elapsed = tick() - startTime
-                        local progress = elapsed / fallTime
-                        local currentPos = startPos:Lerp(endPos, progress)
-                        
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(currentPos)
-                        wait(0.01)
-                    end
-                    
-                    -- Optional: Create explosion effect on impact
-                    local humanoid = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-                    if humanoid then
-                        humanoid.Health = 0 -- "Explode" the bot
-                    end
-                end)
-            end
-        end
-        wait(2)
-  
-      elseif command:sub(1, 8) == "tornado " and cmdtornado and table.find(bots, displayName) then
-        local targetName = command:sub(9)
-        local target = findPlayer(targetName)
-        if target then
-            tornadobool = true
-            local baseRadius = 5
-            local maxHeight = 20
-            
-            spawn(function()
-                local startTime = tick()
-                while tornadobool do
-                    for i = 1, nbbot do
-                        if i == index then
-                            local t = tick() - startTime
-                            
-                            -- Calculate position in the tornado
-                            local heightFactor = i / nbbot
-                            local currentHeight = heightFactor * maxHeight
-                            
-                            -- Make radius smaller as we go higher
-                            local currentRadius = baseRadius * (1 - heightFactor * 0.8)
-                            
-                            -- Rotation speed increases with height
-                            local rotationSpeed = 2 + heightFactor * 3
-                            local angle = t * rotationSpeed
-                            
-                            local xOffset = currentRadius * math.cos(angle)
-                            local zOffset = currentRadius * math.sin(angle)
-                            
-                            local targetPos = target.Character.HumanoidRootPart.Position
-                            local position = targetPos + Vector3.new(xOffset, currentHeight, zOffset)
-                            
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position, position + Vector3.new(math.cos(angle + math.pi/2), 0, math.sin(angle + math.pi/2)))
-                        end
-                    end
-                    wait(0.01)
-                end
-            end)
-        end
-        wait(2)
-        
-      elseif command == "untornado" and cmduntornado and table.find(bots, displayName) then
-        tornadobool = false
-        wait(2)
-    
       elseif command:sub(1, 7) == "undance" and table.find(bots, displayName) and cmddance then
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         wait(2)
@@ -3306,6 +2999,161 @@ local function connectChatListener(playerpower)
             chatMessage("Player not found: " .. playerName)
           end
         end
+
+        -- Wave Formation
+elseif command:sub(1, 5) == "wave " and cmdwave then
+  local targetName = command:sub(6)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      wavebool = true
+      chatMessage("Bots are now in wave formation around " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+elseif command == "unwave" and cmdunwave then
+  wavebool = false
+  chatMessage("Wave formation disabled")
+  wait(2)
+
+-- Portal Effect
+elseif command:sub(1, 7) == "portal " and cmdportal then
+  local targetName = command:sub(8)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      portalbool = true
+      chatMessage("Bots are creating a portal around " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+elseif command == "unportal" and cmdunportal then
+  portalbool = false
+  chatMessage("Portal formation disabled")
+  wait(2)
+
+-- Shield Wall
+elseif command:sub(1, 7) == "shield " and cmdshield then
+  local targetName = command:sub(8)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      shieldbool = true
+      chatMessage("Bots are forming a shield around " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+elseif command == "unshield" and cmdunshield then
+  shieldbool = false
+  chatMessage("Shield formation disabled")
+  wait(2)
+
+-- Swarm Attack
+elseif command:sub(1, 6) == "swarm " and cmdswarm then
+  local targetName = command:sub(7)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      swarmbool = true
+      chatMessage("Bots are swarming " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+elseif command == "unswarm" and cmdunswarm then
+  swarmbool = false
+  chatMessage("Swarm attack disabled")
+  wait(2)
+
+-- DNA Helix
+elseif command:sub(1, 4) == "dna " and cmddna then
+  local targetName = command:sub(5)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      dnabool = true
+      chatMessage("Bots are forming a DNA helix around " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+elseif command == "undna" and cmdundna then
+  dnabool = false
+  chatMessage("DNA formation disabled")
+  wait(2)
+
+-- Galaxy Formation
+elseif command:sub(1, 7) == "galaxy " and cmdgalaxy then
+  local targetName = command:sub(8)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      galaxybool = true
+      chatMessage("Bots are forming a galaxy around " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+elseif command == "ungalaxy" and cmdungalaxy then
+  galaxybool = false
+  chatMessage("Galaxy formation disabled")
+  wait(2)
+
+-- Meteor Shower
+elseif command:sub(1, 7) == "meteor " and cmdmeteor then
+  local targetName = command:sub(8)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      -- Each bot becomes a meteor
+      if index then
+          spawn(function()
+              -- Get random starting positions
+              local angle = math.random(0, 360) * (math.pi/180)
+              local distance = 20 * math.sqrt(math.random())
+              local xOffset = math.cos(angle) * distance
+              local zOffset = math.sin(angle) * distance
+              
+              -- Start high in the air
+              local startPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 100, zOffset)
+              local endPos = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
+              
+              -- Teleport to starting position
+              game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(startPos)
+              wait(index * 0.2) -- Stagger the meteors
+              
+              -- Fall down
+              local fallTime = 2
+              local startTime = tick()
+              local elapsed = 0
+              
+              while elapsed < fallTime do
+                  elapsed = tick() - startTime
+                  local progress = elapsed / fallTime
+                  local currentPos = startPos:Lerp(endPos, progress)
+                  
+                  game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(currentPos)
+                  wait(0.01)
+              end
+          end)
+      end
+      chatMessage("Meteor shower launched at " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+
+-- Tornado
+elseif command:sub(1, 8) == "tornado " and cmdtornado then
+  local targetName = command:sub(9)
+  local target = Players:FindFirstChild(targetName)
+  if target then
+      tornadobool = true
+      chatMessage("Bots are forming a tornado around " .. targetName)
+  else
+      chatMessage("Player not found")
+  end
+  wait(2)
+elseif command == "untornado" and cmduntornado then
+  tornadobool = false
+  chatMessage("Tornado disabled")
+  wait(2)
 
     elseif command:sub(1, 7) == "follow " and table.find(bots, displayName) and cmdfollow then
       disablebool()
