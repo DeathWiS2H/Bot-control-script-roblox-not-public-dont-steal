@@ -1685,6 +1685,134 @@ local function gun(targetPlayer, initialDistance)
   return gunConnection
 end
 
+-- ;wave
+local function wave(targetPlayer)
+  local amplitude = 5
+  local frequency = 0.5
+  
+  local t = tick() + (index * frequency / nbbot)
+  local yOffset = amplitude * math.sin(t * frequency)
+  local position = target.Character.HumanoidRootPart.Position + Vector3.new(index * 2 - nbbot, yOffset, 0)
+  player.Character.HumanoidRootPart.CFrame = CFrame.new(position)
+end
+
+-- ;portal
+local function portal(targetPlayer)
+  local radius = 6
+  local angle = ((index-1) / nbbot) * 2 * math.pi
+  local rotSpeed = 0.5
+  local currentAngle = angle + tick() * rotSpeed
+  
+  local xOffset = radius * math.cos(currentAngle)
+  local zOffset = radius * math.sin(currentAngle)
+  
+  local position = target.Character.HumanoidRootPart.Position + Vector3.new(xOffset, 0, zOffset)
+  player.Character.HumanoidRootPart.CFrame = CFrame.new(position, target.Character.HumanoidRootPart.Position)
+end
+
+-- ;shield
+local function shield(targetPlayer)
+  local angle = ((index-1) / nbbot) * 2 * math.pi
+  local radius = 5
+  
+  local xOffset = radius * math.cos(angle)
+  local zOffset = radius * math.sin(angle)
+  
+  local targetPos = target.Character.HumanoidRootPart.Position
+  local position = targetPos + Vector3.new(xOffset, 0, zOffset)
+  
+  player.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+end
+
+-- ;swarm
+local function swarmFormation(target)
+  local randomOffset = Vector3.new(
+      math.random(-3, 3), 
+      math.random(-1, 3), 
+      math.random(-3, 3)
+  )
+  
+  local targetPos = target.Character.HumanoidRootPart.Position
+  local position = targetPos + randomOffset
+  
+  player.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+end
+
+-- ;dna
+local function dna(targetPlayer)
+  local radius = 4
+  local height = 10
+  local speed = 0.5
+  
+  local t = tick() * speed
+  local angle = ((index-1) / nbbot) * math.pi * 2 + t
+  
+  -- Calculate strand position (alternating between two strands)
+  local strandOffset = (index % 2 == 0) and 0 or math.pi
+  local xOffset = radius * math.cos(angle + strandOffset)
+  local zOffset = radius * math.sin(angle + strandOffset)
+  
+  -- Calculate vertical position for helix
+  local yPosition = ((angle / (math.pi * 2)) % 1) * height
+  
+  local targetPos = target.Character.HumanoidRootPart.Position
+  local position = targetPos + Vector3.new(xOffset, yPosition - height/2, zOffset)
+  
+  player.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+end
+
+-- ;galaxy
+local function galaxy(targetPlayer)
+  local baseRadius = 10
+  local height = 3
+  local rotationSpeed = 0.3
+  
+  -- Calculate spiral parameters
+  local botProgress = index / nbbot
+  local spiralRadius = baseRadius * (0.3 + 0.7 * botProgress)
+  local t = tick() * rotationSpeed
+  
+  -- Add a rotation that's faster toward the center
+  local angle = t * (1 + (1 - botProgress) * 2) + botProgress * math.pi * 4
+  
+  -- Create spiral effect
+  local xOffset = spiralRadius * math.cos(angle)
+  local zOffset = spiralRadius * math.sin(angle)
+  
+  -- Add some height variation
+  local yOffset = math.sin(angle * 0.5) * height * botProgress
+  
+  local targetPos = target.Character.HumanoidRootPart.Position
+  local position = targetPos + Vector3.new(xOffset, yOffset, zOffset)
+  
+  player.Character.HumanoidRootPart.CFrame = CFrame.new(position, targetPos)
+end
+
+-- ;tornado
+local function tornado(targetPlayer)
+  local baseRadius = 5
+  local maxHeight = 20
+  
+  -- Calculate position in the tornado
+  local heightFactor = index / nbbot
+  local currentHeight = heightFactor * maxHeight
+  
+  -- Make radius smaller as we go higher
+  local currentRadius = baseRadius * (1 - heightFactor * 0.8)
+  
+  -- Rotation speed increases with height
+  local rotationSpeed = 2 + heightFactor * 3
+  local angle = tick() * rotationSpeed
+  
+  local xOffset = currentRadius * math.cos(angle)
+  local zOffset = currentRadius * math.sin(angle)
+  
+  local targetPos = target.Character.HumanoidRootPart.Position
+  local position = targetPos + Vector3.new(xOffset, currentHeight, zOffset)
+  
+  player.Character.HumanoidRootPart.CFrame = CFrame.new(position, position + Vector3.new(math.cos(angle + math.pi/2), 0, math.sin(angle + math.pi/2)))
+end
+
 -- ;bridge
 local function bridge(targetPlayer)
   -- Stop any existing bridge connection
