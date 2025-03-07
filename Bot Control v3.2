@@ -1315,75 +1315,89 @@ local function mine(targetPlayer)
 end
 
 -- ;elevator
-local function elevator(targetPlayer)
+local function elevator(targetPlayer, initialDistance)
+  -- Stop any existing elevator connection
+  if elevatorConnection then
+      elevatorConnection:Disconnect()
+      elevatorConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  -- Set elevator boolean to true
+  elevatorbool = true
+  
   -- Get the bot's index to determine position
   local displayName = player.DisplayName
   local botIndex = table.find(bots, displayName)
-  if not botIndex then return end
 
-  -- Calculate initial position
-  local totalBots = #bots
-  local middleOffset = math.floor(totalBots / 2)
-  local horizontalOffset = (botIndex - middleOffset - 1) * 3
-
-  -- Reset any existing elevator command
-  if elevatorbool then
-    elevatorbool = false
-  end
-  elevatorbool = true
-  
-  -- Get initial target position
-  local initialPosition
-  if targetPlayer and targetPlayer.Character then
-    local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if targetHumanoidRootPart then
-      initialPosition = targetHumanoidRootPart.Position
-    end
+  if not botIndex then 
+      return nil
   end
 
-  if not initialPosition then return end
-  
-  -- Start rising motion
-  local startTime = tick()
-  local riseConnection
-  riseConnection = RunService.Heartbeat:Connect(function()
-    if not elevatorbool or commandInProgress ~= "elevator" then
-      riseConnection:Disconnect()
-      return
-    end
+  -- Dynamic distance calculation
+  local horizontalSpacing = 1.5 -- Horizontal spacing between bots
+  local verticalOffset = -3.2 -- Vertical offset to place bots underneath feet
 
-    if not player or not player.Character then
-      riseConnection:Disconnect()
-      return
-    end
+  -- Calculate the bot's specific horizontal position
+  local horizontalOffset
+  if botIndex == 1 then
+      horizontalOffset = 0  -- First bot at center
+  else
+      -- Alternate bots to the left and right
+      horizontalOffset = (botIndex % 2 == 0) and 
+                         (math.ceil(botIndex/2) * horizontalSpacing) or 
+                         (-math.floor(botIndex/2) * horizontalSpacing)
+  end
 
-    local humanoid = player.Character:FindFirstChild("Humanoid")
-    if not humanoid or humanoid.Health <= 0 then
-      riseConnection:Disconnect()
-      return
-    end
+  -- Continuous positioning mechanism
+  elevatorConnection = RunService.Heartbeat:Connect(function()
+      -- Check if elevator should continue
+      if not elevatorbool or not player or not player.Character then
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+          return
+      end
 
-    local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-    if localHumanoidRootPart then
-      -- Calculate rising height based on time since start
-      local timePassed = tick() - startTime
-      local height = math.max(-3 + timePassed * 2, -3) -- Start at -3 and rise up
-      
-      -- Position with horizontal offset and rising height
-      local offset = Vector3.new(horizontalOffset, height, 0)
-      local rotation = CFrame.Angles(math.rad(90), 0, 0)
-      localHumanoidRootPart.CFrame = CFrame.new(initialPosition + offset) * rotation
-      
-      removeVelocity()
-    end
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          -- Get target's current position and rotation
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          -- Calculate bot's position underneath the player
+          local desiredPosition = targetCFrame.Position + 
+                                  targetCFrame.RightVector * horizontalOffset + 
+                                  Vector3.new(0, verticalOffset, 0)
+
+          -- Create a CFrame that matches the target's rotation
+          -- Extract the target's rotation, but keep the vertical offset
+          local rotatedCFrame = CFrame.new(desiredPosition) * 
+                                (targetCFrame - targetCFrame.Position) * 
+                                CFrame.Angles(math.rad(90), 0, 0)
+
+          -- Set bot's CFrame 
+          localHumanoidRootPart.CFrame = rotatedCFrame
+      else
+          -- Disconnect if target or bot is missing
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+      end
   end)
-  
-  commandInProgress = "elevator"
-end
 
--- ;unelevator
-local function unelevator()
-  elevatorbool = false
+  return elevatorConnection
 end
 
 -- ;sword
@@ -1845,6 +1859,95 @@ local function gun(targetPlayer, initialDistance)
   end)
 
   return gunConnection
+end
+
+-- ;elevator
+local function elevator(targetPlayer)
+  -- Stop any existing elevator connection
+  if elevatorConnection then
+      elevatorConnection:Disconnect()
+      elevatorConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  -- Set elevator boolean to true
+  elevatorbool = true
+  
+  -- Get the bot's index to determine position
+  local displayName = player.DisplayName
+  local botIndex = table.find(bots, displayName)
+
+  if not botIndex then 
+      return nil
+  end
+
+  -- Dynamic horizontal spacing
+  local horizontalSpacing = 2.5  -- Space between bots horizontally
+  local verticalOffset = -2.5 -- Distance below the target player
+
+  -- Calculate horizontal offset based on bot index
+  local horizontalOffset
+  if botIndex == 1 then
+      horizontalOffset = 0  -- First bot at center
+  else
+      -- Alternate bots to the left and right
+      horizontalOffset = (botIndex % 2 == 0) and 
+                         (math.ceil(botIndex/2) * horizontalSpacing) or 
+                         (-math.floor(botIndex/2) * horizontalSpacing)
+  end
+
+  -- Continuous positioning mechanism
+  elevatorConnection = RunService.Heartbeat:Connect(function()
+      -- Check if elevator should continue
+      if not elevatorbool or not player or not player.Character then
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          -- Get target's current position and rotation
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          -- Calculate position underneath the target
+          local desiredPosition = targetCFrame.Position + 
+                                  targetCFrame.RightVector * horizontalOffset + 
+                                  Vector3.new(0, verticalOffset, 0)
+
+          -- Create a CFrame that matches the target's full rotation and position
+          -- Apply 90-degree rotation towards the sky while preserving target's rotation
+          local rotatedCFrame = CFrame.new(desiredPosition) * 
+                                (targetCFrame - targetCFrame.Position) * 
+                                CFrame.Angles(math.rad(90), 0, 0)
+
+          -- Set bot's CFrame 
+          localHumanoidRootPart.CFrame = rotatedCFrame
+
+          -- Remove velocity to prevent drifting
+          removeVelocity()
+      else
+          -- Disconnect if target or bot is missing
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+      end
+  end)
+
+  return elevatorConnection
 end
 
 -- ;bridge
