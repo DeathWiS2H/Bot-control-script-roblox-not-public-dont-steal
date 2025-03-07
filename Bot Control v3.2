@@ -3368,10 +3368,12 @@ local function connectChatListener(playerpower)
           end
         end
 
-    elseif command:sub(1, 6) == "reset" and table.find(bots, displayName) and cmdreset then
-      disablebool()
-        player.Character:BreakJoints()
-        game.Workspace.Gravity = 196.2
+      elseif command:sub(1, 6) == "reset" and table.find(bots, displayName) and cmdreset then
+        disablebool()
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+          humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+        end
         wait(2)
 
     elseif command:sub(1, 5) == "worm " and table.find(bots, displayName) and cmdworm then
