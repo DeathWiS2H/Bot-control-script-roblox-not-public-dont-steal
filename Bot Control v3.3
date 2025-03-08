@@ -1,8 +1,8 @@
 --Configuration
 getgenv().Use_Displayname = true -- if true, put accounts displayname for bots | if false use the username of accounts
-getgenv().bots = {"Red", "Purple", "Blue", "Green", "Orange"} --bots
+getgenv().bots = {"Red", "Purple", "Blue"} --bots
 getgenv().owner = "JokerMadBoss" --Owner (USER NAME, DO NOT PUT DISPLAYNAME)
-getgenv().nbbot = 5 -- Number of bots you want to use
+getgenv().nbbot = 3 -- Number of bots you want to use
 getgenv().prefix = ";" -- Prefix
 getgenv().botrender = true -- when true, bots use less CPU
 getgenv().printcmd = true -- if true, displays all commands available in the console
@@ -88,6 +88,7 @@ local cmdunshotgun = true
 local cmdgun = true
 local cmdungun = true
 local cmdsmite = true
+local cmdfreeze = true
 
 local towerbool = nil
 local followbool = nil
@@ -120,6 +121,7 @@ local shotgunbool = nil
 local gunbool = nil
 local trampolinebool = nil
 local smitebool = nil
+local freezebool = nil
 local Admins = {}
 
 --version of the script
@@ -337,9 +339,9 @@ ladderbool = false
 quakebool = false
 shotgunbool = false
 gunbool = false
-walkflingbool = nil
-trampolinebool = nil
-smitebool = nil
+walkflingbool = false
+trampolinebool = false
+freezebool = false
 end
 
 -- ;fix
@@ -367,7 +369,7 @@ shotgunbool = false
 gunbool = false
 walkflingbool = false
 trampolinebool = false
-smitebool = false
+freezebool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -1490,6 +1492,46 @@ local function sword(targetPlayer, initialDistance)
   return swordConnection
 end
 
+-- ;freeze
+local function freeze()
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+  
+  if humanoid and humanoidRootPart then
+      -- Disable movement
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+      
+      -- Remove any existing velocity
+      humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+      humanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+      
+      -- Create a BodyPosition to lock the bot in place
+      local bodyPosition = Instance.new("BodyPosition")
+      bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+      bodyPosition.Position = humanoidRootPart.Position
+      bodyPosition.Parent = humanoidRootPart
+  end
+end
+
+-- ;unfreeze
+local function unfreeze()
+  local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+  
+  if humanoidRootPart then
+      -- Remove the BodyPosition constraint
+      local bodyPosition = humanoidRootPart:FindFirstChild("BodyPosition")
+      if bodyPosition then
+          bodyPosition:Destroy()
+      end
+      
+      -- Restore normal movement
+      local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+      if humanoid then
+          humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+      end
+  end
+end
+
 -- ;smite
 local function smite(targetPlayer, initialDistance)
   -- Stop any existing smite connection
@@ -1551,7 +1593,7 @@ local function smite(targetPlayer, initialDistance)
           local targetCFrame = targetHumanoidRootPart.CFrame
 
           -- Calculate position 100 studs above the target
-          local desiredPosition = targetCFrame.Position + Vector3.new(0, 1000, 0)
+          local desiredPosition = targetCFrame.Position + Vector3.new(0, 100, 0)
 
           -- Create a CFrame that looks at the target while being upside down
           local rotatedCFrame = CFrame.lookAt(desiredPosition, targetCFrame.Position) * 
@@ -1574,7 +1616,7 @@ local function smite(targetPlayer, initialDistance)
       end
   end)
 
-  task.delay(0.5, function()
+  task.delay(0.25, function()
       if targetPlayer and targetPlayer.Character and targetHumanoid then
           -- Kill the player
           player.Character:BreakJoints()
@@ -2675,6 +2717,12 @@ local function connectChatListener(playerpower)
             trampolinebool = false
             cmdsmite = false
             smitebool = false
+            cmdbang = false
+            cmdunbang = false
+            bangbool = false
+            cmdfreeze = false
+            cmdunfreeze = false
+            freezebool = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -3021,6 +3069,22 @@ local function connectChatListener(playerpower)
           end
           wait(2)
 
+        elseif command == "freeze" and table.find(bots, displayName) and cmdfreeze then
+          freezebool = true
+          freeze()
+          if index == channel then
+              chatMessage("Bots are now frozen")
+          end
+          wait(2)
+      
+        elseif command == "unfreeze" and table.find(bots, displayName) then
+          freezebool = false
+          unfreeze()
+          if index == channel then
+              chatMessage("Bots are now unfrozen")
+          end
+          wait(2)
+          
       elseif command:sub(1, 5) == "mine " and table.find(bots, displayName) and cmdmine then
         disablebool()
         local playerName = command:sub(6)
@@ -3126,7 +3190,7 @@ local function connectChatListener(playerpower)
         else
           chatMessage("Player not found: " .. playerName)
         end
-        
+
       elseif command:sub(1, 9) == "elevator " and table.find(bots, displayName) and cmdelevator then
         disablebool()
         local playerName = command:sub(10)
