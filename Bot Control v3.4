@@ -199,6 +199,8 @@ if printcmd then
   print(";sword [plr]                         | Bots sword towards a player")
   print(";unsword                             | Stop bots from swording")
   print(";smite [plr]                         | Bots descend from above and explode on impact")
+  print(";walkfling                           | Bots enable walkfling")
+  print(";unwalkfling                         | Bots disable walkfling")
   -- Utility & Fix Commands
   print(";fix                                 | Attempt to fix a bot if glitched")
   print("-------------------------------------------------------------------")
@@ -2831,7 +2833,8 @@ local function connectChatListener(playerpower)
             chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
             chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
-            chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;unshotgun")
+            chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;unshotgun ;smite (plr) ;quake (plr)")
+            chatMessage(";walkfling ;unwalkfling")
         end
         wait(2)
 
