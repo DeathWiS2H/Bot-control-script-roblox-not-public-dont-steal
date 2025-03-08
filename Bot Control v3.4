@@ -201,6 +201,7 @@ if printcmd then
   print(";smite [plr]                         | Bots descend from above and explode on impact")
   print(";walkfling                           | Bots enable walkfling")
   print(";unwalkfling                         | Bots disable walkfling")
+  print(";trampoline [plr]                    | Bots create a bouncy platform under a player")
   -- Utility & Fix Commands
   print(";fix                                 | Attempt to fix a bot if glitched")
   print("-------------------------------------------------------------------")
@@ -2834,7 +2835,7 @@ local function connectChatListener(playerpower)
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
             chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
             chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;unshotgun ;smite (plr) ;quake (plr)")
-            chatMessage(";walkfling ;unwalkfling")
+            chatMessage(";walkfling ;unwalkfling ;trampoline (plr)")
         end
         wait(2)
 
