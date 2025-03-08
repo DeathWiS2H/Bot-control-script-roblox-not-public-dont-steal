@@ -4,7 +4,7 @@ getgenv().bots = {"Red", "Purple", "Blue"} --bots
 getgenv().owner = "JokerMadBoss" --Owner (USER NAME, DO NOT PUT DISPLAYNAME)
 getgenv().nbbot = 3 -- Number of bots you want to use
 getgenv().prefix = ";" -- Prefix
-getgenv().botrender = true -- when true, bots use less CPU
+getgenv().botrender = false -- when true, bots use less CPU
 getgenv().printcmd = true -- if true, displays all commands available in the console
 
 --get configs | Important
@@ -813,69 +813,63 @@ local function unfling()
   end
 end
 
+-- Helper function to get the character's root part
+local function getRoot(char)
+  return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+end
+
 -- ;walkfling
 local function walkfling()
   local character = player.Character
   local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-  if humanoid then
-      -- Disconnect previous death connection if any
-      if humanoid.Died then
-          humanoid.Died:Disconnect()
-      end
-      
-      -- Reconnect death event to stop walkfling
-      humanoid.Died:Connect(function()
-          walkflingbool = false
-      end)
+  local root = getRoot(character)
+
+  if not root or not humanoid then return end
+
+  -- Disable previous walkfling connection if exists
+  if walkflingConnection then
+      walkflingConnection:Disconnect()
+      walkflingConnection = nil
   end
-  
-  -- Enable noclip
-  noclip = true
-  
+
   -- Set walkfling flag
   walkflingbool = true
-  
-  -- Walkfling Heartbeat connection
-  local walkfling = RunService.Heartbeat:Connect(function()
-      if not walkflingbool then
-          walkfling:Disconnect()
-          noclipEnabled = false
+
+  -- Create walkfling connection
+  walkflingConnection = RunService.Heartbeat:Connect(function()
+      if not walkflingbool or not character or not root then
+          walkflingConnection:Disconnect()
+          walkflingbool = false
           return
       end
+
+      local vel = root.Velocity
+
+      -- Apply massive velocity boost
+      root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
       
-      local root = getRoot(character)
+      RunService.RenderStepped:Wait()
       
       if character and root then
-          local vel = root.Velocity
-          
-          -- Massive velocity boost
-          root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
-          
-          RunService.RenderStepped:Wait()
-          
-          if character and root then
-              root.Velocity = vel
-          end
-          
-          RunService.Stepped:Wait()
-          
-          if character and root then
-              root.Velocity = vel + Vector3.new(0, 0.1, 0)
-          end
+          root.Velocity = vel
+      end
+      
+      RunService.Stepped:Wait()
+      
+      if character and root then
+          root.Velocity = vel + Vector3.new(0, 0.1, 0)
       end
   end)
 end
 
 -- ;unwalkfling
 local function unwalkfling()
-  -- Check if walkfling command is enabled
-  if not cmdwalkfling then
-      return
-  end
-
-  -- Disable walkflinging
   walkflingbool = false
-  noclipEnabled = false
+  
+  if walkflingConnection then
+      walkflingConnection:Disconnect()
+      walkflingConnection = nil
+  end
 end
 
 -- ;nuke
