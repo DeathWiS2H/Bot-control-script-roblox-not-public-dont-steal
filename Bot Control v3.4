@@ -4,7 +4,7 @@ getgenv().bots = {"Red", "Purple", "Blue"} --bots
 getgenv().owner = "JokerMadBoss" --Owner (USER NAME, DO NOT PUT DISPLAYNAME)
 getgenv().nbbot = 3 -- Number of bots you want to use
 getgenv().prefix = ";" -- Prefix
-getgenv().botrender = false -- when true, bots use less CPU
+getgenv().botrender = true -- when true, bots use less CPU
 getgenv().printcmd = true -- if true, displays all commands available in the console
 
 --get configs | Important
@@ -91,6 +91,10 @@ local cmdsmite = true
 local cmdfreeze = true
 local cmdnoclip = true
 local cmdclip = true
+local cmdtest = true
+local cmdlevitate = true
+local cmdfloathead = true
+local cmdshuffle = true
 
 local towerbool = nil
 local followbool = nil
@@ -154,7 +158,6 @@ if printcmd then
   print(";ws <number>                         | Change bots' walk speed")
   print(";channel <number>                    | Select which bot speaks in chat")
   print(";gravity <number>                    | Bots change gravity")
-  -- Positioning & Formation Commands
   print(";goto [plr]                          | Bots teleport to a player")
   print(";left [plr]                          | Bots form a line to the left")
   print(";right [plr]                         | Bots form a line to the right")
@@ -170,7 +173,6 @@ if printcmd then
   print(";unworm                              | Stop the train formation")
   print(";sit                                 | Bots sit")
   print(";unsit                               | Bots stop sitting")
-  -- Orbit & Motion Effects
   print(";orbit [plr] <radius> <speed>        | Bots orbit a player (V1 - Basic)")
   print(";orbit2 [plr] <radius> <speed>       | Bots orbit a player (V2 - Enhanced)")
   print(";orbit3 [plr] <radius> <speed>       | Bots orbit a player (V3)")
@@ -182,11 +184,9 @@ if printcmd then
   print(";unquake                             | Bots unquake")
   print(";spin <number>                       | Bots start spinning")
   print(";unspin                              | Bots stop spinning")
-  -- Admin Commands
   print(";admin [plr]                         | Grant admin permissions to a player")
   print(";unadmin [plr]                       | Remove admin permissions")
   print(";cmds                                | Display available commands in chat")
-  -- Special Effects & Attacks
   print(";fling [plr]                         | Bots teleport to a player and fling them")
   print(";unfling                             | Stop bots from flinging")
   print(";fireworks [plr]                     | Bots launch into the air and explode")
@@ -202,7 +202,6 @@ if printcmd then
   print(";walkfling                           | Bots enable walkfling")
   print(";unwalkfling                         | Bots disable walkfling")
   print(";trampoline [plr]                    | Bots create a bouncy platform under a player")
-  -- Utility & Fix Commands
   print(";fix                                 | Attempt to fix a bot if glitched")
   print("-------------------------------------------------------------------")
 end
@@ -274,7 +273,7 @@ end
 -- make life easy, with this you don't have to type someone's whole name
 local function findPlayerByName(partialName)
   if partialName:lower() == "me" then
-    return game.Players:FindFirstChild()
+    return game.Players:FindFirstChild(targetPlayer)
   end
 
   if partialName:lower() == "random" then
@@ -973,6 +972,79 @@ local function setGravity(gravityValue)
   gravityValue = tonumber(gravityValue) or 196.2
   
   game.Workspace.Gravity = gravityValue
+end
+
+-- ;undance
+local function undance()
+  local character = player.Character
+  if character then
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          -- Stop all playing animations
+          for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+              track:Stop()
+          end
+      end
+  end
+end
+
+-- ;levitate
+local function levitate()
+  local character = player.Character
+  if character then
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          local animation = Instance.new("Animation")
+          animation.AnimationId = "rbxassetid://313762630"
+          local animationTrack = humanoid:LoadAnimation(animation)
+          animationTrack:Play()
+      end
+  end
+end
+
+-- ;floathead
+local function floathead()
+  local character = player.Character
+  if character then
+      -- Specific animation for head detachment
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          local animation = Instance.new("Animation")
+          animation.AnimationId = "rbxassetid://121572214"
+          local animationTrack = humanoid:LoadAnimation(animation)
+          animationTrack:Play()
+      end
+  end
+end
+
+-- ;shuffle
+local function shuffle()
+  local character = player.Character
+  if character then
+      -- Specific animation for head detachment
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          local animation = Instance.new("Animation")
+          animation.AnimationId = "rbxassetid://429703734"
+          local animationTrack = humanoid:LoadAnimation(animation)
+          animationTrack:Play()
+      end
+  end
+end
+
+-- ;test
+local function test()
+  local character = player.Character
+  if character then
+      -- Specific animation for head detachment
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          local animation = Instance.new("Animation")
+          animation.AnimationId = "rbxassetid://"
+          local animationTrack = humanoid:LoadAnimation(animation)
+          animationTrack:Play()
+      end
+  end
 end
 
 -- ;gojo
@@ -2744,6 +2816,10 @@ local function connectChatListener(playerpower)
             cmdfreeze = false
             cmdunfreeze = false
             freezebool = false
+            cmdlevitate = false
+            cmdfloathead = false
+            cmdshuffle = false
+            cmdtest = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -2887,6 +2963,7 @@ local function connectChatListener(playerpower)
 
       elseif command:sub(1, 7) == "undance" and table.find(bots, displayName) and cmddance then
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        undance()
         wait(2)
 
       elseif command:sub(1, 7) == "circle " and table.find(bots, displayName) and cmdcircle then
@@ -3192,6 +3269,34 @@ local function connectChatListener(playerpower)
         else
             chatMessage("Player not found: " .. playerName)
         end
+
+      elseif command == "levitate" and table.find(bots, displayName) and cmdlevitate then
+        levitate()
+        if index == channel then
+            chatMessage("Bots are now levitating")
+        end
+        wait(2)
+
+      elseif command == "floathead" and table.find(bots, displayName) and cmdfloathead then
+        floathead()
+        if index == channel then
+            chatMessage("Bots are now floating their head")
+        end
+        wait(2)
+
+      elseif command == "shuffle" and table.find(bots, displayName) and cmdshuffle then
+        shuffle()
+        if index == channel then
+            chatMessage("Bots are now shuffling")
+        end
+        wait(2)
+
+      elseif command == "test" and table.find(bots, displayName) and cmdtest then
+        test()
+        if index == channel then
+            chatMessage("Bots are now shuffling")
+        end
+        wait(2)
 
       elseif command:sub(1, 6) == "ladder" and table.find(bots, displayName) and cmdladder then
         disablebool()
