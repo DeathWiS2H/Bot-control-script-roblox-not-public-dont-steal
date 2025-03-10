@@ -1641,6 +1641,8 @@ local function freeze()
   local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
   local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
   
+  freezebool = true
+  
   if humanoid and humanoidRootPart then
       -- Disable movement
       humanoid:ChangeState(Enum.HumanoidStateType.Physics)
@@ -1660,6 +1662,8 @@ end
 -- ;unfreeze
 local function unfreeze()
   local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+  
+  freezebool = false
   
   if humanoidRootPart then
       -- Remove the BodyPosition constraint
@@ -1919,67 +1923,48 @@ local function shotgun(targetPlayer, initialDistance)
 end
 
 -- ;gun
-local function gun(targetPlayer, initialDistance)
-  -- Stop any existing gun connection
-  if gunConnection then
-      gunConnection:Disconnect()
-      gunConnection = nil
-  end
-
+local function gun(targetPlayer)
   if not targetPlayer or not targetPlayer.Character then
-      return nil
+      return
   end
 
   local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
   if not targetHumanoidRootPart then
-      return nil
+      return
   end
 
-  -- Set gun boolean to true
-  gunbool = true
- 
-  -- Get the bot's index to determine position
+  -- Bot positioning logic
   local displayName = player.DisplayName
   local botIndex = table.find(bots, displayName)
-
-  if not botIndex then
-      return nil
+  
+  if not botIndex then 
+      return 
   end
 
-  -- Dynamic distance calculation
-  local subsequentSpacing = 2.5 -- Spacing between subsequent bots
+  -- Precise offset calculations with synchronized movement
+  local offset
+  local movementProgress = 0  -- Shared movement progress for bots
+  local synchronizedMovement = 0  -- Ensures bots move at exactly the same rate
 
-  -- Calculate the bot's specific distance
-  local forwardDistance
-  if botIndex == 1 then
-      forwardDistance = initialDistance  -- Use the initial distance specified
-  else
-      -- Subsequent bots are placed incrementally further
-      forwardDistance = initialDistance + ((botIndex - 1) * subsequentSpacing)
+  if botIndex == 1 then  -- bot1: starts left
+      offset = Vector3.new(-10, 0, -3)
+  elseif botIndex == 2 then  -- bot2: starts underneath
+      offset = Vector3.new(0, -10, 3)
+  elseif botIndex == 3 then  -- bot3: starts right
+      offset = Vector3.new(10, 0, -3)
   end
 
-  -- Store initial velocity
-  local initialVelocity = Vector3.new(0, 0, 0)
-  local velocityTimer = nil
-  local stateChangeTimer = nil
-  local sitTimer = nil
-
-  -- Local function to sit the player
-  local function sit()
-      local localHumanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-      if localHumanoid then
-          localHumanoid.Sit = true
-      end
-  end
+  -- Flags to track bot states
+  local middleReached = false
+  local bot2ReachedTop = false
+  local forwardDistance = 3
+  local maxForwardDistance = 50
 
   -- Continuous positioning mechanism
+  local gunConnection
   gunConnection = RunService.Heartbeat:Connect(function()
-      -- Check if gun should continue
-      if not gunbool or not player or not player.Character then
-          if gunConnection then
-              gunConnection:Disconnect()
-              gunConnection = nil
-          end
+      if not player or not player.Character then
+          gunConnection:Disconnect()
           return
       end
 
@@ -1987,60 +1972,74 @@ local function gun(targetPlayer, initialDistance)
       local localHumanoid = player.Character:FindFirstChild("Humanoid")
 
       if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
-          -- Get target's current position and rotation
           local targetCFrame = targetHumanoidRootPart.CFrame
+          local finalOffset = offset
 
-          -- Calculate forward vector
-          local forwardVector = targetCFrame.LookVector * forwardDistance
+          -- Synchronized movement for bot1 and bot3
+          if botIndex == 1 or botIndex == 3 then
+              -- Increment shared movement progress
+              synchronizedMovement = math.min(synchronizedMovement + 0.02, 1)
+              
+              -- Calculate interpolated offset for both bot1 and bot3
+              finalOffset = Vector3.new(
+                  offset.X * (1 - synchronizedMovement),
+                  offset.Y,
+                  offset.Z
+              )
 
-          -- Compute final position
-          local desiredPosition = targetCFrame.Position + forwardVector
-
-          -- Rotate 90 degrees to make the bot's face point towards the sky
-          local rotatedCFrame = CFrame.lookAt(desiredPosition, targetCFrame.Position) * CFrame.Angles(math.rad(90), 0, 0)
-
-          -- Set bot's CFrame to always face the target player but rotated upward
-          localHumanoidRootPart.CFrame = rotatedCFrame
-
-          -- Add velocity towards the target
-          local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
-          local velocityMagnitude = -500  -- Adjust this value to control speed
-         
-          local currentVelocity = velocityDirection * velocityMagnitude
-          localHumanoidRootPart.Velocity = currentVelocity
-         
-          -- Store initial velocity for reset timer
-          if initialVelocity.Magnitude == 0 then
-              initialVelocity = currentVelocity
-          end
-
-          -- Timer to reset character while maintaining velocity
-          if not velocityTimer then
-              velocityTimer = task.delay(3, function()
-                  -- Reset character
+              -- When bots reach middle, teleport to front
+              if synchronizedMovement >= 1 then
+                  middleReached = true
+                  finalOffset = Vector3.new(0, 0, 3)
+                  disablebool()
                   player.Character:BreakJoints()
-                 
-                  -- After a short delay, restore the initial velocity
-                  task.delay(1, function()
-                      if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                          player.Character:FindFirstChild("HumanoidRootPart").Velocity = initialVelocity
-                      end
-                  end)
-              end)
+              end
+          elseif botIndex == 2 then
+              -- Existing bot2 movement logic
+              if not bot2ReachedTop then
+                  finalOffset = Vector3.new(
+                      offset.X,
+                      offset.Y + (10 * movementProgress),
+                      offset.Z
+                  )
+                  movementProgress = math.min(movementProgress + 0.01, 1)
+
+                  if movementProgress >= 1 then
+                      bot2ReachedTop = true
+                      movementProgress = 0
+                  end
+              else
+                  forwardDistance = math.min(forwardDistance + 1.5, maxForwardDistance)
+                  finalOffset = Vector3.new(0, 0, forwardDistance)
+
+                  if forwardDistance >= maxForwardDistance then
+                      gunConnection:Disconnect()
+                      player.Character:BreakJoints()
+                  end
+              end
           end
 
-          -- Add timer to sit the player after 2 seconds
-          if not sitTimer then
-              sitTimer = task.delay(2, function()
-                  sit()
-              end)
-          end
+          -- Calculate rotated offset
+          local rotatedOffset = targetCFrame.RightVector * finalOffset.X + 
+                                 targetCFrame.UpVector * finalOffset.Y + 
+                                 targetCFrame.LookVector * finalOffset.Z
+          
+          -- Calculate the exact desired position
+          local desiredPosition = targetCFrame.Position + rotatedOffset
+          
+          -- Set the bot's position precisely
+          localHumanoidRootPart.CFrame = CFrame.new(desiredPosition) * 
+                                         targetCFrame.Rotation
+          
+          -- Remove velocity to prevent drifting
+          removeVelocity()
 
-          -- Disconnect if target or bot is missing
-          if gunConnection then
+          -- Disconnect if middle is reached for bot1 and bot3
+          if middleReached and (botIndex == 1 or botIndex == 3) then
               gunConnection:Disconnect()
-              gunConnection = nil
           end
+      else
+          gunConnection:Disconnect()
       end
   end)
 
@@ -3134,6 +3133,27 @@ local function connectChatListener(playerpower)
           end
           wait(2)
 
+        elseif command:sub(1, 4) == "gun " and table.find(bots, displayName) and cmdgun then
+          disablebool()
+          local playerName = command:sub(5)
+          local targetPlayer = findPlayerByName(playerName)
+          if targetPlayer then
+              if index == channel then
+                  chatMessage("Bots are now in Gun formation around " .. targetPlayer.Name)
+              end
+              gun(targetPlayer)
+              wait(2)
+          else
+              chatMessage("Player not found: " .. playerName)
+          end
+      
+        elseif command == "ungun" and table.find(bots, displayName) and cmdungun then
+          gunbool = false
+          if index == channel then
+              chatMessage("Stopped Gun formation")
+          end
+          wait(2)
+
         elseif command:sub(1, 5) == "smite" and table.find(bots, displayName) and cmdsmite then
           disablebool()
           local args = command:sub(7):split(" ")  -- Split the command into arguments
@@ -3153,38 +3173,7 @@ local function connectChatListener(playerpower)
                   chatMessage("Player not found for smiting.")
               end
           end
-        
-        elseif command:sub(1, 4) == "gun " and table.find(bots, displayName) and cmdgun then
-          disablebool()
-          local args = command:sub(5):split(" ")  -- Split the command into arguments
-          local targetName = args[1]
-          local initialDistance = tonumber(args[2]) or 9  -- Default distance is 9 if not specified
-        
-          local targetPlayer = findPlayerByName(targetName)
-        
-          if targetPlayer then
-              if index == channel then
-                  chatMessage("Gunning to " .. targetPlayer.Name .. " at a distance of " .. initialDistance)
-              end
-              gun(targetPlayer, initialDistance)  -- Pass the distance to the gun function
-              wait(2)
-          else
-              if index == channel then
-                  chatMessage("Player not found for gunning.")
-              end
-          end
-        
-        elseif command:sub(1, 7) == "ungun" and table.find(bots, displayName) and cmdungun then
-          gunbool = false
-          if gunConnection then
-              gunConnection:Disconnect()
-              gunConnection = nil
-          end
-          if index == channel then
-              chatMessage("Ungunned")
-          end
-          wait(2)
-
+      
         elseif command:sub(1, 6) == "bridge" and table.find(bots, displayName) and cmdbridge then
           disablebool()
           local targetName = command:sub(8)
@@ -3214,7 +3203,7 @@ local function connectChatListener(playerpower)
           wait(2)
 
         elseif command == "freeze" and table.find(bots, displayName) and cmdfreeze then
-          freezebool = true
+          disablebool()
           freeze()
           if index == channel then
               chatMessage("Bots are now frozen")
@@ -3222,7 +3211,6 @@ local function connectChatListener(playerpower)
           wait(2)
       
         elseif command == "unfreeze" and table.find(bots, displayName) then
-          freezebool = false
           unfreeze()
           if index == channel then
               chatMessage("Bots are now unfrozen")
