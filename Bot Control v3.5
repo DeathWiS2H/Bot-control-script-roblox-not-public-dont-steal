@@ -95,6 +95,7 @@ local cmdfloathead = true
 local cmdshuffle = true
 local cmdbang = true
 local cmdunbang = true
+local cmdclear = true
 
 local towerbool = nil
 local followbool = nil
@@ -202,6 +203,7 @@ if printcmd then
   print(";walkfling                           | Bots enable walkfling")
   print(";unwalkfling                         | Bots disable walkfling")
   print(";trampoline [plr]                    | Bots create a bouncy platform under a player")
+  print(";clear                               | Bots clear the chat")
   print(";fix                                 | Attempt to fix a bot if glitched")
   print("-------------------------------------------------------------------")
 end
@@ -521,6 +523,12 @@ local function goto(targetPlayer)
       removeVelocity()
       localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
     end
+  end
+end
+
+-- ;clear
+local function clear()
+  if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(".\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\.") 
   end
 end
 
@@ -2742,6 +2750,7 @@ local function connectChatListener(playerpower)
             bangbool = false
             cmdbang = false
             cmdunbang = false
+            cmdclear = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -2833,7 +2842,7 @@ local function connectChatListener(playerpower)
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
             chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
             chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;smite (plr) ;quake (plr)")
-            chatMessage(";walkfling ;unwalkfling ;trampoline (plr)")
+            chatMessage(";walkfling ;unwalkfling ;trampoline (plr) ;clear")
         end
         wait(2)
 
@@ -2841,6 +2850,10 @@ local function connectChatListener(playerpower)
         local spinarg = tonumber(command:sub(6))
         spin(spinarg)
         boolspin = true
+        wait(2)
+
+      elseif command == "clear" and table.find(bots, displayName) and cmdclear then
+        clear()
         wait(2)
 
       elseif command:sub(1, 8) == "ragdoll" and table.find(bots, displayName) and cmdragdoll then
