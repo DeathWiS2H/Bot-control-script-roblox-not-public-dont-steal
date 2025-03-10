@@ -1087,7 +1087,7 @@ local function bang(targetPlayer)
                   if localHumanoidRootPart and targetHumanoidRootPart then
                       -- Calculate the exact position 1.5 studs behind the target
                       local targetCFrame = targetHumanoidRootPart.CFrame
-                      local behindCFrame = targetCFrame * CFrame.new(0, 0, 1.5)
+                      local behindCFrame = targetCFrame * CFrame.new(0, 0, 1.3)
 
                       -- Set bot's CFrame to the calculated position with target's exact rotation
                       localHumanoidRootPart.CFrame = behindCFrame
