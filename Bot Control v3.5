@@ -84,9 +84,7 @@ local cmdunquake = true
 local cmdsword = true
 local cmdunsword = true
 local cmdshotgun = true
-local cmdunshotgun = true
 local cmdgun = true
-local cmdungun = true
 local cmdsmite = true
 local cmdfreeze = true
 local cmdnoclip = true
@@ -1922,130 +1920,6 @@ local function shotgun(targetPlayer, initialDistance)
   return shotgunConnection
 end
 
--- ;gun
-local function gun(targetPlayer)
-  if not targetPlayer or not targetPlayer.Character then
-      return
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-      return
-  end
-
-  -- Bot positioning logic
-  local displayName = player.DisplayName
-  local botIndex = table.find(bots, displayName)
-  
-  if not botIndex then 
-      return 
-  end
-
-  -- Precise offset calculations with synchronized movement
-  local offset
-  local movementProgress = 0  -- Shared movement progress for bots
-  local synchronizedMovement = 0  -- Ensures bots move at exactly the same rate
-
-  if botIndex == 1 then  -- bot1: starts left
-      offset = Vector3.new(-10, 0, -3)
-  elseif botIndex == 2 then  -- bot2: starts underneath
-      offset = Vector3.new(0, -10, 3)
-  elseif botIndex == 3 then  -- bot3: starts right
-      offset = Vector3.new(10, 0, -3)
-  end
-
-  -- Flags to track bot states
-  local middleReached = false
-  local bot2ReachedTop = false
-  local forwardDistance = 3
-  local maxForwardDistance = 50
-
-  -- Continuous positioning mechanism
-  local gunConnection
-  gunConnection = RunService.Heartbeat:Connect(function()
-      if not player or not player.Character then
-          gunConnection:Disconnect()
-          return
-      end
-
-      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-      local localHumanoid = player.Character:FindFirstChild("Humanoid")
-
-      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
-          local targetCFrame = targetHumanoidRootPart.CFrame
-          local finalOffset = offset
-
-          -- Synchronized movement for bot1 and bot3
-          if botIndex == 1 or botIndex == 3 then
-              -- Increment shared movement progress
-              synchronizedMovement = math.min(synchronizedMovement + 0.02, 1)
-              
-              -- Calculate interpolated offset for both bot1 and bot3
-              finalOffset = Vector3.new(
-                  offset.X * (1 - synchronizedMovement),
-                  offset.Y,
-                  offset.Z
-              )
-
-              -- When bots reach middle, teleport to front
-              if synchronizedMovement >= 1 then
-                  middleReached = true
-                  finalOffset = Vector3.new(0, 0, 3)
-                  disablebool()
-                  player.Character:BreakJoints()
-              end
-          elseif botIndex == 2 then
-              -- Existing bot2 movement logic
-              if not bot2ReachedTop then
-                  finalOffset = Vector3.new(
-                      offset.X,
-                      offset.Y + (10 * movementProgress),
-                      offset.Z
-                  )
-                  movementProgress = math.min(movementProgress + 0.01, 1)
-
-                  if movementProgress >= 1 then
-                      bot2ReachedTop = true
-                      movementProgress = 0
-                  end
-              else
-                  forwardDistance = math.min(forwardDistance + 1.5, maxForwardDistance)
-                  finalOffset = Vector3.new(0, 0, forwardDistance)
-
-                  if forwardDistance >= maxForwardDistance then
-                      gunConnection:Disconnect()
-                      player.Character:BreakJoints()
-                  end
-              end
-          end
-
-          -- Calculate rotated offset
-          local rotatedOffset = targetCFrame.RightVector * finalOffset.X + 
-                                 targetCFrame.UpVector * finalOffset.Y + 
-                                 targetCFrame.LookVector * finalOffset.Z
-          
-          -- Calculate the exact desired position
-          local desiredPosition = targetCFrame.Position + rotatedOffset
-          
-          -- Set the bot's position precisely
-          localHumanoidRootPart.CFrame = CFrame.new(desiredPosition) * 
-                                         targetCFrame.Rotation
-          
-          -- Remove velocity to prevent drifting
-          removeVelocity()
-
-          -- Disconnect if middle is reached for bot1 and bot3
-          if middleReached and (botIndex == 1 or botIndex == 3) then
-              gunConnection:Disconnect()
-          end
-      else
-          gunConnection:Disconnect()
-      end
-  end)
-
-  return gunConnection
-end
-
 -- ;elevator
 local function elevator(targetPlayer)
   -- Stop any existing elevator connection
@@ -2847,10 +2721,8 @@ local function connectChatListener(playerpower)
             cmdunsword = false
             swordbool = false
             cmdshotgun = false
-            cmdunshotgun = false
             shotgunbool = false
             cmdgun = false
-            cmdungun = false
             gunbool = false
             walkflingbool = false
             cmdwalkfling = false
@@ -2960,7 +2832,7 @@ local function connectChatListener(playerpower)
             chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
             chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
-            chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;unshotgun ;smite (plr) ;quake (plr)")
+            chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;smite (plr) ;quake (plr)")
             chatMessage(";walkfling ;unwalkfling ;trampoline (plr)")
         end
         wait(2)
@@ -3121,38 +2993,6 @@ local function connectChatListener(playerpower)
                   chatMessage("Player not found for shotgunning.")
               end
           end
-
-        elseif command:sub(1, 9) == "unshotgun" and table.find(bots, displayName) and cmdunshotgun then
-          shotgunbool = false
-          if shotgunConnection then
-              shotgunConnection:Disconnect()
-              shotgunConnection = nil
-          end
-          if index == channel then
-              chatMessage("Unshotgunned")
-          end
-          wait(2)
-
-        elseif command:sub(1, 4) == "gun " and table.find(bots, displayName) and cmdgun then
-          disablebool()
-          local playerName = command:sub(5)
-          local targetPlayer = findPlayerByName(playerName)
-          if targetPlayer then
-              if index == channel then
-                  chatMessage("Bots are now in Gun formation around " .. targetPlayer.Name)
-              end
-              gun(targetPlayer)
-              wait(2)
-          else
-              chatMessage("Player not found: " .. playerName)
-          end
-      
-        elseif command == "ungun" and table.find(bots, displayName) and cmdungun then
-          gunbool = false
-          if index == channel then
-              chatMessage("Stopped Gun formation")
-          end
-          wait(2)
 
         elseif command:sub(1, 5) == "smite" and table.find(bots, displayName) and cmdsmite then
           disablebool()
