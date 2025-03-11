@@ -275,7 +275,7 @@ end
 -- make life easy, with this you don't have to type someone's whole name
 local function findPlayerByName(partialName)
   if partialName:lower() == "me" then
-    return game.Players:FindFirstChild(targetPlayer)
+    return game.Players:FindFirstChild()
   end
 
   if partialName:lower() == "random" then
@@ -2842,7 +2842,7 @@ local function connectChatListener(playerpower)
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
             chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
             chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;smite (plr) ;quake (plr)")
-            chatMessage(";walkfling ;unwalkfling ;trampoline (plr) ;clear")
+            chatMessage(";walkfling ;unwalkfling ;trampoline (plr) ;clear ;shuffle ;floathead ;levitate")
         end
         wait(2)
 
