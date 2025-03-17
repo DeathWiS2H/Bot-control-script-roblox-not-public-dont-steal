@@ -669,10 +669,9 @@ local function explode(targetPlayer)
   
   if not humanoid or not humanoidRootPart then return end
   
-  -- Flag to control explosion sequence
   local isExploding = true
+  local originalCFrame = humanoidRootPart.CFrame  -- Store the original position
   
-  -- Create tracking connection
   local explosionConnection
   explosionConnection = game:GetService("RunService").Heartbeat:Connect(function()
       if not isExploding then 
@@ -680,52 +679,58 @@ local function explode(targetPlayer)
           return 
       end
       
-      -- If target player is specified, track them
+      -- If no target player, stay in the current position
       if targetPlayer and targetPlayer.Character then
           local targetRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
           
           if targetRootPart then
-              -- Continuously teleport on top of target
-              humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(0, 0, 0)
+              -- Precise teleportation directly on top of target
+              humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(
+                  math.random(-0.5, 0.5),   -- Small random X offset
+                  -0,                       -- Slightly below target
+                  math.random(-0.5, 0.5)    -- Small random Z offset
+              )
           end
       else
-          -- If no target, add random movement
-          local randomOffset = Vector3.new(
-              math.random(-0, 0),
-              math.random(0, 0),
-              math.random(-0, 0)
-          )
-          humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.new(randomOffset)
+          -- Stay in the original position
+          humanoidRootPart.CFrame = originalCFrame
       end
       
-      -- Spin effect with angular velocity between 100 and 150
+      -- Continuous spin while teleporting or staying in place
       local spin = Instance.new("BodyAngularVelocity")
       spin.Name = "ExplodeSpin"
       spin.Parent = humanoidRootPart
-      spin.MaxTorque = Vector3.new(0, math.huge, 0)
-      spin.AngularVelocity = Vector3.new(0, math.random(100, 150), 0)
+      spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+      spin.AngularVelocity = Vector3.new(
+          math.random(200, 300),   -- Intense X-axis rotation
+          math.random(200, 300),   -- Intense Y-axis rotation
+          math.random(200, 300)    -- Intense Z-axis rotation
+      )
       
-      -- Upward velocity between -25 and -50
+      -- Minimal velocity to add some dynamic movement
       local velocity = Instance.new("BodyVelocity")
       velocity.Name = "ExplodeVelocity"
       velocity.Parent = humanoidRootPart
-      velocity.MaxForce = Vector3.new(0, math.huge, 0)
-      velocity.Velocity = Vector3.new(0, math.random(-50, -25), 0)
+      velocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+      velocity.Velocity = Vector3.new(
+          math.random(-10, 10),    -- Small horizontal X movement
+          math.random(10, 20),     -- Slight upward movement
+          math.random(-10, 10)     -- Small horizontal Z movement
+      )
   end)
 
-  -- Timer to break bones and end explosion
   spawn(function()
-      wait(0.3)  -- Wait for 0.3 seconds
+      -- Wait for 0.3 seconds before breaking joints
+      wait(0.25)
       
-      -- Break bones
+      -- Break joints using built-in method
       if player.Character then
-        player.Character:BreakJoints()
+          player.Character:BreakJoints()
       end
-      
-      -- Stop the explosion
+
+      -- Cleanup
       isExploding = false
-      
-      -- Clean up any remaining instances
+
       if humanoidRootPart then
           local spin = humanoidRootPart:FindFirstChild("ExplodeSpin")
           local velocity = humanoidRootPart:FindFirstChild("ExplodeVelocity")
@@ -734,7 +739,6 @@ local function explode(targetPlayer)
           if velocity then velocity:Destroy() end
       end
       
-      -- Disconnect the connection
       if explosionConnection then
           explosionConnection:Disconnect()
       end
@@ -911,6 +915,9 @@ local function nuke(targetPlayer)
           -- Force sit before descent
           humanoid.Sit = true
 
+          -- Set gravity to 196.2
+          workspace.Gravity = 196.2
+
           -- Teleport to spawn position upside down
           local initialRotation = CFrame.Angles(math.pi, 0, 0)  -- Upside down
           humanoidRootPart.CFrame = CFrame.new(spawnPosition) * initialRotation
@@ -919,6 +926,8 @@ local function nuke(targetPlayer)
           local spinAngle = 0  -- Track spin angle
           nukeConnection = RunService.Heartbeat:Connect(function()
               if not player or not player.Character or not targetPlayer.Character then
+                  -- Reset gravity when nuke is cancelled
+                  workspace.Gravity = 196.8  -- Default Roblox gravity
                   nukeConnection:Disconnect()
                   return
               end
@@ -959,6 +968,8 @@ local function nuke(targetPlayer)
                   local randomDownwardVelocity = math.random(40, 75)  -- Random downward velocity between 40 and 75
                   teleportConnection = RunService.Heartbeat:Connect(function()
                       if not player or not player.Character or not targetPlayer.Character then
+                          -- Reset gravity when nuke is cancelled
+                          workspace.Gravity = 196.8  -- Default Roblox gravity
                           teleportConnection:Disconnect()
                           return
                       end
@@ -988,6 +999,9 @@ local function nuke(targetPlayer)
                           -- Break joints
                           wait(0.25)
                           player.Character:BreakJoints()
+                          
+                          -- Reset gravity
+                          workspace.Gravity = 196.8  -- Default Roblox gravity
                           
                           -- Disconnect the connections
                           nukeConnection:Disconnect()
