@@ -698,38 +698,43 @@ local function explode(targetPlayer)
           humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.new(randomOffset)
       end
       
-      -- Spin effect
+      -- Spin effect with angular velocity between 100 and 150
       local spin = Instance.new("BodyAngularVelocity")
       spin.Name = "ExplodeSpin"
       spin.Parent = humanoidRootPart
       spin.MaxTorque = Vector3.new(0, math.huge, 0)
-      spin.AngularVelocity = Vector3.new(0, 235, 0)
+      spin.AngularVelocity = Vector3.new(0, math.random(100, 150), 0)
       
-      -- Upward velocity
+      -- Upward velocity between -25 and -50
       local velocity = Instance.new("BodyVelocity")
       velocity.Name = "ExplodeVelocity"
       velocity.Parent = humanoidRootPart
       velocity.MaxForce = Vector3.new(0, math.huge, 0)
-      velocity.Velocity = Vector3.new(0, 20, 0)
+      velocity.Velocity = Vector3.new(0, math.random(-50, -25), 0)
   end)
-  
-  -- Kill character after a delay
-  task.delay(0.3, function()
-      isExploding = false
+
+  -- Timer to break bones and end explosion
+  spawn(function()
+      wait(0.3)  -- Wait for 0.3 seconds
       
-      -- Remove spin and velocity objects
-      local spin = humanoidRootPart:FindFirstChild("ExplodeSpin")
-      local velocity = humanoidRootPart:FindFirstChild("ExplodeVelocity")
-      
-      if spin then spin:Destroy() end
-      if velocity then velocity:Destroy() end
-      
-      -- Kill the character
-      if humanoid then
-          humanoid.Health = 0
+      -- Break bones
+      if player.Character then
+        player.Character:BreakJoints()
       end
       
-      -- Disconnect the tracking connection
+      -- Stop the explosion
+      isExploding = false
+      
+      -- Clean up any remaining instances
+      if humanoidRootPart then
+          local spin = humanoidRootPart:FindFirstChild("ExplodeSpin")
+          local velocity = humanoidRootPart:FindFirstChild("ExplodeVelocity")
+          
+          if spin then spin:Destroy() end
+          if velocity then velocity:Destroy() end
+      end
+      
+      -- Disconnect the connection
       if explosionConnection then
           explosionConnection:Disconnect()
       end
@@ -950,7 +955,8 @@ local function nuke(targetPlayer)
               if raycastResult and raycastResult.Distance <= 1 then
                   -- Constantly teleport onto the target player
                   local teleportConnection
-                  local teleportStage = 0  -- Track teleport stage
+                  local randomSpinSpeed = math.random(135, 165)  -- Random spin speed between 135 and 165
+                  local randomDownwardVelocity = math.random(40, 75)  -- Random downward velocity between 40 and 75
                   teleportConnection = RunService.Heartbeat:Connect(function()
                       if not player or not player.Character or not targetPlayer.Character then
                           teleportConnection:Disconnect()
@@ -964,19 +970,17 @@ local function nuke(targetPlayer)
                       local teleportCFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0) * CFrame.Angles(math.pi, 0, 0)
                       humanoidRootPart.CFrame = teleportCFrame
 
-                      -- Dynamically change spin velocity
+                      -- Use the random spin speed
                       local spinVelocity = Instance.new("BodyAngularVelocity")
-                      
-                      -- High velocity at first, then slow down
-                      if teleportStage < 5 then
-                          spinVelocity.AngularVelocity = Vector3.new(250, 0, 0)  -- Very high initial spin
-                          teleportStage = teleportStage + 1
-                      else
-                          spinVelocity.AngularVelocity = Vector3.new(45, 0, 0)  -- Slower spin near target
-                      end
-                      
+                      spinVelocity.AngularVelocity = Vector3.new(randomSpinSpeed, 0, 0)
                       spinVelocity.MaxTorque = Vector3.new(math.huge, 0, 0)
                       spinVelocity.Parent = humanoidRootPart
+
+                      -- Add random downward velocity
+                      local bodyVelocity = Instance.new("BodyVelocity")
+                      bodyVelocity.Velocity = Vector3.new(0, -randomDownwardVelocity, 0)
+                      bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                      bodyVelocity.Parent = humanoidRootPart
 
                       -- Check if we're on top of the target
                       local distanceToTarget = (humanoidRootPart.Position - targetHumanoidRootPart.Position).Magnitude
