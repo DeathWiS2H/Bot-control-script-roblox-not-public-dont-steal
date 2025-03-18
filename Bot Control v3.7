@@ -683,8 +683,11 @@ local function explode(targetPlayer)
   
   if not humanoid or not humanoidRootPart then return end
   
+  -- Change humanoid state to Sitting
+  humanoid.Sit = true
+  
   local isExploding = true
-  local explosionDuration = 0.2  -- Reduced explosion duration
+  local explosionDuration = 0.5
   
   local explosionConnection
   explosionConnection = game:GetService("RunService").Heartbeat:Connect(function()
@@ -698,31 +701,45 @@ local function explode(targetPlayer)
           local targetRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
           
           if targetRootPart then
-              -- Tighter, more precise teleportation
               humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(
-                  math.random(-0.0, 0.0),   -- Reduced random offset
-                  -0.5,                        -- Directly on target
-                  math.random(-0.0, 0.0)    -- Reduced random offset
+                  math.random(-0.0, 0.0),
+                  -0.2,
+                  math.random(-0.0, 0.0)
               )
           end
       end
       
-      -- Reduced intensity spin
+      -- Create directional velocity
+      local maxVelocityMagnitude = 100  -- Increased velocity
+      local randomDirection = Vector3.new(
+          math.random(-1, 1),
+          math.random(0, 1),  -- Slight upward bias
+          math.random(-1, 1)
+      ).Unit
+      
+      local velocity = Instance.new("BodyVelocity")
+      velocity.Name = "ExplodeVelocity"
+      velocity.Parent = humanoidRootPart
+      velocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+      
+      -- Apply constant high velocity
+      velocity.Velocity = randomDirection * maxVelocityMagnitude
+      
+      -- Spin effect
       local spin = Instance.new("BodyAngularVelocity")
       spin.Name = "ExplodeSpin"
       spin.Parent = humanoidRootPart
       spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
       spin.AngularVelocity = Vector3.new(
-          math.random(30, 150),   -- Lowered rotation speed
-          math.random(30, 150),   -- Lowered rotation speed
-          math.random(30, 150)    -- Lowered rotation speed
+          math.random(100, 200),  -- Increased spin intensity
+          math.random(100, 200),
+          math.random(100, 200)
       )
-      
   end)
 
   spawn(function()
-      -- Reduced wait time
-      wait(explosionDuration)
+      -- Wait almost full duration, leaving a small buffer before breaking joints
+      wait(explosionDuration * 0.95)
       
       -- Break joints
       if player.Character then
@@ -744,278 +761,6 @@ local function explode(targetPlayer)
           explosionConnection:Disconnect()
       end
   end)
-end
-
--- ;fling
-local function fling(targetPlayer)
-  if player and player.Character then
-    local humanoid = player.Character:FindFirstChild("Humanoid")
-    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-    
-    if humanoid and humanoidRootPart then
-      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-      -- Apply fling effects
-      local Spin = Instance.new("BodyAngularVelocity")
-      Spin.Name = "Spinning"
-      Spin.Parent = humanoidRootPart
-      Spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-      Spin.AngularVelocity = Vector3.new(999999, 999999, 999999)
-      
-      local Velocity = Instance.new("BodyVelocity")
-      Velocity.Name = "Upward"
-      Velocity.Parent = humanoidRootPart
-      Velocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-      Velocity.Velocity = Vector3.new(999999, 999999, 999999)
-
-      flingbool = true
-
-      if targetPlayer then
-        -- Loop teleport and walk to target player
-        local teleportLoop = game:GetService("RunService").Heartbeat:Connect(function()
-          if not flingbool then
-            teleportLoop:Disconnect()
-            if Spin then
-              Spin:Destroy()
-            end
-            if Velocity then
-              Velocity:Destroy()
-            end
-            return
-          end
-          
-          if targetPlayer.Character then
-            local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if targetHumanoidRootPart then
-              -- Teleport near target
-              humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + targetHumanoidRootPart.CFrame.LookVector * 0
-              
-            end
-          end
-        end)
-        
-        -- Clean up loop when target dies
-        task.spawn(function()
-          while targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") and targetPlayer.Character.Humanoid.Health > 0 do
-            task.wait()
-          end
-          teleportLoop:Disconnect()
-          player.Character:BreakJoints()
-          humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-
-          if humanoid then
-            if Spin then
-              Spin:Destroy()  
-            end
-            if Velocity then
-              Velocity:Destroy()
-            end
-          end
-        end)
-      end
-    end
-  end
-end
-
--- ;unfling
-local function unfling()
-  flingbool = false
-  if player and player.Character then
-    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-    if humanoidRootPart then
-      local spin = humanoidRootPart:FindFirstChild("Spinning")
-      local velocity = humanoidRootPart:FindFirstChild("Upward")
-      
-      if spin then
-        spin:Destroy()
-      end
-      if velocity then
-        velocity:Destroy()
-      end
-    end
-  end
-end
-
--- Helper function to get the character's root part
-local function getRoot(char)
-  return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
-end
-
--- ;walkfling
-local function walkfling()
-  local character = player.Character
-  local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-  local root = getRoot(character)
-
-  if not root or not humanoid then return end
-
-  -- Disable previous walkfling connection if exists
-  if walkflingConnection then
-      walkflingConnection:Disconnect()
-      walkflingConnection = nil
-  end
-
-  -- Set walkfling flag
-  walkflingbool = true
-
-  -- Create walkfling connection
-  walkflingConnection = RunService.Heartbeat:Connect(function()
-      if not walkflingbool or not character or not root then
-          walkflingConnection:Disconnect()
-          walkflingbool = false
-          return
-      end
-
-      local vel = root.Velocity
-
-      -- Apply massive velocity boost
-      root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
-      
-      RunService.RenderStepped:Wait()
-      
-      if character and root then
-          root.Velocity = vel
-      end
-      
-      RunService.Stepped:Wait()
-      
-      if character and root then
-          root.Velocity = vel + Vector3.new(0, 0.1, 0)
-      end
-  end)
-end
-
--- ;unwalkfling
-local function unwalkfling()
-  walkflingbool = false
-  
-  if walkflingConnection then
-      walkflingConnection:Disconnect()
-      walkflingConnection = nil
-  end
-end
-
--- ;nuke
-local function nuke(targetPlayer)
-  if not targetPlayer or not targetPlayer.Character then
-      return
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-      return
-  end
-
-  -- Spawn directly above the player at a fixed height
-  local spawnPosition = targetHumanoidRootPart.Position + Vector3.new(0, 300, 0)
-
-  local player = Players.LocalPlayer
-  if player and player.Character then
-      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-      local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-      if humanoidRootPart and humanoid then
-          -- Force sit before descent
-          humanoid.Sit = true
-
-          -- Set gravity to 196.2
-          workspace.Gravity = 196.2
-
-          -- Teleport to spawn position upside down
-          local initialRotation = CFrame.Angles(math.pi, 0, 0)  -- Upside down
-          humanoidRootPart.CFrame = CFrame.new(spawnPosition) * initialRotation
-
-          local nukeConnection
-          local spinAngle = 0  -- Track spin angle
-          nukeConnection = RunService.Heartbeat:Connect(function()
-              if not player or not player.Character or not targetPlayer.Character then
-                  -- Reset gravity when nuke is cancelled
-                  workspace.Gravity = 196.8  -- Default Roblox gravity
-                  nukeConnection:Disconnect()
-                  return
-              end
-
-              -- Ensure player remains seated
-              humanoid.Sit = true
-
-              local targetPosition = targetHumanoidRootPart.Position
-              local currentPosition = humanoidRootPart.Position
-
-              -- Add spinning during descent
-              spinAngle = spinAngle + 5  -- Adjust spin speed as needed
-              
-              -- Continuously update position to follow target while spinning and staying upside down
-              local newCFrame = CFrame.new(
-                  targetPosition.X, 
-                  currentPosition.Y - 1,  -- Slow descent
-                  targetPosition.Z
-              ) * CFrame.Angles(math.pi, spinAngle, 0)  -- Upside down with spin
-
-              humanoidRootPart.CFrame = newCFrame
-
-              -- Check if bot is close to ground
-              local raycastParams = RaycastParams.new()
-              raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-              raycastParams.FilterDescendantsInstances = {player.Character}
-
-              local raycastResult = workspace:Raycast(
-                  humanoidRootPart.Position, 
-                  Vector3.new(0, -10, 0), 
-                  raycastParams
-              )
-
-              if raycastResult and raycastResult.Distance <= 1 then
-                  -- Constantly teleport onto the target player
-                  local teleportConnection
-                  local randomSpinSpeed = math.random(135, 165)  -- Random spin speed between 135 and 165
-                  local randomDownwardVelocity = math.random(40, 75)  -- Random downward velocity between 40 and 75
-                  teleportConnection = RunService.Heartbeat:Connect(function()
-                      if not player or not player.Character or not targetPlayer.Character then
-                          -- Reset gravity when nuke is cancelled
-                          workspace.Gravity = 196.8  -- Default Roblox gravity
-                          teleportConnection:Disconnect()
-                          return
-                      end
-
-                      -- Ensure player remains seated
-                      humanoid.Sit = true
-
-                      -- Teleport directly onto the target player upside down
-                      local teleportCFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0) * CFrame.Angles(math.pi, 0, 0)
-                      humanoidRootPart.CFrame = teleportCFrame
-
-                      -- Use the random spin speed
-                      local spinVelocity = Instance.new("BodyAngularVelocity")
-                      spinVelocity.AngularVelocity = Vector3.new(randomSpinSpeed, 0, 0)
-                      spinVelocity.MaxTorque = Vector3.new(math.huge, 0, 0)
-                      spinVelocity.Parent = humanoidRootPart
-
-                      -- Add random downward velocity
-                      local bodyVelocity = Instance.new("BodyVelocity")
-                      bodyVelocity.Velocity = Vector3.new(0, -randomDownwardVelocity, 0)
-                      bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                      bodyVelocity.Parent = humanoidRootPart
-
-                      -- Check if we're on top of the target
-                      local distanceToTarget = (humanoidRootPart.Position - targetHumanoidRootPart.Position).Magnitude
-                      if distanceToTarget <= 2 then
-                          -- Break joints
-                          wait(0.25)
-                          player.Character:BreakJoints()
-                          
-                          -- Reset gravity
-                          workspace.Gravity = 196.8  -- Default Roblox gravity
-                          
-                          -- Disconnect the connections
-                          nukeConnection:Disconnect()
-                          teleportConnection:Disconnect()
-                      end
-                  end)
-
-                  -- Disconnect the original connection
-                  nukeConnection:Disconnect()
-              end
-          end)
-      end
-  end
 end
 
 -- ;ragdoll
