@@ -684,7 +684,7 @@ local function explode(targetPlayer)
   if not humanoid or not humanoidRootPart then return end
   
   local isExploding = true
-  local originalCFrame = humanoidRootPart.CFrame  -- Store the original position
+  local explosionDuration = 0.2  -- Reduced explosion duration
   
   local explosionConnection
   explosionConnection = game:GetService("RunService").Heartbeat:Connect(function()
@@ -693,51 +693,38 @@ local function explode(targetPlayer)
           return 
       end
       
-      -- If no target player, stay in the current position
+      -- Constant tracking of target player if specified
       if targetPlayer and targetPlayer.Character then
           local targetRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
           
           if targetRootPart then
-              -- Precise teleportation directly on top of target
+              -- Tighter, more precise teleportation
               humanoidRootPart.CFrame = targetRootPart.CFrame * CFrame.new(
-                  math.random(-0.5, 0.5),   -- Small random X offset
-                  -0,                       -- Slightly below target
-                  math.random(-0.5, 0.5)    -- Small random Z offset
+                  math.random(-0.0, 0.0),   -- Reduced random offset
+                  -0.5,                        -- Directly on target
+                  math.random(-0.0, 0.0)    -- Reduced random offset
               )
           end
-      else
-          -- Stay in the original position
-          humanoidRootPart.CFrame = originalCFrame
       end
       
-      -- Continuous spin while teleporting or staying in place
+      -- Reduced intensity spin
       local spin = Instance.new("BodyAngularVelocity")
       spin.Name = "ExplodeSpin"
       spin.Parent = humanoidRootPart
       spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
       spin.AngularVelocity = Vector3.new(
-          math.random(200, 300),   -- Intense X-axis rotation
-          math.random(200, 300),   -- Intense Y-axis rotation
-          math.random(200, 300)    -- Intense Z-axis rotation
+          math.random(30, 150),   -- Lowered rotation speed
+          math.random(30, 150),   -- Lowered rotation speed
+          math.random(30, 150)    -- Lowered rotation speed
       )
       
-      -- Minimal velocity to add some dynamic movement
-      local velocity = Instance.new("BodyVelocity")
-      velocity.Name = "ExplodeVelocity"
-      velocity.Parent = humanoidRootPart
-      velocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-      velocity.Velocity = Vector3.new(
-          math.random(-10, 10),    -- Small horizontal X movement
-          math.random(10, 20),     -- Slight upward movement
-          math.random(-10, 10)     -- Small horizontal Z movement
-      )
   end)
 
   spawn(function()
-      -- Wait for 0.3 seconds before breaking joints
-      wait(0.25)
+      -- Reduced wait time
+      wait(explosionDuration)
       
-      -- Break joints using built-in method
+      -- Break joints
       if player.Character then
           player.Character:BreakJoints()
       end
