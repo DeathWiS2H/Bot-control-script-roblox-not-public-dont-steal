@@ -75,8 +75,6 @@ local cmdsit = true
 local cmdunsit = true
 local cmdgravity = true
 local cmdladder = true
-local cmdmine = true
-local cmdunmine = true
 local cmdragdoll = true
 local cmdunragdoll = true
 local cmdquake = true
@@ -93,8 +91,6 @@ local cmdtest = true
 local cmdlevitate = true
 local cmdfloathead = true
 local cmdshuffle = true
-local cmdbang = true
-local cmdunbang = true
 local cmdclear = true
 
 local towerbool = nil
@@ -121,7 +117,6 @@ local elevatorbool = nil
 local gojobool = nil
 local bridgebool = nil
 local ladderbool = nil
-local minebool = nil
 local quakebool = false
 local swordbool = nil
 local shotgunbool = nil
@@ -343,16 +338,12 @@ flingbool = false
 elevatorbool = false
 gojobool = false
 bridgebool = false
-minebool = false
 swordbool = false
 ladderbool = false
 quakebool = false
 shotgunbool = false
-gunbool = false
-walkflingbool = false
 trampolinebool = false
 freezebool = false
-bangbool = false
 end
 
 -- ;fix
@@ -375,13 +366,10 @@ elevatorbool = false
 gojobool = false
 bridgebool = false
 ladderbool = false
-minebool = false
 shotgunbool = false
-gunbool = false
 walkflingbool = false
 trampolinebool = false
 freezebool = false
-bangbool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -1388,126 +1376,6 @@ local function quake(targetPlayer, radius)
   return nil
 end
 
--- ;mine 
-local function mine(targetPlayer)
-  -- Add a bool for the mine command
-  minebool = true
-
-  if not targetPlayer then
-      -- If no target player is specified, just teleport underground
-      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-      local humanoid = player.Character:FindFirstChild("Humanoid")
-      
-      if humanoidRootPart and humanoid then
-          -- Prevent falling animation by setting humanoid state
-          humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-          
-          -- Teleport underground at current location
-          local newPosition = humanoidRootPart.Position + Vector3.new(0, -4.2, 0)
-          
-          -- Create a CFrame at the underground position
-          local newCFrame = CFrame.new(newPosition)
-          
-          -- Teleport and lock the bot in place
-          humanoidRootPart.CFrame = newCFrame
-          
-          -- Continuous position maintenance
-          local connection
-          connection = RunService.Heartbeat:Connect(function()
-              if not minebool then
-                  connection:Disconnect()
-                  return
-              end
-              
-              if humanoidRootPart and humanoidRootPart.Parent then
-                  -- Zero out velocity
-                  humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                  
-                  -- Ensure physics state
-                  humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-                  
-                  -- Maintain the exact underground position
-                  humanoidRootPart.CFrame = newCFrame
-              else
-                  -- Cleanup if character is destroyed
-                  if connection then
-                      connection:Disconnect()
-                  end
-              end
-          end)
-          
-          return connection
-      end
-  else
-      if not targetPlayer.Character then
-          return
-      end
-      
-      local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-      if not targetHumanoidRootPart then
-          return
-      end
-
-      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-      local humanoid = player.Character:FindFirstChild("Humanoid")
-      
-      if humanoidRootPart and humanoid then
-          -- Prevent falling animation by setting humanoid state
-          humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-          
-          -- Single teleport function
-          local function getTeleportPosition()
-              local randomAngle = math.random() * 2 * math.pi
-              local randomRadius = math.random(5, 15)  -- Between 5 and 15 studs
-              
-              local offsetX = math.cos(randomAngle) * randomRadius
-              local offsetZ = math.sin(randomAngle) * randomRadius
-              
-              -- Teleport deeper underground
-              local newPosition = targetHumanoidRootPart.Position + Vector3.new(offsetX, -4.2, offsetZ)
-              
-              return newPosition
-          end
-          
-          -- Initial teleport
-          local newPosition = getTeleportPosition()
-          
-          -- Create a CFrame at the underground position (removed looking at target)
-          local newCFrame = CFrame.new(newPosition)
-          
-          -- Teleport and lock the bot in place
-          humanoidRootPart.CFrame = newCFrame
-          
-          -- Continuous position maintenance
-          local connection
-          connection = RunService.Heartbeat:Connect(function()
-              if not minebool then
-                  connection:Disconnect()
-                  return
-              end
-              
-              if humanoidRootPart and humanoidRootPart.Parent then
-                  -- Zero out velocity
-                  humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                  
-                  -- Ensure physics state
-                  humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-                  
-                  -- Maintain the exact underground position
-                  humanoidRootPart.CFrame = newCFrame
-              else
-                  -- Cleanup if character is destroyed
-                  if connection then
-                      connection:Disconnect()
-                  end
-              end
-          end)
-          
-          return connection
-      end
-  end
-end
-
 -- ;elevator
 local function elevator(targetPlayer, initialDistance)
   -- Stop any existing elevator connection
@@ -2213,7 +2081,7 @@ local function trampoline(targetPlayer, initialDistance)
   end
 
   -- Dynamic distance calculation
-  local horizontalSpacing = 0 -- Horizontal spacing between bots
+  local horizontalSpacing = 2 -- Horizontal spacing between bots
   local verticalOffset = -3.6 -- Vertical offset to place bots underneath feet
 
   -- Calculate the bot's specific horizontal position
@@ -2801,8 +2669,6 @@ local function connectChatListener(playerpower)
             cmdsit = false
             cmdladder = false
             ladderbool = false
-            minebool = false
-            cmdmine = false
             cmdragdoll = false
             cmdunragdoll = false
             cmdquake = false
@@ -3151,33 +3017,6 @@ local function connectChatListener(playerpower)
               chatMessage("Bots are now unfrozen")
           end
           wait(2)
-          
-      elseif command:sub(1, 5) == "mine " and table.find(bots, displayName) and cmdmine then
-        disablebool()
-        local playerName = command:sub(6)
-        local targetPlayer = findPlayerByName(playerName)
-        
-        if targetPlayer then
-            if index == channel then
-                chatMessage("Bots are now mining near " .. targetPlayer.Name)
-            end
-            mine(targetPlayer)
-            wait(2)
-        else
-            -- If no specific player is mentioned, use default mine behavior
-            if index == channel then
-                chatMessage("Bots are now mining")
-            end
-            mine()
-            wait(2)
-        end
-
-      elseif command == "unmine" and table.find(bots, displayName) and cmdunmine then
-        minebool = false
-        if index == channel then
-            chatMessage("Stopped mining")
-        end
-        wait(2)
 
       elseif command:sub(1, 6) == "quake " and table.find(bots, displayName) and cmdquake then
         disablebool()
@@ -3562,15 +3401,14 @@ local function connectChatListener(playerpower)
         disablebool()
         local args = command:sub(12):split(" ")  -- Split the command into arguments
         local targetName = args[1]
-        local initialDistance = tonumber(args[2]) or 0  -- Default distance is 20 if not specified
       
         local targetPlayer = findPlayerByName(targetName)
       
         if targetPlayer then
             if index == channel then
-                chatMessage("Trampolining to " .. targetPlayer.Name .. " at a distance of " .. initialDistance)
+                chatMessage("Trampolining to " .. targetPlayer.Name)
             end
-            trampoline(targetPlayer, initialDistance)  -- Pass the distance to the trampoline function
+            trampoline(targetPlayer)  -- Remove initial distance parameter
             wait(2)
         else
             if index == channel then
