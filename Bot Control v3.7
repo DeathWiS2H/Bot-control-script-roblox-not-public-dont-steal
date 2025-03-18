@@ -205,6 +205,9 @@ if printcmd then
   print(";trampoline [plr]                    | Bots create a bouncy platform under a player")
   print(";clear                               | Bots clear the chat")
   print(";fix                                 | Attempt to fix a bot if glitched")
+  print(";shuffle                             | Dances")
+  print(";levitate                            | Bots Levitates")
+  print(";floathead                           | Bots head detaches and floats")
   print("-------------------------------------------------------------------")
 end
 
@@ -2036,7 +2039,7 @@ local function elevator(targetPlayer)
   end
 
   -- Dynamic horizontal spacing
-  local horizontalSpacing = 2.5  -- Space between bots horizontally
+  local horizontalSpacing = 0  -- Space between bots horizontally
   local verticalOffset = -2.5 -- Distance below the target player
 
   -- Calculate horizontal offset based on bot index
