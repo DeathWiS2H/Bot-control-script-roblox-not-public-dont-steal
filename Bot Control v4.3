@@ -92,8 +92,6 @@ local cmdhaunt = true
 local cmdunhaunt = true
 local cmdblackhole = true
 local cmdunblackhole = true
-local cmdnoodle = true
-local cmdunnoodle = true
 
 local towerbool = nil
 local followbool = nil
@@ -125,7 +123,6 @@ local freezebool = nil
 local noclipping = nil
 local hauntbool = nil
 local blackholebool = nil
-local noodlebool = nil
 local Admins = {}
 
 --version of the script
@@ -339,7 +336,6 @@ trampolinebool = false
 freezebool = false
 hauntbool = false
 blackholebool = false
-noodlebool = false
 end
 
 -- ;fix
@@ -364,7 +360,6 @@ trampolinebool = false
 freezebool = false
 hauntbool = false
 blackholebool = false
-noodlebool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -2200,132 +2195,6 @@ local function unblackhole()
     blackholebool = false
 end
 
-local function noodle(targetPlayer)
-  if not targetPlayer or not targetPlayer.Character then
-      return nil
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-      return nil
-  end
-
-  -- Set noodle boolean to true
-  noodlebool = true
-  
-  -- Noodle physics parameters
-  local chainLength = 3       -- Base distance between bots
-  local springStiffness = 50   -- How strongly bots try to maintain position
-  local springDamping = 15     -- How quickly bots settle into position
-  local flexibilityFactor = 0.7 -- Noodle-like bendability
-  local frontOffset = 10       -- Distance in front of target player
-  local gravityEffect = 0.5    -- Simulated gravity influence
-  local inertiaFactor = 0.3    -- Resistance to sudden movements
-
-  -- Physics simulation variables
-  local botPositions = {}
-  local botVelocities = {}
-  local botRotations = {}
-
-  -- Initialize bot positions and velocities
-  for i, botName in ipairs(bots) do
-      local botPlayer = findPlayerByName(botName)
-      if botPlayer and botPlayer.Character then
-          local botRootPart = botPlayer.Character:FindFirstChild("HumanoidRootPart")
-          if botRootPart then
-              botPositions[i] = botRootPart.Position
-              botVelocities[i] = Vector3.new(0, 0, 0)
-              botRotations[i] = botRootPart.CFrame.Rotation
-          end
-      end
-  end
-
-  -- Continuous positioning mechanism
-  noodleConnection = RunService.Heartbeat:Connect(function(dt)
-      -- Check if noodle should continue
-      if not noodlebool then
-          if noodleConnection then
-              noodleConnection:Disconnect()
-          end
-          return
-      end
-
-      -- First bot follows target with offset
-      local firstBotPlayer = findPlayerByName(bots[1])
-      if firstBotPlayer and firstBotPlayer.Character then
-          local firstBotRootPart = firstBotPlayer.Character:FindFirstChild("HumanoidRootPart")
-          if firstBotRootPart then
-              local targetCFrame = targetHumanoidRootPart.CFrame
-              local frontPosition = targetCFrame.Position - (targetCFrame.LookVector * frontOffset)
-              
-              -- Spring-like movement for first bot
-              local displacement = frontPosition - firstBotRootPart.Position
-              local springForce = displacement * springStiffness
-              local dampingForce = -botVelocities[1] * springDamping
-              
-              botVelocities[1] = botVelocities[1] + (springForce + dampingForce) * dt
-              botVelocities[1] = botVelocities[1] - Vector3.new(0, gravityEffect, 0)  -- Gravity effect
-              
-              firstBotRootPart.CFrame = CFrame.new(
-                  firstBotRootPart.Position + botVelocities[1] * dt
-              ) * targetCFrame.Rotation
-          end
-      end
-
-      -- Subsequent bots follow with noodle-like physics
-      for i = 2, #bots do
-          local botPlayer = findPlayerByName(bots[i])
-          local prevBotPlayer = findPlayerByName(bots[i-1])
-          
-          if botPlayer and botPlayer.Character and prevBotPlayer and prevBotPlayer.Character then
-              local botRootPart = botPlayer.Character:FindFirstChild("HumanoidRootPart")
-              local prevBotRootPart = prevBotPlayer.Character:FindFirstChild("HumanoidRootPart")
-              
-              if botRootPart and prevBotRootPart then
-                  -- Calculate target position based on previous bot
-                  local targetPosition = prevBotRootPart.Position - 
-                      prevBotRootPart.CFrame.LookVector * chainLength
-                  
-                  -- Spring physics for connection
-                  local displacement = targetPosition - botRootPart.Position
-                  local springForce = displacement * springStiffness
-                  local dampingForce = -botVelocities[i] * springDamping
-                  
-                  -- Add flexibility and inertia
-                  local flexibilityForce = Vector3.new(
-                      math.sin(tick() * 3 + i) * flexibilityFactor,
-                      math.cos(tick() * 3 + i) * flexibilityFactor,
-                      0
-                  )
-                  
-                  botVelocities[i] = botVelocities[i] + 
-                      (springForce + dampingForce + flexibilityForce) * dt
-                  
-                  -- Gravity and inertia effects
-                  botVelocities[i] = botVelocities[i] - 
-                      Vector3.new(0, gravityEffect, 0) * inertiaFactor
-                  
-                  -- Update bot position with velocity
-                  botRootPart.CFrame = CFrame.new(
-                      botRootPart.Position + botVelocities[i] * dt
-                  ) * prevBotRootPart.CFrame.Rotation
-              end
-          end
-      end
-  end)
-
-  return noodleConnection
-end
-
--- ;unnoodle function
-local function unnoodle()
-  noodlebool = false
-  if noodleConnection then
-      noodleConnection:Disconnect()
-      noodleConnection = nil
-  end
-end
-
 -- ;elevator
 local function elevator(targetPlayer)
   -- Stop any existing elevator connection
@@ -3027,9 +2896,6 @@ local function connectChatListener(playerpower)
             cmdblackhole = false
             cmdunblackhole = false
             blackholebool = false
-            cmdnoodle = false
-            cmdunnoodle = false
-            noodlebool = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
@@ -3247,31 +3113,6 @@ local function connectChatListener(playerpower)
         blackholebool = false
         if index == channel then
             chatMessage("Stopped blackhole effect")
-        end
-        wait(2)
-
-      elseif command:sub(1, 6) == "noodle" and table.find(bots, displayName) and cmdnoodle then
-        disablebool()
-        local playerName = command:sub(8)
-        local targetPlayer = findPlayerByName(playerName)
-    
-        if targetPlayer then
-            if index == channel then
-                chatMessage("Bots are now noodling towards " .. targetPlayer.Name)
-            end
-            noodle(targetPlayer)
-            wait(2)
-        else
-            if index == channel then
-                chatMessage("Player not found for noodling.")
-            end
-        end
-        wait(2)
-
-      elseif command == "unnoodle" and table.find(bots, displayName) and cmdunnoodle then
-        unnoodle()
-        if index == channel then
-            chatMessage("Stopped noodling effect")
         end
         wait(2)
 
