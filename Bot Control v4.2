@@ -1890,12 +1890,17 @@ local function haunt(targetPlayer)
   local humanoid = character:WaitForChild("Humanoid")
   local head = character:WaitForChild("Head")
   
+  -- Change humanoid state to Physics
+  if humanoid then
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  end
+  
   local followDistance = -0.1  -- Original follow distance
   local teleportDistance = -0.1  -- New teleport distance in front of target
   
   -- Bot repulsion settings
-  local repulsionRadius = 5  -- Radius to detect nearby bots
-  local repulsionForce = 8  -- Strength of the bounce-away force
+  local repulsionRadius = 4  -- Radius to detect nearby bots
+  local repulsionForce = 5  -- Strength of the bounce-away force
   
   local leaderRootPart = nil
   
@@ -1905,14 +1910,13 @@ local function haunt(targetPlayer)
   local dampingX = 0.5
   local stiffnessY = 8
   local dampingY = 0.2
-  local jumpBoost = 2.5
-  local bounceFactor = 0.6
-  local raycastLength = 1.5
+  local jumpBoost = 2
+  local bounceFactor = 0.5
+  local raycastLength = 2
   
   -- Store original gravity to restore later
   local originalGravity = game.Workspace.Gravity
   game.Workspace.Gravity = 0
-  humanoid.Sit = true
   
   local function findRoot()
       if targetPlayer and targetPlayer.Character then
@@ -1976,7 +1980,9 @@ local function haunt(targetPlayer)
               hauntConnection = nil
           end
           game.Workspace.Gravity = originalGravity
-          if humanoid then humanoid.Sit = false end
+          if humanoid then 
+              humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+          end
           return
       end
       
@@ -1987,7 +1993,7 @@ local function haunt(targetPlayer)
               hauntConnection = nil
           end
           game.Workspace.Gravity = originalGravity
-          humanoid.Sit = false
+          humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
           return
       end
       
