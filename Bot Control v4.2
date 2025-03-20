@@ -1895,7 +1895,7 @@ local function haunt(targetPlayer)
   
   -- Bot repulsion settings
   local repulsionRadius = 5  -- Radius to detect nearby bots
-  local repulsionForce = 20  -- Strength of the bounce-away force
+  local repulsionForce = 8  -- Strength of the bounce-away force
   
   local leaderRootPart = nil
   
@@ -2057,8 +2057,8 @@ local function blackhole(targetPlayer)
   local teleportDistance = Vector3.new(-0.5, -0.5, -0.5)
   
   -- Reduced bot repulsion settings
-  local repulsionRadius = 4
-  local repulsionForce = 8
+  local repulsionRadius = 5.5
+  local repulsionForce = 5
   
   local leaderRootPart = nil
   
@@ -2066,11 +2066,11 @@ local function blackhole(targetPlayer)
   local springVelocity = Vector3.new(0, 0, 0)
   
   -- Enhanced physics parameters with axis-specific tuning
-  local stiffness = Vector3.new(5, 12, 5)
-  local damping = Vector3.new(0.3, 0.1, 0.3)
-  local jumpBoost = 10
+  local stiffness = Vector3.new(3, 8, 3)
+  local damping = Vector3.new(0.8, 0.8, 0.8)
+  local jumpBoost = 5
   local bounceFactor = 0.8
-  local raycastLength = 2
+  local raycastLength = 1.5
   
   -- Store original gravity to restore later
   local originalGravity = game.Workspace.Gravity
