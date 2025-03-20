@@ -47,10 +47,6 @@ local cmdadmin = true
 local cmdunadmin = true
 local cmdarch = true
 local cmdorbit2 = true
-local cmdorbit3 = true
-local cmdorbit4 = true
-local cmdorbit5 = true
-local cmdorbit6 = true
 local cmdstalk = true
 local cmdunstalk = true
 local cmdcmds = true
@@ -103,10 +99,6 @@ local towerbool = nil
 local followbool = nil
 local orbitbool = nil
 local orbitbool2 = nil
-local orbitbool3 = nil
-local orbitbool4 = nil
-local orbitbool5 = nil
-local orbitbool6 = nil
 local leftoffset = nil
 local rightoffset = nil
 local booljump = nil
@@ -133,7 +125,7 @@ local freezebool = nil
 local noclipping = nil
 local hauntbool = nil
 local blackholebool = nil
-local noodlebool - nil
+local noodlebool = nil
 local Admins = {}
 
 --version of the script
@@ -180,11 +172,6 @@ if printcmd then
   print(";unsit                               | Bots stop sitting")
   print(";orbit [plr] <radius> <speed>        | Bots orbit a player (V1 - Basic)")
   print(";orbit2 [plr] <radius> <speed>       | Bots orbit a player (V2 - Enhanced)")
-  print(";orbit3 [plr] <radius> <speed>       | Bots orbit a player (V3)")
-  print(";orbit4 [plr] <radius> <speed>       | Bots orbit a player (V4)")
-  print(";orbit5 [plr] <radius> <speed>       | Bots orbit a player (V5)")
-  print(";orbit6 [plr] <radius> <speed>       | Bots orbit a player (V6 - Chaotic)")
-  print(";unorbit                             | Stop bots from orbiting")
   print(";quake [plr] <radius>                | Bots teleport randomly within a radius")
   print(";unquake                             | Bots unquake")
   print(";spin <number>                       | Bots start spinning")
@@ -336,10 +323,6 @@ towerbool = false
 followbool = false
 orbitbool = false
 orbitbool2 = false
-orbitbool3 = false
-orbitbool4 = false
-orbitbool5 = false
-orbitbool6 = false
 booljump = false
 wormbool = false
 boolspin = false
@@ -366,10 +349,6 @@ towerbool = false
 followbool = false
 orbitbool = false
 orbitbool2 = false
-orbitbool3 = false
-orbitbool4 = false
-orbitbool5 = false
-orbitbool6 = false
 booljump = false
 wormbool = false
 boolspin = false
@@ -2077,7 +2056,7 @@ local function blackhole(targetPlayer)
   local springVelocity = Vector3.new(0, 0, 0)
   
   -- Enhanced physics parameters with axis-specific tuning
-  local stiffness = Vector3.new(3, 8, 3)
+  local stiffness = Vector3.new(3, 3, 3)
   local damping = Vector3.new(0.8, 0.8, 0.8)
   local jumpBoost = 5
   local bounceFactor = 0.8
@@ -2086,7 +2065,10 @@ local function blackhole(targetPlayer)
   -- Store original gravity to restore later
   local originalGravity = game.Workspace.Gravity
   game.Workspace.Gravity = 0
-  humanoid.Sit = true
+
+  if humanoid then
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  end
   
   local function findRoot()
       if targetPlayer and targetPlayer.Character then
@@ -2218,15 +2200,129 @@ local function unblackhole()
     blackholebool = false
 end
 
--- ;noodle
+local function noodle(targetPlayer)
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
 
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
 
--- ;unnoodle
+  -- Set noodle boolean to true
+  noodlebool = true
+  
+  -- Noodle physics parameters
+  local chainLength = 3       -- Base distance between bots
+  local springStiffness = 50   -- How strongly bots try to maintain position
+  local springDamping = 15     -- How quickly bots settle into position
+  local flexibilityFactor = 0.7 -- Noodle-like bendability
+  local frontOffset = 10       -- Distance in front of target player
+  local gravityEffect = 0.5    -- Simulated gravity influence
+  local inertiaFactor = 0.3    -- Resistance to sudden movements
+
+  -- Physics simulation variables
+  local botPositions = {}
+  local botVelocities = {}
+  local botRotations = {}
+
+  -- Initialize bot positions and velocities
+  for i, botName in ipairs(bots) do
+      local botPlayer = findPlayerByName(botName)
+      if botPlayer and botPlayer.Character then
+          local botRootPart = botPlayer.Character:FindFirstChild("HumanoidRootPart")
+          if botRootPart then
+              botPositions[i] = botRootPart.Position
+              botVelocities[i] = Vector3.new(0, 0, 0)
+              botRotations[i] = botRootPart.CFrame.Rotation
+          end
+      end
+  end
+
+  -- Continuous positioning mechanism
+  noodleConnection = RunService.Heartbeat:Connect(function(dt)
+      -- Check if noodle should continue
+      if not noodlebool then
+          if noodleConnection then
+              noodleConnection:Disconnect()
+          end
+          return
+      end
+
+      -- First bot follows target with offset
+      local firstBotPlayer = findPlayerByName(bots[1])
+      if firstBotPlayer and firstBotPlayer.Character then
+          local firstBotRootPart = firstBotPlayer.Character:FindFirstChild("HumanoidRootPart")
+          if firstBotRootPart then
+              local targetCFrame = targetHumanoidRootPart.CFrame
+              local frontPosition = targetCFrame.Position - (targetCFrame.LookVector * frontOffset)
+              
+              -- Spring-like movement for first bot
+              local displacement = frontPosition - firstBotRootPart.Position
+              local springForce = displacement * springStiffness
+              local dampingForce = -botVelocities[1] * springDamping
+              
+              botVelocities[1] = botVelocities[1] + (springForce + dampingForce) * dt
+              botVelocities[1] = botVelocities[1] - Vector3.new(0, gravityEffect, 0)  -- Gravity effect
+              
+              firstBotRootPart.CFrame = CFrame.new(
+                  firstBotRootPart.Position + botVelocities[1] * dt
+              ) * targetCFrame.Rotation
+          end
+      end
+
+      -- Subsequent bots follow with noodle-like physics
+      for i = 2, #bots do
+          local botPlayer = findPlayerByName(bots[i])
+          local prevBotPlayer = findPlayerByName(bots[i-1])
+          
+          if botPlayer and botPlayer.Character and prevBotPlayer and prevBotPlayer.Character then
+              local botRootPart = botPlayer.Character:FindFirstChild("HumanoidRootPart")
+              local prevBotRootPart = prevBotPlayer.Character:FindFirstChild("HumanoidRootPart")
+              
+              if botRootPart and prevBotRootPart then
+                  -- Calculate target position based on previous bot
+                  local targetPosition = prevBotRootPart.Position - 
+                      prevBotRootPart.CFrame.LookVector * chainLength
+                  
+                  -- Spring physics for connection
+                  local displacement = targetPosition - botRootPart.Position
+                  local springForce = displacement * springStiffness
+                  local dampingForce = -botVelocities[i] * springDamping
+                  
+                  -- Add flexibility and inertia
+                  local flexibilityForce = Vector3.new(
+                      math.sin(tick() * 3 + i) * flexibilityFactor,
+                      math.cos(tick() * 3 + i) * flexibilityFactor,
+                      0
+                  )
+                  
+                  botVelocities[i] = botVelocities[i] + 
+                      (springForce + dampingForce + flexibilityForce) * dt
+                  
+                  -- Gravity and inertia effects
+                  botVelocities[i] = botVelocities[i] - 
+                      Vector3.new(0, gravityEffect, 0) * inertiaFactor
+                  
+                  -- Update bot position with velocity
+                  botRootPart.CFrame = CFrame.new(
+                      botRootPart.Position + botVelocities[i] * dt
+                  ) * prevBotRootPart.CFrame.Rotation
+              end
+          end
+      end
+  end)
+
+  return noodleConnection
+end
+
+-- ;unnoodle function
 local function unnoodle()
   noodlebool = false
   if noodleConnection then
-    noodleConnection:Disconnect()
-    noodleConnection = nil
+      noodleConnection:Disconnect()
+      noodleConnection = nil
   end
 end
 
@@ -2719,162 +2815,6 @@ local function orbitPlayer2(targetPlayer, speed, r)
   end)
 end
 
--- ;orbit3
-local function orbitPlayer3(targetPlayer, speed, r)
-  game.Workspace.Gravity = 0
-
-  if r == 0 then
-    r = 0.0001
-  end
-
-  local playerCharacter = player.Character
-  local playerHumanoidRootPart = playerCharacter and playerCharacter:FindFirstChild("HumanoidRootPart")
-
-  if not playerHumanoidRootPart then
-    return
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-    return
-  end
-
-  local rotation = indexcircle
-  local orbitConnection
-  orbitConnection = RunService.Heartbeat:Connect(function()
-  if not orbitbool3 or not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-    orbitConnection:Disconnect()
-    return
-  end
-
-  removeVelocity()
-  local newCFrame = CFrame.new(targetHumanoidRootPart.Position)
-  * CFrame.Angles(0, math.rad(rotation), 90) -- if you are bored try to mess with values
-  * CFrame.new(r, 0, 0)
-  playerHumanoidRootPart.CFrame = newCFrame
-  local lookAtCFrame = CFrame.new(playerHumanoidRootPart.Position, targetHumanoidRootPart.Position)
-  playerHumanoidRootPart.CFrame = lookAtCFrame
-  rotation = (rotation + speed) % 360
-  end)
-end
-
--- ;orbit4
-local function orbitPlayer4(targetPlayer, speed, r)
-  game.Workspace.Gravity = 0
-
-  if r == 0 then
-    r = 0.0001
-  end
-
-  local playerCharacter = player.Character
-  local playerHumanoidRootPart = playerCharacter and playerCharacter:FindFirstChild("HumanoidRootPart")
-
-  if not playerHumanoidRootPart then
-    return
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-    return
-  end
-
-  removeVelocity()
-  local rotation = indexcircle
-  local orbitConnection
-  orbitConnection = RunService.Heartbeat:Connect(function()
-  if not orbitbool4 or not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-    orbitConnection:Disconnect()
-    return
-  end
-
-  local newCFrame = CFrame.new(targetHumanoidRootPart.Position)
-  * CFrame.Angles(math.rad(rotation),0, math.rad(rotation))
-  * CFrame.new(r, 0, 0)
-  playerHumanoidRootPart.CFrame = newCFrame
-  local lookAtCFrame = CFrame.new(playerHumanoidRootPart.Position, targetHumanoidRootPart.Position)
-  playerHumanoidRootPart.CFrame = lookAtCFrame
-  rotation = (rotation + speed) % 360
-  end)
-end
-
--- ;orbit5
-local function orbitPlayer5(targetPlayer, speed, r)
-  game.Workspace.Gravity = 0
-
-  if r == 0 then
-    r = 0.0001
-  end
-
-  local playerCharacter = player.Character
-  local playerHumanoidRootPart = playerCharacter and playerCharacter:FindFirstChild("HumanoidRootPart")
-
-  if not playerHumanoidRootPart then
-    return
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-    return
-  end
-
-  local rotation = indexcircle
-  local orbitConnection
-  orbitConnection = RunService.Heartbeat:Connect(function()
-  if not orbitbool5 or not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-    orbitConnection:Disconnect()
-    return
-  end
-
-  removeVelocity()
-  local newCFrame = CFrame.new(targetHumanoidRootPart.Position)
-  * CFrame.Angles(math.rad(math.random(0, 360)), math.rad(math.random(0, 360)), math.rad(math.random(0, 360)))
-  * CFrame.new(r, 0, 0)
-  playerHumanoidRootPart.CFrame = newCFrame
-  local lookAtCFrame = CFrame.new(playerHumanoidRootPart.Position, targetHumanoidRootPart.Position)
-  playerHumanoidRootPart.CFrame = lookAtCFrame
-  rotation = (rotation + speed) % 360
-  end)
-end
-
--- ;orbit6
-local function orbitPlayer6(targetPlayer, speed, r)
-  game.Workspace.Gravity = 0
-
-  if r == 0 then
-    r = 0.0001
-  end
-
-  local playerCharacter = player.Character
-  local playerHumanoidRootPart = playerCharacter and playerCharacter:FindFirstChild("HumanoidRootPart")
-
-  if not playerHumanoidRootPart then
-    return
-  end
-
-  local targetHumanoidRootPart = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-  if not targetHumanoidRootPart then
-    return
-  end
-
-  local rotation = indexcircle
-  local orbitConnection
-  orbitConnection = RunService.Heartbeat:Connect(function()
-  if not orbitbool6 or not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-    orbitConnection:Disconnect()
-    return
-  end
-
-  removeVelocity()
-  local newCFrame = CFrame.new(targetHumanoidRootPart.Position)
-  * CFrame.Angles(math.rad(math.random(0, 360)), math.rad(math.random(0, 360)), 0)
-  * CFrame.new(r, 0, 0)
-  playerHumanoidRootPart.CFrame = newCFrame
-  local lookAtCFrame = CFrame.new(playerHumanoidRootPart.Position, targetHumanoidRootPart.Position)
-  playerHumanoidRootPart.CFrame = lookAtCFrame
-  rotation = (rotation + speed) % 360
-  end)
-end
-
 -- ;stalk
 local function stalkPlayer(targetPlayer)
   if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -3016,11 +2956,7 @@ local function connectChatListener(playerpower)
             cmdcircle = false
             cmdchannel = false
             orbitbool = false
-            orbitbool5 = false
             orbitbool2 = false
-            orbitbool3 = false
-            orbitbool4 = false
-            orbitbool6 = false
             wormbool = false
             cmdworm = false
             cmdunworm = false
@@ -3031,10 +2967,6 @@ local function connectChatListener(playerpower)
             adminbool = false
             cmdarch = false
             cmdorbit2 = false
-            cmdorbit3 = false
-            cmdorbit4 = false
-            cmdorbit5 = false
-            cmdorbit6 = false
             cmdstalk = false
             stalkbool = false
             cmdunstalk = false
@@ -3165,31 +3097,30 @@ local function connectChatListener(playerpower)
         chatMessage("/e dance")
         wait(2)
 
-      elseif command:sub(1, 7) == "dance 1" and table.find(bots, displayName) and cmddance then
+      elseif command:sub(1, 7) == "dance1" and table.find(bots, displayName) and cmddance then
         chatMessage("/e dance1")
         wait(2)
 
-      elseif command:sub(1, 7) == "dance 2" and table.find(bots, displayName) and cmddance then
+      elseif command:sub(1, 7) == "dance2" and table.find(bots, displayName) and cmddance then
         chatMessage("/e dance2")
         wait(2)
 
-      elseif command:sub(1, 7) == "dance 3" and table.find(bots, displayName) and cmddance then
+      elseif command:sub(1, 7) == "dance3" and table.find(bots, displayName) and cmddance then
         chatMessage("/e dance3")
         wait(2)
 
-      elseif command:sub(1, 7) == "dance 4" and table.find(bots, displayName) and cmddance then
-        chatMessage("/e dance 4")
+      elseif command:sub(1, 7) == "dance4" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance4")
         wait(2)
       
       elseif command:sub(1, 5) == "cmds" and table.find(bots, displayName) and cmdcmds then
         if index == 1 then
             chatMessage(";status ;index ;follow [plr] ;quit ;dance <number> ;undance ;reset ;jump ;say <sentence> ;unfollow ;orbit [plr] <radius> <speed>")
-            chatMessage(";orbit2 [plr] <radius> <speed> ;orbit3 [plr] <radius> <speed> ;orbit4 [plr] <radius> <speed> ;orbit5 [plr] <radius> <speed>")
-            chatMessage(";orbit6 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
+            chatMessage(";orbit2 [plr] <radius> <speed> ;unorbit ;goto [plr] ;ws <number> ;loopjump ;unloopjump ;circle <number> ;channel <number>")
             chatMessage(";worm [plr] ;unworm ;spin <number> ;unspin ;admin [plr] ;arch <number> ;stalk [plr] ;unstalk ;cmds ;firework")
             chatMessage(";elevator [plr] ;gojo [plr] ;explode [plr] ;fling [plr] ;bridge [plr] ;nuke [plr] ;gravity <number> ;sit ;unsit")
-            chatMessage(";ladder (plr) ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;smite (plr) ;quake (plr)")
-            chatMessage(";walkfling ;unwalkfling ;trampoline (plr) ;clear ;shuffle ;floathead ;levitate")
+            chatMessage(";ladder [plr] ;ragdoll ;unragdoll ;sword [plr] <distance> ;unsword ;shotgun [plr] <distance> ;smite [plr] ;quake [plr]")
+            chatMessage(";walkfling ;unwalkfling ;trampoline [plr] ;clear ;shuffle ;floathead ;levitate ;haunt [plr] ;blackhole [plr]")
         end
         wait(2)
 
@@ -3738,102 +3669,6 @@ local function connectChatListener(playerpower)
             chatMessage("Bots are now orbiting " .. targetPlayer.Name)
           end
           orbitPlayer2(targetPlayer, speed, r)
-
-          wait(2)
-        else
-          if index == channel then
-            chatMessage("Player not found: " .. playerName)
-          end
-        end
-
-    elseif command:sub(1, 7) == "orbit3 " and table.find(bots, displayName) and cmdorbit3 then
-      disablebool()
-        orbitbool3 = false
-        local args = command:split(" ")
-        local playerName = args[2]
-        local r = tonumber(args[3])
-        local speed = tonumber(args[4])
-
-        local targetPlayer = findPlayerByName(playerName)
-        if targetPlayer then
-          orbitbool3 = true
-
-          if index == channel then
-            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
-          end
-          orbitPlayer3(targetPlayer, speed, r)
-
-          wait(2)
-        else
-          if index == channel then
-            chatMessage("Player not found: " .. playerName)
-          end
-        end
-    elseif command:sub(1, 7) == "orbit4 " and table.find(bots, displayName) and cmdorbit4 then
-      disablebool()
-        orbitbool4 = false
-        local args = command:split(" ")
-        local playerName = args[2]
-        local r = tonumber(args[3])
-        local speed = tonumber(args[4])
-
-        local targetPlayer = findPlayerByName(playerName)
-        if targetPlayer then
-          orbitbool4 = true
-
-          if index == channel then
-            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
-          end
-          orbitPlayer4(targetPlayer, speed, r)
-
-          wait(2)
-        else
-          if index == channel then
-            chatMessage("Player not found: " .. playerName)
-          end
-        end
-
-    elseif command:sub(1, 7) == "orbit6 " and table.find(bots, displayName) and cmdorbit6 then
-      disablebool()
-        orbitbool6 = false
-        local args = command:split(" ")
-        local playerName = args[2]
-        local r = tonumber(args[3])
-        local speed = tonumber(args[4])
-
-        local targetPlayer = findPlayerByName(playerName)
-        if targetPlayer then
-          orbitbool6 = true 
-
-          if index == channel then
-            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
-          end
-          orbitPlayer6(targetPlayer, speed, r)
-
-          wait(2)
-        else
-          if index == channel then
-            chatMessage("Player not found: " .. playerName)
-          end
-        end
-
-    elseif command:sub(1, 7) == "orbit5 " and table.find(bots, displayName) and cmdorbit5 then
-      disablebool()
-        orbitbool5 = false
-        local args = command:split(" ")
-        local playerName = args[2]
-        local r = tonumber(args[3])
-        local speed = tonumber(args[4])
-
-        local targetPlayer = findPlayerByName(playerName)
-        if targetPlayer then
-          orbitbool5 = true
-
-          if index == channel then
-            chatMessage("Bots are now orbiting " .. targetPlayer.Name)
-          end
-
-          orbitPlayer5(targetPlayer, speed, r)
 
           wait(2)
         else
