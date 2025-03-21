@@ -219,6 +219,7 @@ shotgunbool = false
 freezebool = false
 hauntbool = false
 blackholebool = false
+volcanobool = false
 end
 
 -- ;fix
@@ -238,6 +239,7 @@ walkflingbool = false
 freezebool = false
 hauntbool = false
 blackholebool = false
+volcanobool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -1159,7 +1161,7 @@ local function volcano(targetPlayer, initialDistance)
 
   -- Set volcano boolean to true
   volcanobool = true
-  
+
   -- Get the bot's index to determine position
   local displayName = player.DisplayName
   local botIndex = table.find(bots, displayName)
@@ -1169,8 +1171,8 @@ local function volcano(targetPlayer, initialDistance)
   end
 
   -- Dynamic distance calculation
-  local horizontalSpacing = 2 -- Horizontal spacing between bots
-  local verticalOffset = -3.6 -- Vertical offset to place bots underneath feet
+  local horizontalSpacing = 0.05 -- Horizontal spacing between bots
+  local verticalOffset = -10 -- Fixed vertical offset of -10 units (directly under player)
 
   -- Calculate the bot's specific horizontal position
   local horizontalOffset
@@ -1201,24 +1203,45 @@ local function volcano(targetPlayer, initialDistance)
           -- Get target's current position and rotation
           local targetCFrame = targetHumanoidRootPart.CFrame
 
-          -- Calculate bot's position underneath the player
+          -- Calculate bot's position directly under the player (fixed vertical offset)
           local desiredPosition = targetCFrame.Position + 
-                                  targetCFrame.RightVector * horizontalOffset + 
+                                  targetCFrame.RightVector * math.random(-30, 30) +  -- Random horizontal offset
                                   Vector3.new(0, verticalOffset, 0)
 
-          -- Create a CFrame that matches the target's rotation
-          -- Extract the target's rotation, but keep the vertical offset
+          -- Create a CFrame that matches the target's rotation and stays aligned in all axes
           local rotatedCFrame = CFrame.new(desiredPosition) * 
                                 (targetCFrame - targetCFrame.Position) * 
                                 CFrame.Angles(math.rad(90), 0, 0)
 
-          -- Set bot's CFrame 
-          localHumanoidRootPart.CFrame = rotatedCFrame
+          -- Ensure the bot remains directly under the target at the vertical offset
+          local finalCFrame = CFrame.new(targetCFrame.Position + Vector3.new(0, verticalOffset, 0), 
+                                         targetCFrame.Position + targetCFrame.LookVector)
 
-          -- Add vertical velocity for a bouncing effect
-          local velocityDirection = Vector3.new(0, 100, 0)  -- Strong upward velocity
-          
-          localHumanoidRootPart.Velocity = velocityDirection
+          -- Set bot's CFrame 
+          localHumanoidRootPart.CFrame = finalCFrame
+
+          -- Random velocity for bouncing effect
+          local randomVelocity = Vector3.new(0, math.random(150, 150), 0)  -- Random vertical velocity
+          localHumanoidRootPart.Velocity = randomVelocity
+
+          -- Reset AssemblyAngularVelocity after a small delay with random values
+          task.wait(0.01)
+          if localHumanoidRootPart then
+              localHumanoidRootPart.AssemblyAngularVelocity = Vector3.new(math.random(-30, 30), math.random(-30, 30), math.random(-30, 30))
+          end
+
+          -- Keep the bot 10 units underneath the player by resetting the position every frame
+          local newCFrame = CFrame.new(targetCFrame.Position + Vector3.new(0, verticalOffset, 0), 
+                                       targetCFrame.Position + targetCFrame.LookVector)
+          localHumanoidRootPart.CFrame = newCFrame
+
+          -- Break the joints after 1 second
+          task.delay(1, function()
+              if targetPlayer and targetPlayer.Character and localHumanoid then
+                  localHumanoid.Health = 0 -- Kill the humanoid (simulate break joints)
+              end
+          end)
+
       else
           -- Disconnect if target or bot is missing
           if volcanoConnection then
@@ -2145,6 +2168,7 @@ local function connectChatListener(playerpower)
             cmdunblackhole = false
             blackholebool = false
             cmdvolcano = false
+            volcanobool = false
             Admins = {}
             adminNotConnected = {}
             chatMessage("Ended Script.")
