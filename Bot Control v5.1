@@ -1,0 +1,2490 @@
+--Configuration
+getgenv().Use_Displayname = true -- if true, put accounts displayname for bots | if false use the username of accounts
+getgenv().bots = {"Red", "Purple", "Blue"} --bots
+getgenv().owner = "lucid_v1sion" --Owner (USER NAME, DO NOT PUT DISPLAYNAME)
+getgenv().numberbot = 3 -- Number of bots you want to use
+getgenv().prefix = ";" -- Prefix
+getgenv().botrender = true -- when true, bots use less CPU
+
+--get configs | Important
+local Use_Displayname = getgenv().Use_Displayname
+local bots = getgenv().bots
+local owner = getgenv().owner
+local bot = getgenv().numberbot
+local prefix = getgenv().prefix
+local botrender = getgenv().botrender
+
+-- cmd, bool and stuff
+local cmdstatus = true
+local cmdargs = true
+local cmdorder = true
+local cmdend = true
+local cmddance = true
+local cmdundance = true
+local cmdreset = true
+local cmdjump = true
+local cmdsay = true
+local cmdreset = true
+local cmdorbit = true
+local cmdorbit2 = true
+local cmdunorbit = true
+local cmdgoto = true
+local cmdadmin = true
+local cmdunadmin = true
+local cmdcmds = true
+local cmdtower = true
+local cmduntower = true
+local cmdfix = true
+local cmdfireworks = true
+local cmdfling = true
+local cmdunfling = true
+local cmdwalkfling = true
+local cmdunwalkfling = true
+local cmdexplode = true
+local cmdelevator = true
+local cmdunelevator = true
+local cmdbridge = true
+local cmdunbridge = true
+local cmdnuke = true
+local cmdsit = true
+local cmdunsit = true
+local cmdgravity = true
+local cmdladder = true
+local cmdragdoll = true
+local cmdunragdoll = true
+local cmdsword = true
+local cmdunsword = true
+local cmdshotgun = true
+local cmdgun = true
+local cmdsmite = true
+local cmdfreeze = true
+local cmdnoclip = true
+local cmdclip = true
+local cmdlevitate = true
+local cmdfloathead = true
+local cmdshuffle = true
+local cmdclear = true
+local cmdhaunt = true
+local cmdunhaunt = true
+local cmdblackhole = true
+local cmdunblackhole = true
+local cmderuption = true
+
+local towerbool = nil
+local orbitbool = nil
+local orbit2bool = nil
+local ordercircle = nil
+local distance = nil
+local adminbool = nil
+local flingbool = nil
+local walkflingbool = nil
+local elevatorbool = nil
+local bridgebool = nil
+local ladderbool = nil
+local swordbool = nil
+local shotgunbool = nil
+local gunbool = nil
+local smitebool = nil
+local freezebool = nil
+local noclipping = nil
+local hauntbool = nil
+local blackholebool = nil
+local eruptionbool = nil
+local Admins = {}
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TextChatService = game:GetService("TextChatService")
+local VirtualUser = game:GetService("VirtualUser")
+
+local player = game.Players.LocalPlayer
+local displayName = player.DisplayName
+local user = player.Name
+local offset = math.random(0, 360)
+
+local ownerPlayer = game.Players:FindFirstChild(owner)
+local adminNotConnected = {}
+
+local order
+
+if Use_Displayname then
+  for i, bot in ipairs(bots) do
+    if displayName == bot then
+      order = i
+      break
+    end
+  end
+else
+  for i, bot in ipairs(bots) do
+    if user == bot then
+      order = i
+      break
+    end
+  end
+end
+
+-- don't mess with it
+if order then
+  ordercircle = (360 / numberbot * order)
+end
+
+--disable/enable render (less cpu usage)
+if order and botrender then
+  RunService:Set3dRenderingEnabled(false)
+else
+  RunService:Set3dRenderingEnabled(true)
+end
+
+-- IsOrder
+if not order then
+  if player.Name == owner then
+  else
+    warn("No bot or owner corresponding with: " .. table.concat(bots, ", ") .. " or " .. owner .. " for this instance.")
+    return
+  end
+end
+
+-- Chat message
+local function chatMessage(str)
+  str = tostring(str)
+  if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+    TextChatService.TextChannels.RBXGeneral:SendAsync(str)
+  else
+    game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(str, "All")
+  end
+end
+
+-- make life easy, with this you don't have to type someone's whole name
+local function findPlayerByName(partialName)
+  if partialName:lower() == "me" then
+    return game.Players:FindFirstChild()
+  end
+
+  if partialName:lower() == "random" then
+    local players = game.Players:GetPlayers()
+    if #players > 0 then
+      return players[math.random(1, #players)]
+    end
+  end
+
+  local bestMatch = nil
+  local bestMatchScore = 0
+
+  for _, plr in pairs(game.Players:GetPlayers()) do
+    local nameMatch = plr.Name:lower():find(partialName:lower())
+    local displayNameMatch = plr.DisplayName:lower():find(partialName:lower())
+
+    if nameMatch or displayNameMatch then
+      local score = (nameMatch and #plr.Name or 0) + (displayNameMatch and #plr.DisplayName or 0)
+      if score > bestMatchScore then
+        bestMatchScore = score
+        bestMatch = plr
+      end
+    end
+  end
+
+  return bestMatch
+end
+
+--no more bots flinging away with this
+local function removeVelocity()
+  for _, v in pairs(player.Character:GetDescendants()) do
+      if v:IsA("BasePart") then
+          v.Velocity = Vector3.new(0, 0, 0)
+          v.RotVelocity = Vector3.new(0, 0, 0)
+      elseif v:IsA("BodyVelocity") then
+          v.Velocity = Vector3.new(0, 0, 0)
+      elseif v:IsA("BodyAngularVelocity") then
+          v.AngularVelocity = Vector3.new(0, 0, 0)
+      elseif v:IsA("BodyPosition") then
+          v.Position = v.Position
+      elseif v:IsA("BodyGyro") then
+          v.CFrame = v.CFrame
+      end
+  end
+end
+
+-- this function make the script a bit more smarter | Important
+local function disablebool()
+towerbool = false
+orbitbool = false
+orbit2bool = false
+boolspin = false
+flingbool = false
+elevatorbool = false
+bridgebool = false
+swordbool = false
+ladderbool = false
+shotgunbool = false
+freezebool = false
+hauntbool = false
+blackholebool = false
+eruptionbool = false
+end
+
+-- fix
+local function fix()
+removeVelocity()
+towerbool = false
+orbitbool = false
+orbit2bool = false
+boolspin = false
+flingbool = false
+elevatorbool = false
+bridgebool = false
+swordbool = false
+ladderbool = false
+shotgunbool = false
+walkflingbool = false
+freezebool = false
+hauntbool = false
+blackholebool = false
+eruptionbool = false
+game.Workspace.Gravity = 196.2
+player.Character:BreakJoints()
+end
+
+-- left
+local function left(targetPlayer)
+  if not targetPlayer or not targetPlayer.Character then
+    return
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+    return
+  end
+
+  if player and player.Character then
+    local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    if localHumanoidRootPart then
+
+      removeVelocity()
+      local offset = targetHumanoidRootPart.CFrame.RightVector * -5 * order  -- NEGATIVE IS LEFT, change this if you want it to go right
+      localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + offset
+    end
+  end
+end
+
+-- sit
+local function sit(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid.Sit = true
+  end
+end
+
+-- unsit
+local function unsit(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid.Sit = false
+  end
+end
+
+-- goto
+local function goto(targetPlayer)
+  if not targetPlayer or not targetPlayer.Character then
+    return
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+    return
+  end
+
+  if player and player.Character then
+    local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    if localHumanoidRootPart then
+      removeVelocity()
+      localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + Vector3.new(0, 0, 0)
+    end
+  end
+end
+
+-- clear
+local function clear()
+  if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(".\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\.") 
+  end
+end
+
+-- ladder
+local function ladder(targetPlayer)
+  if ladderConnection then
+      ladderConnection:Disconnect()
+      ladderConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  ladderbool = true
+  
+  local displayName = player.DisplayName
+  local botOrder = table.find(bots, displayName)
+
+  if not botOrder then 
+      return nil
+  end
+
+  local verticalSpacing = 3
+  local verticalOffset = (botOrder - 1) * verticalSpacing
+
+  local frontOffset = 1
+
+  ladderConnection = RunService.Heartbeat:Connect(function()
+      if not ladderbool or not player or not player.Character then
+          if ladderConnection then
+              ladderConnection:Disconnect()
+              ladderConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          local frontPosition = targetCFrame.Position + 
+                                (targetCFrame.LookVector * frontOffset) + 
+                                Vector3.new(0, verticalOffset, 0)
+
+          local rotatedCFrame = CFrame.new(frontPosition) * 
+                                 targetCFrame.Rotation * 
+                                 CFrame.Angles(math.rad(180), 0, 0)
+
+          localHumanoidRootPart.CFrame = rotatedCFrame
+
+          removeVelocity()
+      else
+          if ladderConnection then
+              ladderConnection:Disconnect()
+              ladderConnection = nil
+          end
+      end
+  end)
+
+  return ladderConnection
+end
+
+-- fling
+local function fling(targetPlayer)
+  if player and player.Character then
+    local humanoid = player.Character:FindFirstChild("Humanoid")
+    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    
+    if humanoid and humanoidRootPart then
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+      local Spin = Instance.new("BodyAngularVelocity")
+      Spin.Name = "Spinning"
+      Spin.Parent = humanoidRootPart
+      Spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+      Spin.AngularVelocity = Vector3.new(999999, 999999, 999999)
+      
+      local Velocity = Instance.new("BodyVelocity")
+      Velocity.Name = "Upward"
+      Velocity.Parent = humanoidRootPart
+      Velocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+      Velocity.Velocity = Vector3.new(999999, 999999, 999999)
+
+      flingbool = true
+
+      if targetPlayer then
+        local teleportLoop = game:GetService("RunService").Heartbeat:Connect(function()
+          if not flingbool then
+            teleportLoop:Disconnect()
+            if Spin then
+              Spin:Destroy()
+            end
+            if Velocity then
+              Velocity:Destroy()
+            end
+            return
+          end
+          
+          if targetPlayer.Character then
+            local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if targetHumanoidRootPart then
+              humanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + targetHumanoidRootPart.CFrame.LookVector * 0
+              
+            end
+          end
+        end)
+        
+        task.spawn(function()
+          while targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") and targetPlayer.Character.Humanoid.Health > 0 do
+            task.wait()
+          end
+          teleportLoop:Disconnect()
+          player.Character:BreakJoints()
+          humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+          if humanoid then
+            if Spin then
+              Spin:Destroy()  
+            end
+            if Velocity then
+              Velocity:Destroy()
+            end
+          end
+        end)
+      end
+    end
+  end
+end
+
+-- unfling
+local function unfling()
+  flingbool = false
+  if player and player.Character then
+    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart then
+      local spin = humanoidRootPart:FindFirstChild("Spinning")
+      local velocity = humanoidRootPart:FindFirstChild("Upward")
+      
+      if spin then
+        spin:Destroy()
+      end
+      if velocity then
+        velocity:Destroy()
+      end
+    end
+  end
+end
+
+-- Helper function to get the character's root part
+local function getRoot(char)
+  return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+end
+
+-- walkfling
+local function walkfling()
+  local character = player.Character
+  local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+  local root = getRoot(character)
+
+  if not root or not humanoid then return end
+
+  if walkflingConnection then
+      walkflingConnection:Disconnect()
+      walkflingConnection = nil
+  end
+
+  walkflingbool = true
+
+  walkflingConnection = RunService.Heartbeat:Connect(function()
+      if not walkflingbool or not character or not root then
+          walkflingConnection:Disconnect()
+          walkflingbool = false
+          return
+      end
+
+      local vel = root.Velocity
+
+      root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
+      
+      RunService.RenderStepped:Wait()
+      
+      if character and root then
+          root.Velocity = vel
+      end
+      
+      RunService.Stepped:Wait()
+      
+      if character and root then
+          root.Velocity = vel + Vector3.new(0, 0.1, 0)
+      end
+  end)
+end
+
+-- unwalkfling
+local function unwalkfling()
+  walkflingbool = false
+  
+  if walkflingConnection then
+      walkflingConnection:Disconnect()
+      walkflingConnection = nil
+  end
+end
+
+local function explode(targetPlayer)
+  local player = game.Players.LocalPlayer
+  if not player or not player.Character then return end
+  
+  local humanoid = player.Character:FindFirstChild("Humanoid")
+  local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+  
+  if not humanoid or not humanoidRootPart then return end
+  
+  humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  
+  local isExploding = true
+  local startTime = tick()
+  
+  local function scatterBodyParts()
+    for _, part in pairs(player.Character:GetDescendants()) do
+      if part:IsA("BasePart") and part ~= humanoidRootPart then
+        local randomForce = Vector3.new(
+          math.random(-10, 10),
+          math.random(-10, 10),   
+          math.random(-10, 10)
+        )
+        part.Velocity = randomForce
+      end
+    end
+  end
+  
+  local explosionConnection
+  explosionConnection = game:GetService("RunService").Heartbeat:Connect(function()
+      if not isExploding then 
+          explosionConnection:Disconnect()
+          return 
+      end
+      
+      local elapsedTime = tick() - startTime
+      
+      if targetPlayer and targetPlayer.Character then
+          local targetRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+          
+          if targetRootPart then
+              local offset = targetRootPart.CFrame * CFrame.new(0, 0, 0.01) * CFrame.Angles(0, math.rad(180), 0)
+              humanoidRootPart.CFrame = offset
+          end
+      end
+      
+      if elapsedTime < 0.4 then
+          local spin = Instance.new("BodyAngularVelocity")
+          spin.Name = "ExplodeSpin1"
+          spin.Parent = humanoidRootPart
+          spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+          spin.AngularVelocity = Vector3.new(
+            math.random(50, 100),  
+            math.random(50, 100), 
+            math.random(50, 100)
+          )
+      else
+          local spin = Instance.new("BodyAngularVelocity")
+          spin.Name = "ExplodeSpin2"
+          spin.Parent = humanoidRootPart
+          spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+          spin.AngularVelocity = Vector3.new(250, 250, 250)
+
+          if targetPlayer and targetPlayer.Character then
+              local targetRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+              if targetRootPart then
+                  local flingDirection = (targetRootPart.Position - humanoidRootPart.Position).Unit
+                  humanoidRootPart.Velocity = flingDirection * 10
+              end
+          end
+      end
+  end)
+
+  spawn(function()
+      wait(0.5)
+      
+      if player.Character then
+          scatterBodyParts()
+          player.Character:BreakJoints()
+      end
+
+      isExploding = false
+
+      if humanoidRootPart then
+          local spin1 = humanoidRootPart:FindFirstChild("ExplodeSpin1")
+          local spin2 = humanoidRootPart:FindFirstChild("ExplodeSpin2")
+          
+          if spin1 then spin1:Destroy() end
+          if spin2 then spin2:Destroy() end
+      end
+      
+      if explosionConnection then
+          explosionConnection:Disconnect()
+      end
+  end)
+end
+
+-- firework
+local function fireworks(targetPlayer)
+  if player and player.Character then
+    local humanoid = player.Character:FindFirstChild("Humanoid")
+    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    
+    if humanoid and humanoidRootPart then
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+      
+      local Velocity = Instance.new("BodyVelocity")
+      Velocity.Name = "Upward"
+      Velocity.Parent = humanoidRootPart
+      Velocity.MaxForce = Vector3.new(0, math.huge, 0)
+      
+      local upwardSpeed = 45
+      Velocity.Velocity = Vector3.new(
+        0,
+        upwardSpeed,
+        0
+      )
+      
+      local InitialSpin = Instance.new("BodyAngularVelocity")
+      InitialSpin.Name = "InitialSpinning"
+      InitialSpin.Parent = humanoidRootPart
+      InitialSpin.MaxTorque = Vector3.new(0, math.huge, 0)
+      InitialSpin.AngularVelocity = Vector3.new(0, 25, 0)
+      
+      local Spin = nil
+
+      task.delay(1.9, function()
+        if InitialSpin then InitialSpin:Destroy() end
+        
+        Spin = Instance.new("BodyAngularVelocity")
+        Spin.Name = "Spinning"
+        Spin.Parent = humanoidRootPart
+        Spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        
+        local spinSpeedX = math.random(35, 60)
+        local spinSpeedY = math.random(35, 60)
+        local spinSpeedZ = math.random(35, 60)
+        Spin.AngularVelocity = Vector3.new(spinSpeedX, spinSpeedY, spinSpeedZ)
+      end)
+      
+      task.delay(2.0, function()
+        if humanoid then
+          if Spin then Spin:Destroy() end
+          if Velocity then Velocity:Destroy() end
+          humanoid.Health = 0
+        end
+      end)
+      
+      if targetPlayer and targetPlayer.Character then
+        local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if targetHumanoidRootPart then
+          local botOrder = table.find(bots, player.DisplayName) or 1
+          
+          local heightOffset = 0
+          if botOrder == 1 then
+            heightOffset = 5
+          else
+            heightOffset = 3.5 + ((botOrder - 1) * 2)
+          end
+          
+          local targetPosition = targetHumanoidRootPart.Position + Vector3.new(0, heightOffset, 0)
+          
+          humanoidRootPart.CFrame = CFrame.new(targetPosition)
+        end
+      end
+    end
+  end
+end
+
+-- nuke
+local function nuke(targetPlayer, height, velocity)
+  if not targetPlayer or not targetPlayer.Character then
+      return
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return
+  end
+
+  local spawnPosition = targetHumanoidRootPart.Position + Vector3.new(0, height, 0)
+  local player = Players.LocalPlayer
+  if player and player.Character then
+      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+      if humanoidRootPart and humanoid then
+          humanoid.Sit = true
+          workspace.Gravity = 196.8
+
+          local initialRotation = CFrame.Angles(math.pi, 0, 0)
+          humanoidRootPart.CFrame = CFrame.new(spawnPosition) * initialRotation
+
+          local nukeConnection
+          local spinAngle = 0
+          nukeConnection = RunService.Heartbeat:Connect(function()
+              if not player or not player.Character or not targetPlayer.Character then
+                  workspace.Gravity = 196.8
+                  nukeConnection:Disconnect()
+                  return
+              end
+
+              humanoid.Sit = true
+
+              local targetPosition = targetHumanoidRootPart.Position
+              local currentPosition = humanoidRootPart.Position
+
+              spinAngle = spinAngle + 180
+
+              local newCFrame = CFrame.new(
+                  targetPosition.X, 
+                  currentPosition.Y - 10,
+                  targetPosition.Z
+              ) * CFrame.Angles(math.pi, spinAngle, 0)
+
+              humanoidRootPart.CFrame = newCFrame
+
+              local raycastParams = RaycastParams.new()
+              raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+              raycastParams.FilterDescendantsInstances = {player.Character}
+
+              local raycastResult = workspace:Raycast(
+                  humanoidRootPart.Position, 
+                  Vector3.new(0, -10, 0), 
+                  raycastParams
+              )
+
+              if raycastResult and raycastResult.Distance <= 2.5 then
+                  local teleportConnection
+                  teleportConnection = RunService.Heartbeat:Connect(function()
+                      if not player or not player.Character or not targetPlayer.Character then
+                          workspace.Gravity = 196.8
+                          teleportConnection:Disconnect()
+                          return
+                      end
+
+                      humanoid.Sit = true
+
+                      local teleportCFrame = targetHumanoidRootPart.CFrame * CFrame.new(0, 0, 0) * CFrame.Angles(math.pi, 0, 0)
+                      humanoidRootPart.CFrame = teleportCFrame
+
+                      local spinVelocity = Instance.new("BodyAngularVelocity")
+                      spinVelocity.AngularVelocity = Vector3.new(velocity, velocity, velocity)
+                      spinVelocity.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+                      spinVelocity.Parent = humanoidRootPart
+
+                      local bodyVelocity = Instance.new("BodyVelocity")
+                      bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                      bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                      bodyVelocity.Parent = humanoidRootPart
+
+                      local distanceToTarget = (humanoidRootPart.Position - targetHumanoidRootPart.Position).Magnitude
+                      if distanceToTarget <= 1 then
+                          wait(0.25)
+                          player.Character:BreakJoints()
+
+                          workspace.Gravity = 196.8
+                          nukeConnection:Disconnect()
+                          teleportConnection:Disconnect()
+                      end
+                  end)
+
+                  nukeConnection:Disconnect()
+              end
+          end)
+      end
+  end
+end
+
+-- ragdoll
+local function ragdoll(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  end
+end
+
+-- unragdoll
+local function unragdoll(targetPlayer)
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  if humanoid then
+      humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+  end
+end
+
+-- gravity
+local function setGravity(gravityValue)
+  gravityValue = tonumber(gravityValue) or 196.2
+  game.Workspace.Gravity = gravityValue
+end
+
+-- undance
+local function undance()
+  local character = player.Character
+  if character then
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+              track:Stop()
+          end
+      end
+  end
+end
+
+-- levitate
+local function levitate()
+  local character = player.Character
+  if character then
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          local animation = Instance.new("Animation")
+          animation.AnimationId = "rbxassetid://313762630"
+          local animationTrack = humanoid:LoadAnimation(animation)
+          animationTrack:Play()
+      end
+  end
+end
+
+-- floathead
+local function floathead()
+  local character = player.Character
+  if character then
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          local animation = Instance.new("Animation")
+          animation.AnimationId = "rbxassetid://121572214"
+          local animationTrack = humanoid:LoadAnimation(animation)
+          animationTrack:Play()
+      end
+  end
+end
+
+-- shuffle
+local function shuffle()
+  local character = player.Character
+  if character then
+      local humanoid = character:FindFirstChildOfClass("Humanoid")
+      if humanoid then
+          local animation = Instance.new("Animation")
+          animation.AnimationId = "rbxassetid://429703734"
+          local animationTrack = humanoid:LoadAnimation(animation)
+          animationTrack:Play()
+      end
+  end
+end
+
+-- elevator
+local function elevator(targetPlayer, initialDistance)
+  if elevatorConnection then
+      elevatorConnection:Disconnect()
+      elevatorConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  elevatorbool = true
+  
+  local displayName = player.DisplayName
+  local botOrder = table.find(bots, displayName)
+
+  if not botOrder then 
+      return nil
+  end
+
+  local horizontalSpacing = 1.5
+  local verticalOffset = -3.2
+
+  local horizontalOffset
+  if botOrder == 1 then
+      horizontalOffset = 0
+  else
+      horizontalOffset = (botOrder % 2 == 0) and 
+                         (math.ceil(botOrder/2) * horizontalSpacing) or 
+                         (-math.floor(botOrder/2) * horizontalSpacing)
+  end
+
+  elevatorConnection = RunService.Heartbeat:Connect(function()
+      if not elevatorbool or not player or not player.Character then
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          local desiredPosition = targetCFrame.Position + 
+                                  targetCFrame.RightVector * horizontalOffset + 
+                                  Vector3.new(0, verticalOffset, 0)
+
+          local rotatedCFrame = CFrame.new(desiredPosition) * 
+                                (targetCFrame - targetCFrame.Position) * 
+                                CFrame.Angles(math.rad(90), 0, 0)
+
+          localHumanoidRootPart.CFrame = rotatedCFrame
+      else
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+      end
+  end)
+
+  return elevatorConnection
+end
+
+-- noclip
+local function noclip()
+  Clip = false
+  wait(0.1)
+
+  local function NoclipLoop()
+      if not Clip and player.Character ~= nil then
+          for _, child in pairs(player.Character:GetDescendants()) do
+              if child:IsA("BasePart") and child.CanCollide == true then
+                  child.CanCollide = false
+              end
+          end
+      end
+  end
+
+  Noclipping = RunService.Stepped:Connect(NoclipLoop)
+end
+
+-- clip
+local function clip()
+  if Noclipping then
+      Noclipping:Disconnect()
+  end
+
+  Clip = true
+
+  if player.Character then
+      for _, child in pairs(player.Character:GetDescendants()) do
+          if child:IsA("BasePart") then
+              child.CanCollide = true
+          end
+      end
+  end
+end
+
+-- sword
+local function sword(targetPlayer, initialDistance, subsequentSpacing, velocityMagnitude)
+  if swordConnection then
+      swordConnection:Disconnect()
+      swordConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  swordbool = true
+
+  local displayName = player.DisplayName
+  local botOrder = table.find(bots, displayName)
+
+  if not botOrder then 
+      return nil
+  end
+
+  if velocityMagnitude > 0 then
+      velocityMagnitude = -velocityMagnitude
+  end
+
+  local forwardDistance
+  if botOrder == 1 then
+      forwardDistance = initialDistance
+  else
+      forwardDistance = initialDistance + ((botOrder - 1) * subsequentSpacing)
+  end
+
+  swordConnection = RunService.Heartbeat:Connect(function()
+      if not swordbool or not player or not player.Character then
+          if swordConnection then
+              swordConnection:Disconnect()
+              swordConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          local forwardVector = targetCFrame.LookVector * forwardDistance
+          local desiredPosition = targetCFrame.Position + forwardVector
+
+          local rotatedCFrame = CFrame.lookAt(desiredPosition, targetCFrame.Position) * CFrame.Angles(math.rad(90), 0, 0)
+
+          localHumanoidRootPart.CFrame = rotatedCFrame
+
+          local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
+          
+          localHumanoidRootPart.Velocity = velocityDirection * velocityMagnitude
+      else
+          if swordConnection then
+              swordConnection:Disconnect()
+              swordConnection = nil
+          end
+      end
+  end)
+
+  return swordConnection
+end
+
+
+-- ;freeze
+local function freeze()
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+  local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+  freezebool = true
+
+  if humanoid and humanoidRootPart then
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+
+      humanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+      humanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+
+      local bodyPosition = Instance.new("BodyPosition")
+      bodyPosition.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+      bodyPosition.Position = humanoidRootPart.Position
+      bodyPosition.Parent = humanoidRootPart
+
+      local bodyGyro = Instance.new("BodyGyro")
+      bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+      bodyGyro.CFrame = humanoidRootPart.CFrame
+      bodyGyro.Parent = humanoidRootPart
+  end
+end
+
+-- ;unfreeze
+local function unfreeze()
+  local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+  freezebool = false
+
+  if humanoidRootPart then
+      local bodyPosition = humanoidRootPart:FindFirstChild("BodyPosition")
+      if bodyPosition then
+          bodyPosition:Destroy()
+      end
+
+      local bodyGyro = humanoidRootPart:FindFirstChild("BodyGyro")
+      if bodyGyro then
+          bodyGyro:Destroy()
+      end
+
+      local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+      if humanoid then
+          humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+      end
+  end
+end
+
+-- eruption
+local function eruption(targetPlayer, velocity)
+  if eruptionConnection then
+      eruptionConnection:Disconnect()
+      eruptionConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  eruptionbool = true
+
+  local displayName = player.DisplayName
+  local botIndex = table.find(bots, displayName)
+
+  if not botIndex then 
+      return nil
+  end
+
+  local verticalOffset = -6
+
+  eruptionConnection = RunService.Heartbeat:Connect(function()
+      if not eruptionbool or not player or not player.Character then
+          if eruptionConnection then
+              eruptionConnection:Disconnect()
+              eruptionConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          local desiredPosition = targetCFrame.Position + 
+                                  Vector3.new(0, verticalOffset, 0)
+
+          local finalCFrame = CFrame.new(desiredPosition)
+
+          localHumanoidRootPart.CFrame = finalCFrame
+
+          local randomVelocity = Vector3.new(0, velocity, 0)
+          localHumanoidRootPart.Velocity = randomVelocity
+
+          task.wait(0.01)
+          if localHumanoidRootPart then
+              localHumanoidRootPart.AssemblyAngularVelocity = Vector3.new(math.random(-35, 35), math.random(-35, 35), math.random(-35, 35))
+          end
+
+          local newCFrame = CFrame.new(targetCFrame.Position + Vector3.new(0, verticalOffset, 0))
+          localHumanoidRootPart.CFrame = newCFrame
+
+          local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+          if humanoid then
+              humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+          end
+
+          task.delay(0.5, function()
+              if targetPlayer and targetPlayer.Character and localHumanoid then
+                  localHumanoid.Health = 0
+                  if eruptionConnection then
+                      eruptionConnection:Disconnect()
+                      eruptionConnection = nil
+                  end
+              end
+          end)
+
+      else
+          if eruptionConnection then
+              eruptionConnection:Disconnect()
+              eruptionConnection = nil
+          end
+      end
+  end)
+
+  return eruptionConnection
+end
+
+-- smite
+local function smite(targetPlayer, height, velocity)
+  if smiteConnection then
+      smiteConnection:Disconnect()
+      smiteConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return
+  end
+
+  local targetRoot = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  local targetHumanoid = targetPlayer.Character:FindFirstChild("Humanoid")
+
+  if not targetRoot or not targetHumanoid then
+      return
+  end
+
+  local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+  local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+
+  if not playerRoot or not humanoid then
+      return
+  end
+
+  smitebool = true
+
+  if not table.find(bots, player.DisplayName) then
+      return
+  end
+
+  humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  local verticalOffset = height
+  local appliedVelocity = velocity
+
+  smiteConnection = RunService.Heartbeat:Connect(function()
+      if not smitebool or not player.Character then
+          smiteConnection:Disconnect()
+          smiteConnection = nil
+          return
+      end
+
+      local targetPosition = targetRoot.Position
+      local desiredPosition = targetPosition + Vector3.new(0, verticalOffset, 0)
+      playerRoot.CFrame = CFrame.lookAt(desiredPosition, targetPosition) * CFrame.Angles(math.rad(90), 0, 0)
+      playerRoot.Velocity = (targetPosition - playerRoot.Position).Unit * appliedVelocity  -- Apply custom velocity
+  end)
+
+  task.delay(0.25, function()
+      if targetPlayer and targetPlayer.Character and targetHumanoid then
+          player.Character:BreakJoints()
+      end
+  end)
+end
+
+
+-- shotgun
+local function shotgun(targetPlayer, initialDistance)
+  if shotgunConnection then
+      shotgunConnection:Disconnect()
+      shotgunConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  shotgunbool = true
+  
+  local displayName = player.DisplayName
+  local botOrder = table.find(bots, displayName)
+
+  if not botOrder then 
+      return nil
+  end
+
+  local subsequentSpacing = 2.5
+
+  local forwardDistance
+  if botOrder == 1 then
+      forwardDistance = initialDistance
+  else
+      forwardDistance = initialDistance + ((botOrder - 1) * subsequentSpacing)
+  end
+
+  local initialVelocity = Vector3.new(0, 0, 0)
+  local velocityTimer = nil
+  local stateChangeTimer = nil
+  local sitTimer = nil
+  local unsitTimer = nil
+  local velocityEnabled = false
+
+  shotgunConnection = RunService.Heartbeat:Connect(function()
+      if not shotgunbool or not player or not player.Character then
+          if shotgunConnection then
+              shotgunConnection:Disconnect()
+              shotgunConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          local forwardVector = targetCFrame.LookVector * forwardDistance
+
+          local desiredPosition = targetCFrame.Position + forwardVector
+
+          local rotatedCFrame = CFrame.lookAt(desiredPosition, targetCFrame.Position) * CFrame.Angles(math.rad(90), 0, 0)
+
+          localHumanoidRootPart.CFrame = rotatedCFrame
+
+          local velocityDirection = (targetHumanoidRootPart.Position - localHumanoidRootPart.Position).Unit
+          local velocityMagnitude = -500
+          
+          if velocityEnabled then
+              local currentVelocity = velocityDirection * velocityMagnitude
+              localHumanoidRootPart.Velocity = currentVelocity
+              
+              if initialVelocity.Magnitude == 0 then
+                  initialVelocity = currentVelocity
+              end
+          else
+              localHumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+          end
+
+          if not velocityTimer then
+              velocityTimer = task.delay(3, function()
+                  player.Character:BreakJoints()
+                  
+                  shotgunbool = false
+                  if shotgunConnection then
+                      shotgunConnection:Disconnect()
+                      shotgunConnection = nil
+                  end
+              end)
+          end
+
+          if not sitTimer then
+              sitTimer = task.delay(2, function()
+                  sit()
+              end)
+          end
+
+          if not stateChangeTimer then
+              stateChangeTimer = task.delay(2, function()
+                  if localHumanoid then
+                      localHumanoid:ChangeState(Enum.HumanoidStateType.Seated)
+                  end
+              end)
+          end
+
+          if not unsitTimer then
+              unsitTimer = task.delay(2.5, function()
+                  if localHumanoid then
+                      localHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                      velocityEnabled = true
+                  end
+              end)
+          end
+      else
+          if shotgunConnection then
+              shotgunConnection:Disconnect()
+              shotgunConnection = nil
+          end
+      end
+  end)
+
+  return shotgunConnection
+end
+
+-- ;haunt
+local function haunt(targetPlayer)
+  if not targetPlayer then return nil end
+  
+  if hauntConnection then
+      hauntConnection:Disconnect()
+      hauntConnection = nil
+  end
+
+  hauntbool = true
+  
+  local character = player.Character or player.CharacterAdded:Wait()
+  local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+  local humanoid = character:WaitForChild("Humanoid")
+  local head = character:WaitForChild("Head")
+  
+  if humanoid then
+      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  end
+  
+  local followDistance = -0.1
+  local teleportDistance = -0.1
+  
+  local repulsionRadius = 4
+  local repulsionForce = 5
+  
+  local leaderRootPart = nil
+  
+  local positionVelocity = Vector3.new(0, 0, 0)
+  local springVelocityY = 0
+  local stiffnessX = 2
+  local dampingX = 0.5
+  local stiffnessY = 8
+  local dampingY = 0.2
+  local jumpBoost = 2
+  local bounceFactor = 0.5
+  local raycastLength = 2
+  
+  local originalGravity = game.Workspace.Gravity
+  game.Workspace.Gravity = 0
+  
+  local function findRoot()
+      if targetPlayer and targetPlayer.Character then
+          leaderRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+          return leaderRootPart ~= nil
+      end
+      return false
+  end
+  
+  if not findRoot() then 
+      hauntbool = false
+      return nil
+  end
+  
+  local leaderCFrame = leaderRootPart.CFrame
+  local teleportPosition = leaderCFrame.Position - (leaderCFrame.LookVector * teleportDistance)
+  humanoidRootPart.CFrame = CFrame.new(teleportPosition, leaderRootPart.Position)
+  
+  local lastLeaderY = leaderRootPart.Position.Y
+  
+  local function isTouchingGround()
+      local origin = humanoidRootPart.Position
+      local direction = Vector3.new(0, -raycastLength, 0)
+      local params = RaycastParams.new()
+      params.FilterDescendantsInstances = {character}
+      params.FilterType = Enum.RaycastFilterType.Blacklist
+      
+      local result = game.Workspace:Raycast(origin, direction, params)
+      return result ~= nil
+  end
+  
+  local function checkBotRepulsion()
+      local nearbyParts = game.Workspace:GetPartBoundsInRadius(humanoidRootPart.Position, repulsionRadius)
+      local repulsionVector = Vector3.new(0, 0, 0)
+      
+      for _, part in ipairs(nearbyParts) do
+          local nearbyCharacter = part:FindFirstAncestorOfClass("Model")
+          if nearbyCharacter and nearbyCharacter ~= character then
+              local nearbyRootPart = nearbyCharacter:FindFirstChild("HumanoidRootPart")
+              if nearbyRootPart then
+                  local repulsionDirection = (humanoidRootPart.Position - nearbyRootPart.Position).Unit
+                  local distance = (humanoidRootPart.Position - nearbyRootPart.Position).Magnitude
+                  
+                  local inverseFalloff = math.max(0, 1 - (distance / repulsionRadius))
+                  repulsionVector = repulsionVector + (repulsionDirection * repulsionForce * inverseFalloff)
+              end
+          end
+      end
+      
+      return repulsionVector
+  end
+  
+  hauntConnection = game:GetService("RunService").Heartbeat:Connect(function(dt)
+      if not hauntbool or not player or not player.Character then
+          if hauntConnection then
+              hauntConnection:Disconnect()
+              hauntConnection = nil
+          end
+          game.Workspace.Gravity = originalGravity
+          if humanoid then 
+              humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+          end
+          return
+      end
+      
+      if not findRoot() then
+          hauntbool = false
+          if hauntConnection then
+              hauntConnection:Disconnect()
+              hauntConnection = nil
+          end
+          game.Workspace.Gravity = originalGravity
+          humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+          return
+      end
+      
+      local leaderCFrame = leaderRootPart.CFrame
+      local targetPosition = leaderCFrame.Position - (leaderCFrame.LookVector * followDistance)
+      
+      local displacement = targetPosition - humanoidRootPart.Position
+      
+      local yDisplacement = leaderRootPart.Position.Y - humanoidRootPart.Position.Y
+      local yAcceleration = (yDisplacement * stiffnessY) - (springVelocityY * dampingY)
+      
+      if leaderRootPart.Position.Y > lastLeaderY + 1 then
+          springVelocityY = springVelocityY + jumpBoost
+      end
+      lastLeaderY = leaderRootPart.Position.Y
+      
+      springVelocityY = springVelocityY + yAcceleration * dt
+      
+      if isTouchingGround() and springVelocityY < 0 then
+          springVelocityY = -springVelocityY * bounceFactor
+      end
+      
+      local newY = humanoidRootPart.Position.Y + springVelocityY * dt
+      
+      local repulsionVector = checkBotRepulsion()
+      
+      local acceleration = displacement * stiffnessX - positionVelocity * dampingX
+      positionVelocity = positionVelocity + acceleration * dt + repulsionVector * dt
+      
+      local newPosition = Vector3.new(
+          humanoidRootPart.Position.X + positionVelocity.X * dt, 
+          newY, 
+          humanoidRootPart.Position.Z + positionVelocity.Z * dt
+      )
+      
+      humanoidRootPart.CFrame = CFrame.new(newPosition, leaderRootPart.Position)
+      head.CFrame = CFrame.Lerp(head.CFrame, leaderRootPart.CFrame, 0.1)
+  end)
+  return hauntConnection
+end
+
+-- ;unhaunt
+local function unhaunt()
+    hauntbool = false
+end
+
+-- ;blackhole
+local function blackhole(targetPlayer)
+  if not targetPlayer then return nil end
+  
+  if blackholeConnection then
+      blackholeConnection:Disconnect()
+      blackholeConnection = nil
+  end
+
+  blackholebool = true
+  
+  local character = player.Character or player.CharacterAdded:Wait()
+  local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+  local humanoid = character:WaitForChild("Humanoid")
+  local head = character:WaitForChild("Head")
+  
+  local followDistance = Vector3.new(-0.5, -0.5, -0.5)
+  local teleportDistance = Vector3.new(-0.5, -0.5, -0.5)
+  
+  local repulsionRadius = 5.5
+  local repulsionForce = 5
+  
+  local leaderRootPart = nil
+  
+  local positionVelocity = Vector3.new(0, 0, 0)
+  local springVelocity = Vector3.new(0, 0, 0)
+
+  local stiffness = Vector3.new(3, 3, 3)
+  local damping = Vector3.new(0.8, 0.8, 0.8)
+  local jumpBoost = 5
+  local bounceFactor = 0.8
+  local raycastLength = 1.5
+
+  local originalGravity = game.Workspace.Gravity
+  game.Workspace.Gravity = 0
+
+  if humanoid then
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+  end
+  
+  local function findRoot()
+      if targetPlayer and targetPlayer.Character then
+          leaderRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+          return leaderRootPart ~= nil
+      end
+      return false
+  end
+  
+  if not findRoot() then 
+      blackholebool = false
+      return nil
+  end
+
+  local leaderCFrame = leaderRootPart.CFrame
+  local teleportPosition = leaderCFrame.Position - 
+      (leaderCFrame.RightVector * teleportDistance.X + 
+       leaderCFrame.UpVector * teleportDistance.Y + 
+       leaderCFrame.LookVector * teleportDistance.Z)
+  humanoidRootPart.CFrame = CFrame.new(teleportPosition, leaderRootPart.Position)
+  
+  local lastLeaderPosition = leaderRootPart.Position
+  
+  local function isTouchingGround()
+      local origin = humanoidRootPart.Position
+      local direction = Vector3.new(0, -raycastLength, 0)
+      local params = RaycastParams.new()
+      params.FilterDescendantsInstances = {character}
+      params.FilterType = Enum.RaycastFilterType.Blacklist
+      
+      local result = game.Workspace:Raycast(origin, direction, params)
+      return result ~= nil
+  end
+
+  local function checkBotRepulsion()
+      local nearbyParts = game.Workspace:GetPartBoundsInRadius(humanoidRootPart.Position, repulsionRadius)
+      local repulsionVector = Vector3.new(0, 0, 0)
+      
+      for _, part in ipairs(nearbyParts) do
+          local nearbyCharacter = part:FindFirstAncestorOfClass("Model")
+          if nearbyCharacter and nearbyCharacter ~= character then
+              local nearbyRootPart = nearbyCharacter:FindFirstChild("HumanoidRootPart")
+              if nearbyRootPart then
+                  local repulsionDirection = (humanoidRootPart.Position - nearbyRootPart.Position).Unit
+                  local distance = (humanoidRootPart.Position - nearbyRootPart.Position).Magnitude
+
+                  local inverseFalloff = math.max(0, 1 - math.exp(-distance/repulsionRadius))
+                  repulsionVector = repulsionVector + (repulsionDirection * repulsionForce * inverseFalloff * 0.5)
+              end
+          end
+      end
+      
+      return repulsionVector
+  end
+  
+  blackholeConnection = game:GetService("RunService").Heartbeat:Connect(function(dt)
+      if not blackholebool or not player or not player.Character then
+          if blackholeConnection then
+              blackholeConnection:Disconnect()
+              blackholeConnection = nil
+          end
+          game.Workspace.Gravity = originalGravity
+          if humanoid then humanoid.Sit = false end
+          return
+      end
+      
+      if not findRoot() then
+          blackholebool = false
+          if blackholeConnection then
+              blackholeConnection:Disconnect()
+              blackholeConnection = nil
+          end
+          game.Workspace.Gravity = originalGravity
+          humanoid.Sit = false
+          return
+      end
+      
+      local leaderCFrame = leaderRootPart.CFrame
+      local targetPosition = leaderCFrame.Position - 
+          (leaderCFrame.RightVector * followDistance.X + 
+           leaderCFrame.UpVector * followDistance.Y + 
+           leaderCFrame.LookVector * followDistance.Z)
+      
+      local displacement = targetPosition - humanoidRootPart.Position
+      
+      local acceleration = Vector3.new(
+          displacement.X * stiffness.X - positionVelocity.X * damping.X,
+          displacement.Y * stiffness.Y - positionVelocity.Y * damping.Y,
+          displacement.Z * stiffness.Z - positionVelocity.Z * damping.Z
+      )
+
+      local positionDelta = leaderRootPart.Position - lastLeaderPosition
+      if math.abs(positionDelta.Y) > 1.5 then
+          springVelocity = springVelocity + Vector3.new(0, jumpBoost * 1.5, 0)
+      end
+      lastLeaderPosition = leaderRootPart.Position
+
+      local repulsionVector = checkBotRepulsion()
+      positionVelocity = positionVelocity + acceleration * dt + repulsionVector * dt
+
+      if isTouchingGround() then
+          if positionVelocity.Y < 0 then
+              positionVelocity = Vector3.new(
+                  positionVelocity.X, 
+                  -positionVelocity.Y * bounceFactor, 
+                  positionVelocity.Z
+              )
+          end
+      end
+
+      local newPosition = humanoidRootPart.Position + positionVelocity * dt
+      
+      humanoidRootPart.CFrame = CFrame.new(newPosition, leaderRootPart.Position)
+      head.CFrame = CFrame.Lerp(head.CFrame, leaderRootPart.CFrame, 0.2)
+  end)
+  return blackholeConnection
+end
+
+-- ;unblackhole
+local function unblackhole()
+    blackholebool = false
+end
+
+-- ;elevator
+local function elevator(targetPlayer)
+  if elevatorConnection then
+      elevatorConnection:Disconnect()
+      elevatorConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  elevatorbool = true
+  
+  local displayName = player.DisplayName
+  local botOrder = table.find(bots, displayName)
+
+  if not botOrder then 
+      return nil
+  end
+
+  local horizontalSpacing = 0
+  local verticalOffset = -2.5
+
+  local horizontalOffset
+  if botOrder == 1 then
+      horizontalOffset = 0
+  else
+      horizontalOffset = (botOrder % 2 == 0) and 
+                         (math.ceil(botOrder/2) * horizontalSpacing) or 
+                         (-math.floor(botOrder/2) * horizontalSpacing)
+  end
+
+  elevatorConnection = RunService.Heartbeat:Connect(function()
+      if not elevatorbool or not player or not player.Character then
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          local desiredPosition = targetCFrame.Position + 
+                                  targetCFrame.RightVector * horizontalOffset + 
+                                  Vector3.new(0, verticalOffset, 0)
+
+          local rotatedCFrame = CFrame.new(desiredPosition) * 
+                                (targetCFrame - targetCFrame.Position) * 
+                                CFrame.Angles(math.rad(90), 0, 0)
+
+          localHumanoidRootPart.CFrame = rotatedCFrame
+
+          removeVelocity()
+      else
+          if elevatorConnection then
+              elevatorConnection:Disconnect()
+              elevatorConnection = nil
+          end
+      end
+  end)
+
+  return elevatorConnection
+end
+
+-- ;bridge
+local function bridge(targetPlayer)
+  if bridgeConnection then
+      bridgeConnection:Disconnect()
+      bridgeConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return nil
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return nil
+  end
+
+  bridgebool = true
+
+  local displayName = player.DisplayName
+  local botOrder = table.find(bots, displayName)
+
+  if not botOrder then 
+      return nil
+  end
+
+  local baseForwardDistance = 2.5
+  local forwardDistance = baseForwardDistance * (botOrder * 2)
+
+  bridgeConnection = RunService.Heartbeat:Connect(function()
+      if not bridgebool or not player or not player.Character then
+          if bridgeConnection then
+              bridgeConnection:Disconnect()
+              bridgeConnection = nil
+          end
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      local localHumanoid = player.Character:FindFirstChild("Humanoid")
+
+      if localHumanoidRootPart and targetHumanoidRootPart and localHumanoid then
+          local targetCFrame = targetHumanoidRootPart.CFrame
+
+          local forwardVector = targetCFrame.LookVector * forwardDistance
+
+          local desiredPosition = targetCFrame.Position + forwardVector
+
+          local rotatedCFrame = CFrame.lookAt(desiredPosition, targetCFrame.Position) * CFrame.Angles(math.rad(90), 0, 0)
+
+          localHumanoidRootPart.CFrame = rotatedCFrame
+
+          removeVelocity()
+      else
+          if bridgeConnection then
+              bridgeConnection:Disconnect()
+              bridgeConnection = nil
+          end
+      end
+  end)
+
+  return bridgeConnection
+end
+
+-- ;unbridge
+local function unbridge()
+  if bridgeConnection then
+      bridgeConnection:Disconnect()
+      bridgeConnection = nil
+  end
+end
+
+-- ;tower
+local function tower(targetPlayer)
+  if not targetPlayer or not targetPlayer.Character then
+
+      return
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return
+  end
+
+  towerbool = true
+
+  local heartbeatConnection
+  heartbeatConnection = RunService.Heartbeat:Connect(function()
+      if not towerbool or not targetHumanoidRootPart or not targetPlayer.Character then
+          heartbeatConnection:Disconnect()
+          return
+      end
+
+      if player and player.Character then
+          local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+          if localHumanoidRootPart then
+              local offset = targetHumanoidRootPart.CFrame.UpVector * 5 * order
+              localHumanoidRootPart.CFrame = targetHumanoidRootPart.CFrame + offset
+
+              removeVelocity()
+          end
+      end
+  end)
+end
+
+-- ;spin from IY
+local function spin(spinSpeed)
+  local character = player.Character or player.CharacterAdded:Wait()
+
+  local root = character:FindFirstChild("HumanoidRootPart")
+
+  if root then
+    local existingSpin = root:FindFirstChild("Spinning")
+    if existingSpin then
+      existingSpin:Destroy()
+    end
+
+    local Spin = Instance.new("BodyAngularVelocity")
+    Spin.Name = "Spinning"
+    Spin.Parent = root
+    Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+    Spin.AngularVelocity = Vector3.new(0, spinSpeed, 0)
+
+    while boolspin do
+      wait(0.1)
+    end
+
+    Spin:Destroy()
+  end
+end
+
+-- ;orbit
+local function orbit(targetPlayer, speed, radius)
+  if currentOrbitConnection then
+    currentOrbitConnection:Disconnect()
+    currentOrbitConnection = nil
+  end
+
+  if not targetPlayer or not targetPlayer.Character then
+      return
+  end
+
+  local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+  if not targetHumanoidRootPart then
+      return
+  end
+
+  orbitbool = true
+  
+  if radius == 0 then
+    radius = 0.0001
+  end
+
+  local botOrder = order or 1
+
+  local initialAngle = (360 / numberbot) * (botOrder - 1)
+  
+  currentOrbitConnection = RunService.Heartbeat:Connect(function()
+      if not orbitbool or not player or not player.Character then
+          if currentOrbitConnection then
+              currentOrbitConnection:Disconnect()
+              currentOrbitConnection = nil
+          end
+          game.Workspace.Gravity = 196.2
+          return
+      end
+
+      local localHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+      
+      if localHumanoidRootPart and targetHumanoidRootPart then
+          initialAngle = initialAngle + speed
+          
+          local x = radius * math.cos(math.rad(initialAngle))
+          local z = radius * math.sin(math.rad(initialAngle))
+
+          local orbitPosition = targetHumanoidRootPart.Position + Vector3.new(x, 0, z)
+
+          localHumanoidRootPart.CFrame = CFrame.new(orbitPosition, targetHumanoidRootPart.Position)
+
+          game.Workspace.Gravity = 0
+          
+          removeVelocity()
+      else
+          if currentOrbitConnection then
+              currentOrbitConnection:Disconnect()
+              currentOrbitConnection = nil
+          end
+          game.Workspace.Gravity = 196.2
+      end
+  end)
+end
+
+-- check chat for cmds
+local function connectChatListener(playerpower)
+  playerpower.Chatted:Connect(function(message)
+  if playerpower.Name == owner or table.find(Admins, playerpower.Name) then
+    if message:sub(1, #prefix) == prefix then
+      local command = message:sub(#prefix + 1)
+      if command == "status" and cmdstatus and table.find(bots, displayName) then
+        chatMessage(" (Bot " .. order .. ") is online!")
+        wait(2)
+
+      elseif command:sub(1, 6) == "admin" and table.find(bots, displayName) and cmdadmin then
+        if playerpower.Name == owner then
+            local adminargs = command:sub(7)
+            local targetPlayerforadmin = findPlayerByName(adminargs)
+        
+            if targetPlayerforadmin then
+                if not table.find(Admins, targetPlayerforadmin.Name) then
+                    table.insert(Admins, targetPlayerforadmin.Name)
+                    table.insert(adminNotConnected, targetPlayerforadmin.Name)
+                    
+                    local existingPlayer = game.Players:FindFirstChild(targetPlayerforadmin.Name)
+                    if existingPlayer then
+                        connectChatListener(existingPlayer)
+                    end
+                    
+                    if order == 1 then
+                        chatMessage(targetPlayerforadmin.Name .. ' is now an admin.')
+                        wait(1)
+                        chatMessage("Type ;cmds for a list of commands")
+                    end
+                else
+                    if order == 1 then
+                        chatMessage(targetPlayerforadmin.Name .. ' is already an admin.')
+                    end
+                end
+            else
+                if order == 1 then
+                    chatMessage("Player not found.")
+                end
+            end
+        else
+            if order == 1 then
+                chatMessage("Only the owner can use this command.")
+            end
+        end
+        wait(2)
+    
+    elseif command:sub(1, 8) == "unadmin " and table.find(bots, displayName) and cmdunadmin then
+        if playerpower.Name == owner then
+            local unadminargs = command:sub(9)
+            local targetPlayerforunadmin = findPlayerByName(unadminargs)
+        
+            if targetPlayerforunadmin then
+                local adminOrder = table.find(Admins, targetPlayerforunadmin.Name)
+                if adminOrder then
+                    table.remove(Admins, adminOrder)
+                    
+                    local notConnectedOrder = table.find(adminNotConnected, targetPlayerforunadmin.Name)
+                    if notConnectedOrder then
+                        table.remove(adminNotConnected, notConnectedOrder)
+                    end
+                    
+                    if order == 1 then
+                        chatMessage(targetPlayerforunadmin.Name .. ' is no longer an admin.')
+                    end
+                else
+                    if order == 1 then
+                        chatMessage(targetPlayerforunadmin.Name .. ' is not an admin.')
+                    end
+                end
+            else
+                if order == 1 then
+                    chatMessage("Player not found.")
+                end
+            end
+        else
+            if order == 1 then
+                chatMessage("Only the owner can use this command.")
+            end
+        end
+        wait(2)
+    
+    elseif command == "end" and table.find(bots, displayName) and cmdend then
+        -- Important
+        if playerpower.Name == owner then
+            cmdstatus = false
+            cmdargs = false
+            cmdorder = false
+            cmdend = false
+            cmdorbit = false
+            cmdorbit2 = false
+            orbitbool = false
+            orbit2bool = false
+            cmddance = false
+            cmdundance = false
+            cmdreset = false
+            cmdjump = false
+            cmdsay = false
+            cmdreset = false
+            cmdgoto = false
+            cmdadmin = false
+            adminbool = false
+            cmdcmds = false
+            towerbool = false
+            cmdtower = false
+            cmduntower = false
+            cmdfix = false
+            cmdfling = false
+            flingbool = false
+            cmdexplode = false
+            cmdelevator = false
+            elevatorbool = false
+            cmdbridge = false
+            bridgebool = false
+            cmdunbridge = false
+            cmdfireworks = false
+            cmdnuke = false
+            cmdgravity = false
+            cmdsit = false
+            cmdladder = false
+            ladderbool = false
+            cmdragdoll = false
+            cmdunragdoll = false
+            cmdsword = false
+            cmdunsword = false
+            swordbool = false
+            cmdshotgun = false
+            shotgunbool = false
+            cmdgun = false
+            gunbool = false
+            walkflingbool = false
+            cmdwalkfling = false
+            cmdunwalkfling = false
+            cmdsmite = false
+            smitebool = false
+            cmdfreeze = false
+            cmdunfreeze = false
+            freezebool = false
+            cmdlevitate = false
+            cmdfloathead = false
+            cmdshuffle = false
+            cmdclear = false
+            cmdhaunt = false
+            cmdunhaunt = false
+            hauntbool = false
+            cmdblackhole = false
+            cmdunblackhole = false
+            blackholebool = false
+            cmderuption = false
+            eruptionbool = false
+            Admins = {}
+            adminNotConnected = {}
+            chatMessage("Ended Script.")
+            wait(2)
+        end
+
+      elseif command == "order" and cmdorder and table.find(bots, displayName) and cmdorder then
+        chatMessage("(" .. order .. ")")
+        wait(2)
+      
+      elseif command:sub(1, 8) == "untower" and cmduntower and table.find(bots, displayName) and cmduntower then
+        towerbool = false
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance1" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance1")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance2" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance2")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance3" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance3")
+        wait(2)
+
+      elseif command:sub(1, 7) == "dance4" and table.find(bots, displayName) and cmddance then
+        chatMessage("/e dance4")
+        wait(2)
+      
+      elseif command:sub(1, 5) == "cmds" and table.find(bots, displayName) and cmdcmds then
+        if order == 1 then
+            chatMessage("status | args | order | end | dance<n> | undance | reset | jump | say (text) | orbit (p) <r> <s>")
+            chatMessage("orbit2 (p) <r> <s> | unorbit | goto (p) | spin <n> | unspin | admin (p) | cmds | firework (op)")
+            chatMessage("elevator (p) | explode (op) | fling (p) | bridge (p) | nuke (p) | gravity <n> | sit | unsit")
+            chatMessage("ladder (p) | ragdoll | unragdoll | sword (p) <d> <sp> <v> | unsword | shotgun (p) <d> | smite (p)")
+            chatMessage("walkfling | unwalkfling | clear | shuffle | floathead | levitate | haunt (p) | blackhole (p) | eruption (p) <v>")
+        end
+        wait(2)
+
+      elseif command:sub(1, 5) == "args" and table.find(bots, displayName) and cmdargs then
+        if order == 1 then
+          chatMessage(getgenv().prefix  .. " = prefix | (p) = person | (op) = optional player | <r> = radius | <s> = speed | <n> = number | <d> = distance | <sp> = spacing | <v> = velocity | <t> = time")
+        end
+        wait(2)
+
+      elseif command:sub(1, 5) == "spin " and table.find(bots, displayName) and cmdspin then
+        local spinarg = tonumber(command:sub(6))
+        spin(spinarg)
+        boolspin = true
+        wait(2)
+
+      elseif command == "clear" and table.find(bots, displayName) and cmdclear then
+        clear()
+        wait(2)
+
+      elseif command:sub(1, 8) == "ragdoll" and table.find(bots, displayName) and cmdragdoll then
+        ragdoll()
+        wait(2)
+    
+      elseif command:sub(1, 10) == "unragdoll" and table.find(bots, displayName) and cmdunragdoll then
+        unragdoll()
+        wait(2)
+
+      elseif command == "sit" and table.find(bots, displayName) and cmdsit then
+        sit()
+        wait(2)
+    
+    elseif command == "unsit" and table.find(bots, displayName) then
+        unsit()
+        wait(2)
+
+      elseif command:sub(1, 7) == "undance" and table.find(bots, displayName) and cmddance then
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        undance()
+        wait(2)
+
+      elseif command == "noclip" and table.find(bots, displayName) and cmdnoclip then
+        noclip()
+        wait(2)
+    
+      elseif command == "clip" and table.find(bots, displayName) and cmdclip then
+        clip()
+        wait(2)
+
+      elseif command:sub(1, 4) == "say " and table.find(bots, displayName) and cmdsay then
+        local msgcontent = command:sub(5)
+        chatMessage(msgcontent)
+        wait(2)
+
+      elseif command:sub(1, 4) == "fix" and table.find(bots, displayName) and cmdfix then
+        fix()
+        wait(2)
+
+      elseif command:sub(1, 4) == "jump" and table.find(bots, displayName) and cmdjump then
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        wait(2)
+
+      elseif command:sub(1, 6) == "haunt " and cmdhaunt and table.find(bots, displayName) and cmdhaunt then
+          disablebool()
+          local playerName = command:sub(7)
+          local targetPlayer = findPlayerByName(playerName)
+          if targetPlayer then
+              haunt(targetPlayer)
+          end
+          wait(2)
+
+      elseif command == "unhaunt" and cmdunhaunt and table.find(bots, displayName) and cmdunhaunt then
+        unhaunt()
+        wait(2)
+
+      elseif command:sub(1, 9) == "blackhole" and cmdblackhole and table.find(bots, displayName) and cmdblackhole then
+        disablebool()
+        local playerName = command:sub(11)
+        local targetPlayer = findPlayerByName(playerName)
+        
+        if targetPlayer then
+            blackhole(targetPlayer)
+            wait(2)
+        end
+    
+      elseif command == "unblackhole" and table.find(bots, displayName) and cmdunblackhole then
+        blackholebool = false
+        wait(2)
+
+      elseif command:sub(1, 5) == "fling" and table.find(bots, displayName) and cmdfling then
+          disablebool()
+          local playerName = command:sub(7)
+          local targetPlayer = findPlayerByName(playerName)
+          if targetPlayer then
+            fling(targetPlayer)
+            wait(2)
+          end
+        
+        elseif command == "unfling" and table.find(bots, displayName) and cmdunfling then
+          flingbool = false
+          wait(2)
+          
+        elseif command == "walkfling" and table.find(bots, displayName) and cmdwalkfling then
+          disablebool()
+          walkfling()
+          wait(2)
+      
+        elseif command == "unwalkfling" and table.find(bots, displayName) and cmdunwalkfling then
+          walkflingbool = false
+          wait(2)
+
+        elseif command:sub(1, 5) == "sword" and table.find(bots, displayName) and cmdsword then
+          disablebool()
+          local args = command:sub(7):split(" ")
+          
+          local targetName = args[1]
+          local initialDistance = tonumber(args[2]) or 20
+          local subsequentSpacing = tonumber(args[3]) or 5
+          local velocityMagnitude = tonumber(args[4]) or -500
+      
+          local targetPlayer = findPlayerByName(targetName)
+      
+          if targetPlayer then
+              sword(targetPlayer, initialDistance, subsequentSpacing, velocityMagnitude)
+              wait(2)
+          end      
+
+        elseif command:sub(1, 7) == "shotgun" and table.find(bots, displayName) and cmdshotgun then
+          disablebool()
+          local args = command:sub(9):split(" ")
+          local targetName = args[1]
+          local initialDistance = tonumber(args[2]) or 9
+      
+          local targetPlayer = findPlayerByName(targetName)
+      
+          if targetPlayer then
+              shotgun(targetPlayer, initialDistance)
+              wait(2)
+          end
+
+        elseif command:sub(1, 5) == "smite" and table.find(bots, displayName) and cmdsmite then
+          disablebool()
+          local args = command:sub(7):split(" ")
+
+          local targetName = args[1]
+
+          local height = tonumber(args[2]) or 100
+      
+          local velocity = tonumber(args[3]) or 500
+      
+          local targetPlayer = findPlayerByName(targetName)
+      
+          if targetPlayer then
+              smite(targetPlayer, height, velocity)
+              wait(2)
+          end
+
+        elseif command:sub(1, 8) == "eruption" and table.find(bots, displayName) and cmderuption then
+          disablebool()
+          local args = command:sub(10):split(" ")
+        
+          local targetName = args[1]
+          local velocityMagnitude = tonumber(args[2]) or 100
+        
+          local targetPlayer = findPlayerByName(targetName)
+        
+          if targetPlayer then
+              eruption(targetPlayer, velocityMagnitude)
+              wait(2)
+          end
+
+        elseif command:sub(1, 6) == "bridge" and table.find(bots, displayName) and cmdbridge then
+          disablebool()
+          local targetName = command:sub(8)
+          local targetPlayer = findPlayerByName(targetName)
+          
+          if targetPlayer then
+              bridge(targetPlayer)
+              wait(2)
+          end
+      
+        elseif command:sub(1, 8) == "unbridge" and table.find(bots, displayName) then
+          bridgebool = false
+          if bridgeConnection then
+              bridgeConnection:Disconnect()
+              bridgeConnection = nil
+          end
+          wait(2)
+
+        elseif command == "freeze" and table.find(bots, displayName) and cmdfreeze then
+          disablebool()
+          freeze()
+          wait(2)
+      
+        elseif command == "unfreeze" and table.find(bots, displayName) then
+          unfreeze()
+          wait(2)
+
+      elseif command:sub(1, 7) == "gravity" and table.find(bots, displayName) then
+        local args = command:split(" ")
+        local gravityValue = args[2]
+
+        setGravity(gravityValue)
+        wait(2)
+
+      elseif command == "levitate" and table.find(bots, displayName) and cmdlevitate then
+        levitate()
+        wait(2)
+
+      elseif command == "floathead" and table.find(bots, displayName) and cmdfloathead then
+        floathead()
+        wait(2)
+
+      elseif command == "shuffle" and table.find(bots, displayName) and cmdshuffle then
+        shuffle()
+        wait(2)
+
+      elseif command:sub(1, 6) == "ladder" and table.find(bots, displayName) and cmdladder then
+        disablebool()
+        local playerName = command:sub(8)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+            ladder(targetPlayer)
+            wait(2)
+        end
+
+      elseif command:sub(1, 9) == "elevator " and table.find(bots, displayName) and cmdelevator then
+        disablebool()
+        local playerName = command:sub(10)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          elevatorbool = true
+          elevator(targetPlayer)
+        else
+          elevator()
+        end
+        wait(2)
+
+      elseif command:sub(1, 10) == "unelevator" and table.find(bots, displayName) and cmdunelevator then
+        unelevator()
+        wait(2)
+
+      elseif command:sub(1, 8) == "firework" and table.find(bots, displayName) and cmdfireworks then
+        disablebool()
+        local playerName = command:sub(10)
+        local targetPlayer = playerName ~= "" and findPlayerByName(playerName) or nil
+        
+        fireworks(targetPlayer)
+        wait(2)
+
+      elseif command:sub(1, 7) == "explode" and table.find(bots, displayName) and cmdexplode then
+        disablebool()
+        local playerName = command:sub(9)
+        local targetPlayer = findPlayerByName(playerName)
+        
+        if command:sub(8,8) == " " and targetPlayer then
+            explode(targetPlayer)
+        else
+            explode()
+        end
+        wait(2)
+
+      elseif command:sub(1, 5) == "nuke " and table.find(bots, displayName) and cmdnuke then
+        disablebool()
+        local args = command:sub(6):split(" ")
+
+        local playerName = args[1]
+
+        local height = tonumber(args[2]) or 500
+
+        local velocity = tonumber(args[3]) or 125
+    
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+            nuke(targetPlayer, height, velocity)
+            wait(2)
+        end
+    
+      elseif command:sub(1, 5) == "orbit" and table.find(bots, displayName) and cmdorbit then
+        disablebool()
+        local args = command:sub(7):split(" ")
+        local targetName = args[1]
+        local radius = tonumber(args[2]) or 10
+        local speed = tonumber(args[3]) or 2
+        
+        local targetPlayer = findPlayerByName(targetName)
+        
+        if targetPlayer then
+            orbit(targetPlayer, speed, radius)
+            wait(2)
+        end
+
+      elseif command:sub(1, 9) == "unorbit" and table.find(bots, displayName) and cmdunorbit then
+        orbitbool = false
+        orbit2bool = false
+
+        game.Workspace.Gravity = 196.2
+        wait(2)
+
+      elseif command:sub(1, 5) == "goto " and table.find(bots, displayName) and cmdgoto then
+        disablebool()
+          local playerName = command:sub(6)
+          local targetPlayer = findPlayerByName(playerName)
+          if targetPlayer then
+            goto(targetPlayer)
+            wait(2)
+          end
+
+    elseif command:sub(1, 6) == "tower " and table.find(bots, displayName) and cmdtower then
+      disablebool()
+        local playerName = command:sub(7)
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+          tower(targetPlayer)
+          wait(2)
+        end
+          
+    elseif command == "reset" and table.find(bots, displayName) and cmdreset then
+      disablebool()
+      local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+          humanoid:ChangeState(Enum.HumanoidStateType.Dead)
+        end
+        wait(2)
+      end
+    end
+  end
+ end)
+end
+
+--listen to players
+player.Chatted:Connect(function(message)
+
+end)
+
+--listen to owner
+if ownerPlayer then
+  connectChatListener(ownerPlayer)
+end
+
+--listen to admins
+while adminbool do
+  for _, adminName in pairs(adminNotConnected) do
+    local adminPlayer = game.Players:FindFirstChild(adminName)
+    if adminPlayer then
+      connectChatListener(adminPlayer)
+      table.remove(adminNotConnected, table.find(adminNotConnected, adminName))
+    end
+  end
+  wait(2)
+end
+
+--listen to admins
+game.Players.PlayerAdded:Connect(function(player)
+if table.find(Admins, player.Name) then
+  connectChatListener(player)
+end
+end)
