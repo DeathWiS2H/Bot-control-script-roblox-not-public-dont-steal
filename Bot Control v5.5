@@ -2472,13 +2472,12 @@ local function connectChatListener(playerpower)
         end
         wait(2)
           
-    elseif command == "reset" and table.find(bots, displayName) and cmdreset then
-      disablebool()
-      local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+      elseif command == "reset" and table.find(bots, displayName) and cmdreset then
+        disablebool()
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
         if humanoid then
           humanoid:ChangeState(Enum.HumanoidStateType.Dead)
         end
-        wait(2)
       end
     end
   end
