@@ -246,6 +246,7 @@ walkflingbool = false
 freezebool = false
 hauntbool = false
 eruptionbool = false
+stareatbool = false
 game.Workspace.Gravity = 196.2
 player.Character:BreakJoints()
 end
@@ -2159,7 +2160,6 @@ local function connectChatListener(playerpower)
         local args = command:sub(6):split(" ")
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
-          
         local targetPlayer = findPlayerByName(targetName)
           
         if targetPlayer then
@@ -2171,7 +2171,6 @@ local function connectChatListener(playerpower)
         local args = command:sub(7):split(" ")
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
-        
         local targetPlayer = findPlayerByName(targetName)
         
         if targetPlayer then
@@ -2183,7 +2182,6 @@ local function connectChatListener(playerpower)
         local args = command:sub(4):split(" ")
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
-      
         local targetPlayer = findPlayerByName(targetName)
       
         if targetPlayer then
@@ -2195,7 +2193,6 @@ local function connectChatListener(playerpower)
         local args = command:sub(6):split(" ")
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
-      
         local targetPlayer = findPlayerByName(targetName)
       
         if targetPlayer then
@@ -2383,7 +2380,7 @@ local function connectChatListener(playerpower)
         local playerName = command:sub(8)
         local targetPlayer = findPlayerByName(playerName)
         if targetPlayer then
-            ladder(targetPlayer)
+          ladder(targetPlayer)
         end
 
       elseif command == "unladder" and table.find(bots, displayName) and cmdunladder then
@@ -2415,9 +2412,9 @@ local function connectChatListener(playerpower)
         local targetPlayer = findPlayerByName(playerName)
         
         if command:sub(8,8) == " " and targetPlayer then
-            explode(targetPlayer)
+          explode(targetPlayer)
         else
-            explode()
+          explode()
         end
 
       elseif command:sub(1, 5) == "nuke " and table.find(bots, displayName) and cmdnuke then
@@ -2442,7 +2439,7 @@ local function connectChatListener(playerpower)
         local targetPlayer = findPlayerByName(targetName)
         
         if targetPlayer then
-            orbit(targetPlayer, speed, radius)
+          orbit(targetPlayer, speed, radius)
         end
 
       elseif command:sub(1, 9) == "unorbit" and table.find(bots, displayName) and cmdunorbit then
@@ -2450,7 +2447,6 @@ local function connectChatListener(playerpower)
         orbit2bool = false
 
         game.Workspace.Gravity = 196.2
-        wait(2)
 
       elseif command:sub(1, 5) == "goto " and table.find(bots, displayName) and cmdgoto then
         disablebool()
@@ -2460,7 +2456,6 @@ local function connectChatListener(playerpower)
         if targetPlayer then
           goto(targetPlayer)
         end
-        wait(2)
 
       elseif command:sub(1, 6) == "tower " and table.find(bots, displayName) and cmdtower then
         disablebool()
@@ -2470,7 +2465,6 @@ local function connectChatListener(playerpower)
         if targetPlayer then
           tower(targetPlayer)
         end
-        wait(2)
           
       elseif command == "reset" and table.find(bots, displayName) and cmdreset then
         disablebool()
