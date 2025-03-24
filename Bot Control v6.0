@@ -1002,30 +1002,23 @@ local function copyanim(targetPlayer, speed)
 
   if not targetHumanoid or not speakerHumanoid then
       return
-  end
 
-  -- Stop current animations for the speaker's character
   for _, animTrack in pairs(speakerHumanoid:GetPlayingAnimationTracks()) do
       animTrack:Stop()
   end
   
-  -- Find and copy animations from the target player
   for _, targetAnimTrack in pairs(targetHumanoid:GetPlayingAnimationTracks()) do
-      -- Exclude default idle animation
       if not string.find(targetAnimTrack.Animation.AnimationId, "507768375") then
           local copiedAnim = speakerHumanoid:LoadAnimation(targetAnimTrack.Animation)
 
           local animSpeed = speed
           copiedAnim:Play(0.1, 1, targetAnimTrack.Speed * animSpeed)
           
-          -- Sync time position
           copiedAnim.TimePosition = targetAnimTrack.TimePosition
           
           task.spawn(function()
-              -- Wait for the original animation to stop
               targetAnimTrack.Stopped:Wait()
-              
-              -- Stop and destroy the copied animation
+
               copiedAnim:Stop()
               copiedAnim:Destroy()
           end)
@@ -1042,20 +1035,15 @@ local function fakeout()
       
       if root then
           local oldpos = root.CFrame
-          
-          -- Set destroy height to a very low value
+
           workspace.FallenPartsDestroyHeight = 0/1/0
-          
-          -- Teleport character down
+
           root.CFrame = CFrame.new(Vector3.new(0, OrgDestroyHeight - 25, 0))
-          
-          -- Wait a moment
+
           wait(1)
           
-          -- Restore original position
           root.CFrame = oldpos
-          
-          -- Restore original destroy height
+
           workspace.FallenPartsDestroyHeight = OrgDestroyHeight
       end
   end
@@ -1221,20 +1209,17 @@ local function grabtools()
   
   grabtoolsbool = true
   local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-  
-  -- Grab existing tools in workspace
+
   for _, child in ipairs(workspace:GetChildren()) do
       if child:IsA("Tool") and child:FindFirstChild("Handle") then
           humanoid:EquipTool(child)
       end
   end
 
-  -- Disconnect previous connection if exists
   if grabToolsConnection then 
       grabToolsConnection:Disconnect() 
   end
 
-  -- Create a new connection to grab newly dropped tools
   grabToolsConnection = workspace.ChildAdded:Connect(function(child)
       if not grabtoolsbool then return end
       
@@ -1278,7 +1263,6 @@ end
 local function usetool(slotNumber)
   local Backpack = Players.LocalPlayer:FindFirstChildOfClass("Backpack")
 
-  -- Get tools in the order they appear in the backpack
   local tools = {}
   for _, tool in ipairs(Backpack:GetChildren()) do
       if tool:IsA("Tool") then
@@ -1300,7 +1284,7 @@ local function usetool(slotNumber)
       selectedTool.Parent = Players.LocalPlayer.Character
       task.spawn(function()
           selectedTool:Activate()
-          task.wait(0.1) -- Small wait to ensure activation
+          task.wait(0.1)
           selectedTool.Parent = Backpack
       end)
   end
