@@ -2501,6 +2501,554 @@ end, {
     aliases = {"num, index"}
 })
 
+CommandRegistry:addCommand("dance", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddance then
+        chatMessage("/e dance")
+    end
+end, {
+    description = "Perform default dance",
+    usage = "/dance - Performs the default dance emote",
+    aliases = {"d"}
+})
+
+CommandRegistry:addCommand("dance1", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddance then
+        chatMessage("/e dance1")
+    end
+end, {
+    description = "Perform dance 1",
+    usage = "/dance1 - Performs dance emote 1",
+    aliases = {"d1"}
+})
+
+CommandRegistry:addCommand("dance2", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddance then
+        chatMessage("/e dance2")
+    end
+end, {
+    description = "Perform dance 2",
+    usage = "/dance2 - Performs dance emote 2",
+    aliases = {"d2"}
+})
+
+CommandRegistry:addCommand("dance3", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddance then
+        chatMessage("/e dance3")
+    end
+end, {
+    description = "Perform dance 3",
+    usage = "/dance3 - Performs dance emote 3",
+    aliases = {"d3"}
+})
+
+CommandRegistry:addCommand("dance4", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddance then
+        chatMessage("/e dance4")
+    end
+end, {
+    description = "Perform dance 4",
+    usage = "/dance4 - Performs dance emote 4",
+    aliases = {"d4"}
+})
+
+CommandRegistry:addCommand("cmds", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdcmds then
+        if order == channel then
+            local cmdMessages = {
+                "orbit (p) <r> <s> | unorbit | goto (p) | reset | spin <n> | unspin | dance <n> | undance | firework (op)",
+                "elevator (p) | explode (op) | fling (p) | bridge (p) <d> <s> | nuke (p) <h> <v> | gravity <n> | sit | unsit",
+                "ladder (p) | ragdoll | unragdoll | jump | sword (p) <d> <sp> <v> | unsword | shotgun (p) <d> | smite (p) <h> <v>",
+                "walkfling | unwalkfling | say (text) | clear | shuffle | floathead | levitate | haunt (p) | eruption (p) <v>",
+                "left (p) <sp> | right (p) <sp> | up (p) <sp> | down (p) <sp> | copyanim (p) <s> | fakeout | stareat (p) | unstareat",
+                "droptools | grabtools | ungrabtools | usetools (amount) (delay) | usetool <n> | perfomanceboost | fps <n>",
+                "⭐ args | status | channel <n> | order | end | cmds | admin (p) | unadmin (p) | adminlist ⭐"
+            }
+            
+            for _, msg in ipairs(cmdMessages) do
+                chatMessage(msg)
+                wait(0.25)
+            end
+        end
+    end
+end, {
+    description = "Show available commands",
+    usage = "cmds",
+    aliases = {"commands", "help"}
+})
+
+CommandRegistry:addCommand("args", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdargs then
+        if order == channel then
+            chatMessage(getgenv().prefix .. " = prefix | (p) = person | (op) = optional player | <r> = radius | <s> = speed | <n> = number | <d> = distance | <sp> = spacing | <v> = velocity | <t> = time")
+        end
+    end
+end, {
+    description = "Show command argument explanations",
+    usage = "args",
+    aliases = {"arguments"}
+})
+
+CommandRegistry:addCommand("performanceboost", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdperformanceboost then
+        performanceboost()
+    end
+end, {
+    description = "Boost game performance by reducing graphics quality",
+    usage = "performanceboost",
+    aliases = {"perfboost", "lowgraphics"}
+})
+
+CommandRegistry:addCommand("fps", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdfps then
+        local number = args[1]
+        fps(number)
+    end
+end, {
+    description = "Set or remove FPS cap",
+    usage = "fps <number>",
+    aliases = {"setfps", "fpscap, maxfps"}
+})
+
+-- Left Command
+CommandRegistry:addCommand("left", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdleft then
+        disablebool()
+        local targetName = args[1]
+        local spacing = tonumber(args[2]) or 5
+        local targetPlayer = findPlayerByName(targetName)
+        
+        if targetPlayer then
+            left(targetPlayer, spacing)
+        end
+    end
+end, {
+    description = "Move to the left of a player",
+    usage = "left (player) <spacing>",
+    aliases = {"l"}
+})
+
+-- Right Command
+CommandRegistry:addCommand("right", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdright then
+        disablebool()
+        local targetName = args[1]
+        local spacing = tonumber(args[2]) or 5
+        local targetPlayer = findPlayerByName(targetName)
+        
+        if targetPlayer then
+            right(targetPlayer, spacing)
+        end
+    end
+end, {
+    description = "Move to the right of a player",
+    usage = "right (player) <spacing>",
+    aliases = {"r"}
+})
+
+-- Up Command
+CommandRegistry:addCommand("up", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdup then
+        disablebool()
+        local targetName = args[1]
+        local spacing = tonumber(args[2]) or 5
+        local targetPlayer = findPlayerByName(targetName)
+        
+        if targetPlayer then
+            up(targetPlayer, spacing)
+        end
+    end
+end, {
+    description = "Move up relative to a player",
+    usage = "up (player) <spacing>",
+    aliases = {"u"}
+})
+
+CommandRegistry:addCommand("down", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddown then
+        disablebool()
+        local targetName = args[1]
+        local spacing = tonumber(args[2]) or 5
+        local targetPlayer = findPlayerByName(targetName)
+        
+        if targetPlayer then
+            down(targetPlayer, spacing)
+        end
+    end
+end, {
+    description = "Move down relative to a player",
+    usage = "down (player) <spacing>",
+    aliases = {"d"}
+})
+
+CommandRegistry:addCommand("clear", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdclear then
+        clear()
+    end
+end, {
+    description = "Clear any ongoing bot actions",
+    usage = "/clear - Stops current bot activities",
+    aliases = {"c"}
+})
+
+CommandRegistry:addCommand("antichatlogs", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdantichatlogs then
+        antilogs()
+        
+        if order == channel then
+            chatMessage("Anti chat logs enabled.")
+        end
+    end
+end, {
+    description = "Enable anti-chat logging",
+    usage = "antichatlogs",
+    aliases = {"antichatlog", "preventlogs, antilogs"}
+})
+
+CommandRegistry:addCommand("unantichatlogs", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunantichatlogs then
+        unantilogs()
+    end
+end, {
+    description = "Disable anti-chat logging",
+    usage = "unantichatlogs",
+    aliases = {"unanti", "allowlogs"}
+})
+
+CommandRegistry:addCommand("droptools", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddroptools then
+        dropTools()
+    end
+end, {
+    description = "Drop all tools",
+    usage = "droptools",
+    aliases = {"droptool", "drop"}
+})
+
+CommandRegistry:addCommand("grabtools", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdgrabtools then
+        grabtools()
+    end
+end, {
+    description = "Grab nearby tools",
+    usage = "grabtools",
+    aliases = {"pickuptools", "grab"}
+})
+
+CommandRegistry:addCommand("ungrabtools", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdungrabtools then
+        ungrabtools()
+    end
+end, {
+    description = "Release grabbed tools",
+    usage = "ungrabtools",
+    aliases = {"releasetool", "ungrab"}
+})
+
+CommandRegistry:addCommand("usetools", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdusetools then
+        disablebool()
+        local amount = tonumber(args[1]) or 1
+        local delay = tonumber(args[2]) or false
+        
+        usetools(amount, delay)
+    end
+end, {
+    description = "Use tools with optional amount and delay",
+    usage = "usetools <amount> <delay>",
+    aliases = {"usetoolsmulti", "multiuse"}
+})
+
+CommandRegistry:addCommand("usetool", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdusetool then
+        disablebool()
+        local slotNumber = tonumber(args[1]) or 1
+        
+        usetool(slotNumber)
+    end
+end, {
+    description = "Use a specific tool by slot number",
+    usage = "usetool <slot>",
+    aliases = {"selecttool", "toolslot, use"}
+})
+
+CommandRegistry:addCommand("ragdoll", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdragdoll then
+        ragdoll()
+    end
+end, {
+    description = "Ragdoll the bot",
+    usage = "ragdoll",
+    aliases = {"rd", "ragdollmode"}
+})
+
+CommandRegistry:addCommand("unragdoll", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunragdoll then
+        unragdoll()
+    end
+end, {
+    description = "Disable ragdoll state",
+    usage = "unragdoll",
+    aliases = {"unrd", "stopragdoll"}
+})
+
+CommandRegistry:addCommand("stareat", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdstareat then
+        disablebool()
+        local playerName = args[1]
+        local targetPlayer = findPlayerByName(playerName)
+        
+        if targetPlayer then
+            stareat(targetPlayer)
+        end
+    end
+end, {
+    description = "Stare at a specific player",
+    usage = "stareat (player)",
+    aliases = {"stare", "lookAt"}
+})
+
+CommandRegistry:addCommand("unstareat", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunstareat then
+        stareatbool = false
+    end
+end, {
+    description = "Stop staring at a player",
+    usage = "unstareat",
+    aliases = {"stopstare", "unstare"}
+})
+
+CommandRegistry:addCommand("sit", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdsit then
+        sit()
+    end
+end, {
+    description = "Make the bot sit",
+    usage = "sit",
+    aliases = {"sitting"}
+})
+
+CommandRegistry:addCommand("unsit", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunsit then
+        unsit()
+    end
+end, {
+    description = "Make the bot stand up",
+    usage = "unsit",
+    aliases = {"standup"}
+})
+
+CommandRegistry:addCommand("undance", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmddance then
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        undance()
+    end
+end, {
+    description = "Stop dancing",
+    usage = "undance",
+    aliases = {"stopdance"}
+})
+
+CommandRegistry:addCommand("noclip", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdnoclip then
+        noclip()
+    end
+end, {
+    description = "Enable noclip mode",
+    usage = "noclip",
+    aliases = {}
+})
+
+CommandRegistry:addCommand("clip", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdclip then
+        clip()
+    end
+end, {
+    description = "Disable noclip mode",
+    usage = "clip",
+    aliases = {}
+})
+
+CommandRegistry:addCommand("say", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdsay then
+        local msgcontent = table.concat(args, " ")
+        chatMessage(msgcontent)
+    end
+end, {
+    description = "Send a chat message",
+    usage = "say <message>",
+    aliases = {"chat", "message"}
+})
+
+CommandRegistry:addCommand("fix", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdfix then
+        fix()
+    end
+end, {
+    description = "Attempt to fix bot's current state",
+    usage = "fix",
+    aliases = {"repair"}
+})
+
+CommandRegistry:addCommand("jump", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdjump then
+        player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end, {
+    description = "Make the bot jump",
+    usage = "jump",
+    aliases = {}
+})
+
+-- Haunt Commands
+CommandRegistry:addCommand("haunt", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdhaunt then
+        disablebool()
+        local playerName = args[1]
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+            haunt(targetPlayer)
+        end
+    end
+end, {
+    description = "Haunt a specific player",
+    usage = "haunt (player)",
+    aliases = {}
+})
+
+CommandRegistry:addCommand("unhaunt", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunhaunt then
+        hauntbool = false
+    end
+end, {
+    description = "Stop haunting",
+    usage = "unhaunt",
+    aliases = {}
+})
+
+CommandRegistry:addCommand("fling", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdfling then
+        disablebool()
+        local playerName = args[1]
+        local targetPlayer = findPlayerByName(playerName)
+        if targetPlayer then
+            fling(targetPlayer)
+        end
+    end
+end, {
+    description = "Fling a specific player",
+    usage = "fling (player)",
+    aliases = {"f"}
+})
+
+CommandRegistry:addCommand("unfling", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunfling then
+        flingbool = false
+    end
+end, {
+    description = "Stop flinging",
+    usage = "unfling",
+    aliases = {"uf"}
+})
+
+-- Walk Fling Commands
+CommandRegistry:addCommand("walkfling", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdwalkfling then
+        disablebool()
+        walkfling()
+    end
+end, {
+    description = "Enable walk fling mode",
+    usage = "walkfling",
+    aliases = {"wf"}
+})
+
+CommandRegistry:addCommand("unwalkfling", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunwalkfling then
+        walkflingbool = false
+    end
+end, {
+    description = "Disable walk fling mode",
+    usage = "unwalkfling",
+    aliases = {"unwf"}
+})
+
+-- Fakeout Command
+CommandRegistry:addCommand("fakeout", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdfakeout then
+        fakeout()
+    end
+end, {
+    description = "Perform a fakeout action",
+    usage = "fakeout",
+    aliases = {}
+})
+
+CommandRegistry:addCommand("sword", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdsword then
+        disablebool()
+        local targetName = args[1]
+        local initialDistance = tonumber(args[2]) or 20
+        local subsequentSpacing = tonumber(args[3]) or 5
+        local velocityMagnitude = tonumber(args[4]) or -500
+        local targetPlayer = findPlayerByName(targetName)
+      
+        if targetPlayer then
+            sword(targetPlayer, initialDistance, subsequentSpacing, velocityMagnitude)
+        end 
+    end
+end, {
+    description = "Sword attack a player",
+    usage = "sword (player) <distance> <spacing> <velocity>",
+    aliases = {}
+})
+
+CommandRegistry:addCommand("unsword", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdunsword then
+        swordbool = false
+    end
+end, {
+    description = "Stop sword attack",
+    usage = "unsword",
+    aliases = {}
+})
+
+-- Shotgun Command
+CommandRegistry:addCommand("shotgun", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdshotgun then
+        disablebool()
+        local targetName = args[1]
+        local initialDistance = tonumber(args[2]) or 9
+        local targetPlayer = findPlayerByName(targetName)
+      
+        if targetPlayer then
+            shotgun(targetPlayer, initialDistance)
+        end
+    end
+end, {
+    description = "Perform a shotgun attack on a player",
+    usage = "shotgun (player) <distance>",
+    aliases = {"sg"}
+})
+
+-- Smite Command
+CommandRegistry:addCommand("smite", function(playerpower, args)
+    if table.find(bots, player.DisplayName) and cmdsmite then
+        disablebool()
+        local targetName = args[1]
+        local height = tonumber(args[2]) or 100
+        local velocity = tonumber(args[3]) or 500
+        local targetPlayer = findPlayerByName(targetName)
+      
+        if targetPlayer then
+            smite(targetPlayer, height, velocity)
+        end
+    end
+end, {
+    description = "Smite a specific player",
+    usage = "smite (player) <height> <velocity>",
+    aliases = {}
+})
+
 local function modifiedChatHandler(playerpower, message)
     -- Check if the message starts with the prefix
     if message:sub(1, #prefix) == prefix then
