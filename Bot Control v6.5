@@ -139,9 +139,6 @@ local RunService = game:GetService("RunService")
 local TextChatService = game:GetService("TextChatService")
 local VirtualUser = game:GetService("VirtualUser")
 
-local player = game.Players.LocalPlayer
-local displayName = player.DisplayName
-local user = player.Name
 local offset = math.random(0, 360)
 
 local ownerPlayer = game.Players:FindFirstChild(owner)
@@ -461,8 +458,8 @@ local function ladder(targetPlayer)
 
   ladderbool = true
   
-  local displayName = player.DisplayName
-  local botOrder = table.find(bots, displayName)
+  local userName = player.Name
+  local botOrder = getgenv().Settings:findBot(userName)
 
   if not botOrder then 
       return nil
@@ -803,7 +800,7 @@ local function fireworks(targetPlayer)
       if targetPlayer and targetPlayer.Character then
         local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
         if targetHumanoidRootPart then
-          local botOrder = table.find(bots, player.DisplayName) or 1
+          local botOrder = getgenv().Settings:findBot(userName)
           
           local heightOffset = 0
           if botOrder == 1 then
@@ -1109,8 +1106,8 @@ local function elevator(targetPlayer, initialDistance)
 
   elevatorbool = true
   
-  local displayName = player.DisplayName
-  local botOrder = table.find(bots, displayName)
+  local userName = player.Name
+  local botOrder = getgenv().Settings:findBot(userName)
 
   if not botOrder then 
       return nil
@@ -1317,8 +1314,8 @@ local function sword(targetPlayer, initialDistance, subsequentSpacing, velocityM
 
   swordbool = true
 
-  local displayName = player.DisplayName
-  local botOrder = table.find(bots, displayName)
+  local userName = player.Name
+  local botOrder = getgenv().Settings:findBot(userName)
 
   if not botOrder then 
       return nil
@@ -1438,8 +1435,8 @@ local function eruption(targetPlayer, velocity)
 
   eruptionbool = true
 
-  local displayName = player.DisplayName
-  local botIndex = table.find(bots, displayName)
+  local userName = player.Name
+  local botOrder = getgenv().Settings:findBot(userName)
 
   if not botIndex then 
       return nil
@@ -1533,8 +1530,8 @@ local function smite(targetPlayer, height, velocity)
 
   smitebool = true
 
-  if not table.find(bots, player.DisplayName) then
-      return
+  if not getgenv().Settings:findBot(player.Name) then
+    return
   end
 
   humanoid:ChangeState(Enum.HumanoidStateType.Physics)
@@ -1579,8 +1576,8 @@ local function shotgun(targetPlayer, initialDistance)
 
   shotgunbool = true
   
-  local displayName = player.DisplayName
-  local botOrder = table.find(bots, displayName)
+  local userName = player.Name
+  local botOrder = getgenv().Settings:findBot(userName)
 
   if not botOrder then 
       return nil
@@ -1856,8 +1853,8 @@ local function elevator(targetPlayer)
 
   elevatorbool = true
   
-  local displayName = player.DisplayName
-  local botOrder = table.find(bots, displayName)
+  local userName = player.Name
+  local botOrder = getgenv().Settings:findBot(userName)
 
   if not botOrder then 
       return nil
@@ -1930,8 +1927,8 @@ local function bridge(targetPlayer, initialDistance, spacing)
 
   bridgebool = true
 
-  local displayName = player.DisplayName
-  local botOrder = table.find(bots, displayName)
+  local userName = player.Name
+  local botOrder = getgenv().Settings:findBot(userName)
 
   if not botOrder then 
       return nil
@@ -2258,7 +2255,7 @@ function CommandRegistry:listCommands()
 end
 
 CommandRegistry:addCommand("status", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdstatus then
+    if getgenv().Settings:findBot(player.Name) and cmdstatus then
         chatMessage(" (Bot " .. order .. ") is online!")
     end
 end, {
@@ -2268,7 +2265,7 @@ end, {
 })
 
 CommandRegistry:addCommand("channel", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdchannel then
+    if getgenv().Settings:findBot(player.Name) and cmdchannel then
         local chnl = tonumber(args[1])
     
         if not chnl or chnl < 1 or chnl > numberbot then
@@ -2289,7 +2286,7 @@ end, {
 })
 
 CommandRegistry:addCommand("admin", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdadmin then
+    if getgenv().Settings:findBot(player.Name) and cmdadmin then
         if playerpower.Name == owner then
             local adminargs = args[1]
             local targetPlayerforadmin = findPlayerByName(adminargs)
@@ -2332,7 +2329,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unadmin", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunadmin then
+    if getgenv().Settings:findBot(player.Name) and cmdunadmin then
         if playerpower.Name == owner then
             local unadminargs = args[1]
             local targetPlayerforunadmin = findPlayerByName(unadminargs)
@@ -2369,7 +2366,7 @@ end, {
 })
 
 CommandRegistry:addCommand("adminlist", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdadminlist then
+    if getgenv().Settings:findBot(player.Name) and cmdadminlist then
         if playerpower.Name == owner then
             if #Admins > 0 then
                 if order == channel then
@@ -2394,7 +2391,7 @@ end, {
 })
 
 CommandRegistry:addCommand("end", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdend then
+    if getgenv().Settings:findBot(player.Name) and cmdend then
         if playerpower.Name == owner then
             cmdstatus = false
             cmdargs = false
@@ -2494,7 +2491,7 @@ end, {
 })
 
 CommandRegistry:addCommand("order", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdorder then
+    if getgenv().Settings:findBot(player.Name) and cmdorder then
         chatMessage("(" .. order .. ")")
     end
 end, {
@@ -2504,7 +2501,7 @@ end, {
 })
 
 CommandRegistry:addCommand("dance", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddance then
+    if getgenv().Settings:findBot(player.Name) and cmddance then
         chatMessage("/e dance")
     end
 end, {
@@ -2514,7 +2511,7 @@ end, {
 })
 
 CommandRegistry:addCommand("dance1", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddance then
+    if getgenv().Settings:findBot(player.Name) and cmddance then
         chatMessage("/e dance1")
     end
 end, {
@@ -2524,7 +2521,7 @@ end, {
 })
 
 CommandRegistry:addCommand("dance2", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddance then
+    if getgenv().Settings:findBot(player.Name) and cmddance then
         chatMessage("/e dance2")
     end
 end, {
@@ -2534,7 +2531,7 @@ end, {
 })
 
 CommandRegistry:addCommand("dance3", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddance then
+    if getgenv().Settings:findBot(player.Name) and cmddance then
         chatMessage("/e dance3")
     end
 end, {
@@ -2544,7 +2541,7 @@ end, {
 })
 
 CommandRegistry:addCommand("dance4", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddance then
+    if getgenv().Settings:findBot(player.Name) and cmddance then
         chatMessage("/e dance4")
     end
 end, {
@@ -2554,7 +2551,7 @@ end, {
 })
 
 CommandRegistry:addCommand("cmds", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdcmds then
+    if getgenv().Settings:findBot(player.Name) and cmdcmds then
         if order == channel then
             local cmdMessages = {
                 "orbit (p) <r> <s> | unorbit | goto (p) | reset | spin <n> | unspin | dance <n> | undance | firework (op)",
@@ -2579,7 +2576,7 @@ end, {
 })
 
 CommandRegistry:addCommand("args", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdargs then
+    if getgenv().Settings:findBot(player.Name) and cmdargs then
         if order == channel then
             chatMessage(getgenv().prefix .. " = prefix | (p) = person | (op) = optional player | <r> = radius | <s> = speed | <n> = number | <d> = distance | <sp> = spacing | <v> = velocity | <t> = time")
         end
@@ -2591,7 +2588,7 @@ end, {
 })
 
 CommandRegistry:addCommand("performanceboost", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdperformanceboost then
+    if getgenv().Settings:findBot(player.Name) and cmdperformanceboost then
         performanceboost()
     end
 end, {
@@ -2601,7 +2598,7 @@ end, {
 })
 
 CommandRegistry:addCommand("fps", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdfps then
+    if getgenv().Settings:findBot(player.Name) and cmdfps then
         local number = args[1]
         fps(number)
     end
@@ -2611,9 +2608,8 @@ end, {
     aliases = {"setfps", "fpscap, maxfps"}
 })
 
--- Left Command
 CommandRegistry:addCommand("left", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdleft then
+    if getgenv().Settings:findBot(player.Name) and cmdleft then
         disablebool()
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
@@ -2629,9 +2625,8 @@ end, {
     aliases = {"l"}
 })
 
--- Right Command
 CommandRegistry:addCommand("right", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdright then
+    if getgenv().Settings:findBot(player.Name) and cmdright then
         disablebool()
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
@@ -2647,9 +2642,8 @@ end, {
     aliases = {"r"}
 })
 
--- Up Command
 CommandRegistry:addCommand("up", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdup then
+    if getgenv().Settings:findBot(player.Name) and cmdup then
         disablebool()
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
@@ -2666,7 +2660,7 @@ end, {
 })
 
 CommandRegistry:addCommand("down", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddown then
+    if getgenv().Settings:findBot(player.Name) and cmddown then
         disablebool()
         local targetName = args[1]
         local spacing = tonumber(args[2]) or 5
@@ -2683,7 +2677,7 @@ end, {
 })
 
 CommandRegistry:addCommand("clear", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdclear then
+    if getgenv().Settings:findBot(player.Name) and cmdclear then
         clear()
     end
 end, {
@@ -2693,7 +2687,7 @@ end, {
 })
 
 CommandRegistry:addCommand("antichatlogs", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdantichatlogs then
+    if getgenv().Settings:findBot(player.Name) and cmdantichatlogs then
         antilogs()
         
         if order == channel then
@@ -2707,7 +2701,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unantichatlogs", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunantichatlogs then
+    if getgenv().Settings:findBot(player.Name) and cmdunantichatlogs then
         unantilogs()
     end
 end, {
@@ -2717,7 +2711,7 @@ end, {
 })
 
 CommandRegistry:addCommand("droptools", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddroptools then
+    if getgenv().Settings:findBot(player.Name) and cmddroptools then
         dropTools()
     end
 end, {
@@ -2727,7 +2721,7 @@ end, {
 })
 
 CommandRegistry:addCommand("grabtools", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdgrabtools then
+    if getgenv().Settings:findBot(player.Name) and cmdgrabtools then
         grabtools()
     end
 end, {
@@ -2737,7 +2731,7 @@ end, {
 })
 
 CommandRegistry:addCommand("ungrabtools", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdungrabtools then
+    if getgenv().Settings:findBot(player.Name) and cmdungrabtools then
         ungrabtools()
     end
 end, {
@@ -2747,7 +2741,7 @@ end, {
 })
 
 CommandRegistry:addCommand("usetools", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdusetools then
+    if getgenv().Settings:findBot(player.Name) and cmdusetools then
         disablebool()
         local amount = tonumber(args[1]) or 1
         local delay = tonumber(args[2]) or false
@@ -2761,7 +2755,7 @@ end, {
 })
 
 CommandRegistry:addCommand("usetool", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdusetool then
+    if getgenv().Settings:findBot(player.Name) and cmdusetool then
         disablebool()
         local slotNumber = tonumber(args[1]) or 1
         
@@ -2774,7 +2768,7 @@ end, {
 })
 
 CommandRegistry:addCommand("ragdoll", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdragdoll then
+    if getgenv().Settings:findBot(player.Name) and cmdragdoll then
         ragdoll()
     end
 end, {
@@ -2784,7 +2778,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unragdoll", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunragdoll then
+    if getgenv().Settings:findBot(player.Name) and cmdunragdoll then
         unragdoll()
     end
 end, {
@@ -2794,7 +2788,7 @@ end, {
 })
 
 CommandRegistry:addCommand("stareat", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdstareat then
+    if getgenv().Settings:findBot(player.Name) and cmdstareat then
         disablebool()
         local playerName = args[1]
         local targetPlayer = findPlayerByName(playerName)
@@ -2810,7 +2804,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unstareat", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunstareat then
+    if getgenv().Settings:findBot(player.Name) and cmdunstareat then
         stareatbool = false
     end
 end, {
@@ -2820,7 +2814,7 @@ end, {
 })
 
 CommandRegistry:addCommand("sit", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdsit then
+    if getgenv().Settings:findBot(player.Name) and cmdsit then
         sit()
     end
 end, {
@@ -2830,7 +2824,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unsit", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunsit then
+    if getgenv().Settings:findBot(player.Name) and cmdunsit then
         unsit()
     end
 end, {
@@ -2840,7 +2834,7 @@ end, {
 })
 
 CommandRegistry:addCommand("undance", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmddance then
+    if getgenv().Settings:findBot(player.Name) and cmddance then
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         undance()
     end
@@ -2851,7 +2845,7 @@ end, {
 })
 
 CommandRegistry:addCommand("noclip", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdnoclip then
+    if getgenv().Settings:findBot(player.Name) and cmdnoclip then
         noclip()
     end
 end, {
@@ -2861,7 +2855,7 @@ end, {
 })
 
 CommandRegistry:addCommand("clip", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdclip then
+    if getgenv().Settings:findBot(player.Name) and cmdclip then
         clip()
     end
 end, {
@@ -2871,7 +2865,7 @@ end, {
 })
 
 CommandRegistry:addCommand("say", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdsay then
+    if getgenv().Settings:findBot(player.Name) and cmdsay then
         local msgcontent = table.concat(args, " ")
         chatMessage(msgcontent)
     end
@@ -2882,7 +2876,7 @@ end, {
 })
 
 CommandRegistry:addCommand("fix", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdfix then
+    if getgenv().Settings:findBot(player.Name) and cmdfix then
         fix()
     end
 end, {
@@ -2892,7 +2886,7 @@ end, {
 })
 
 CommandRegistry:addCommand("jump", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdjump then
+    if getgenv().Settings:findBot(player.Name) and cmdjump then
         player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end, {
@@ -2903,7 +2897,7 @@ end, {
 
 -- Haunt Commands
 CommandRegistry:addCommand("haunt", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdhaunt then
+    if getgenv().Settings:findBot(player.Name) and cmdhaunt then
         disablebool()
         local playerName = args[1]
         local targetPlayer = findPlayerByName(playerName)
@@ -2918,7 +2912,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unhaunt", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunhaunt then
+    if getgenv().Settings:findBot(player.Name) and cmdunhaunt then
         hauntbool = false
     end
 end, {
@@ -2928,7 +2922,7 @@ end, {
 })
 
 CommandRegistry:addCommand("fling", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdfling then
+    if getgenv().Settings:findBot(player.Name) and cmdfling then
         disablebool()
         local playerName = args[1]
         local targetPlayer = findPlayerByName(playerName)
@@ -2943,7 +2937,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unfling", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunfling then
+    if getgenv().Settings:findBot(player.Name) and cmdunfling then
         flingbool = false
     end
 end, {
@@ -2952,9 +2946,8 @@ end, {
     aliases = {"uf"}
 })
 
--- Walk Fling Commands
 CommandRegistry:addCommand("walkfling", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdwalkfling then
+    if getgenv().Settings:findBot(player.Name) and cmdwalkfling then
         disablebool()
         walkfling()
     end
@@ -2965,7 +2958,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unwalkfling", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunwalkfling then
+    if getgenv().Settings:findBot(player.Name) and cmdunwalkfling then
         walkflingbool = false
     end
 end, {
@@ -2976,7 +2969,7 @@ end, {
 
 -- Fakeout Command
 CommandRegistry:addCommand("fakeout", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdfakeout then
+    if getgenv().Settings:findBot(player.Name) and cmdfakeout then
         fakeout()
     end
 end, {
@@ -2986,7 +2979,7 @@ end, {
 })
 
 CommandRegistry:addCommand("sword", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdsword then
+    if getgenv().Settings:findBot(player.Name) and cmdsword then
         disablebool()
         local targetName = args[1]
         local initialDistance = tonumber(args[2]) or 20
@@ -3005,7 +2998,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unsword", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunsword then
+    if getgenv().Settings:findBot(player.Name) and cmdunsword then
         swordbool = false
     end
 end, {
@@ -3015,7 +3008,7 @@ end, {
 })
 
 CommandRegistry:addCommand("shotgun", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdshotgun then
+    if getgenv().Settings:findBot(player.Name) and cmdshotgun then
         disablebool()
         local targetName = args[1]
         local initialDistance = tonumber(args[2]) or 9
@@ -3032,7 +3025,7 @@ end, {
 })
 
 CommandRegistry:addCommand("smite", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdsmite then
+    if getgenv().Settings:findBot(player.Name) and cmdsmite then
         disablebool()
         local targetName = args[1]
         local height = tonumber(args[2]) or 100
@@ -3050,7 +3043,7 @@ end, {
 })
 
 CommandRegistry:addCommand("eruption", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmderuption then
+    if getgenv().Settings:findBot(player.Name) and cmderuption then
         disablebool()
         local targetName = args[1]
         local velocityMagnitude = tonumber(args[2]) or 100
@@ -3067,7 +3060,7 @@ end, {
 })
 
 CommandRegistry:addCommand("bridge", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdbridge then
+    if getgenv().Settings:findBot(player.Name) and cmdbridge then
         disablebool()
         local targetName = args[1]
         local initialDistance = tonumber(args[2]) or 5
@@ -3085,7 +3078,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unbridge", function(playerpower, args)
-    if table.find(bots, player.DisplayName) then
+    if getgenv().Settings:findBot(player.Name) then
         bridgebool = false
     end
 end, {
@@ -3095,7 +3088,7 @@ end, {
 })
 
 CommandRegistry:addCommand("freeze", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdfreeze then
+    if getgenv().Settings:findBot(player.Name) and cmdfreeze then
         disablebool()
         freeze()
     end
@@ -3106,7 +3099,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unfreeze", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunfreeze then
+    if getgenv().Settings:findBot(player.Name) and cmdunfreeze then
         unfreeze()
     end
 end, {
@@ -3116,7 +3109,7 @@ end, {
 })
 
 CommandRegistry:addCommand("gravity", function(playerpower, args)
-    if table.find(bots, player.DisplayName) then
+    if getgenv().Settings:findBot(player.Name) then
         local gravityValue = tonumber(args[1]) or 196.2
         setGravity(gravityValue)
     end
@@ -3127,7 +3120,7 @@ end, {
 })
 
 CommandRegistry:addCommand("copyanim", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdcopyanim then
+    if getgenv().Settings:findBot(player.Name) and cmdcopyanim then
         local targetName = args[1]
         local speed = tonumber(args[2]) or 1
         local targetPlayer = findPlayerByName(targetName)
@@ -3143,7 +3136,7 @@ end, {
 })
 
 CommandRegistry:addCommand("levitate", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdlevitate then
+    if getgenv().Settings:findBot(player.Name) and cmdlevitate then
         levitate()
     end
 end, {
@@ -3153,7 +3146,7 @@ end, {
 })
 
 CommandRegistry:addCommand("floathead", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdfloathead then
+    if getgenv().Settings:findBot(player.Name) and cmdfloathead then
         floathead()
     end
 end, {
@@ -3163,7 +3156,7 @@ end, {
 })
 
 CommandRegistry:addCommand("shuffle", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdshuffle then
+    if getgenv().Settings:findBot(player.Name) and cmdshuffle then
         shuffle()
     end
 end, {
@@ -3173,7 +3166,7 @@ end, {
 })
 
 CommandRegistry:addCommand("ladder", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdladder then
+    if getgenv().Settings:findBot(player.Name) and cmdladder then
         disablebool()
         local targetName = args[1]
         local targetPlayer = findPlayerByName(targetName)
@@ -3188,7 +3181,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unladder", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunladder then
+    if getgenv().Settings:findBot(player.Name) and cmdunladder then
         ladderbool = false
     end
 end, {
@@ -3198,7 +3191,7 @@ end, {
 })
 
 CommandRegistry:addCommand("elevator", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdelevator then
+    if getgenv().Settings:findBot(player.Name) and cmdelevator then
         disablebool()
         local targetName = args[1]
         local targetPlayer = findPlayerByName(targetName)
@@ -3215,7 +3208,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unelevator", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunelevator then
+    if getgenv().Settings:findBot(player.Name) and cmdunelevator then
         elevatorbool = false
     end
 end, {
@@ -3225,7 +3218,7 @@ end, {
 })
 
 CommandRegistry:addCommand("firework", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdfireworks then
+    if getgenv().Settings:findBot(player.Name) and cmdfireworks then
         disablebool()
         local targetName = args[1]
         local targetPlayer = targetName and findPlayerByName(targetName) or nil
@@ -3239,7 +3232,7 @@ end, {
 })
 
 CommandRegistry:addCommand("explode", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdexplode then
+    if getgenv().Settings:findBot(player.Name) and cmdexplode then
         disablebool()
         local targetName = args[1]
         local targetPlayer = findPlayerByName(targetName)
@@ -3257,7 +3250,7 @@ end, {
 })
 
 CommandRegistry:addCommand("nuke", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdnuke then
+    if getgenv().Settings:findBot(player.Name) and cmdnuke then
         disablebool()
         local targetName = args[1]
         local height = tonumber(args[2]) or 500
@@ -3275,7 +3268,7 @@ end, {
 })
 
 CommandRegistry:addCommand("orbit", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdorbit then
+    if getgenv().Settings:findBot(player.Name) and cmdorbit then
         disablebool()
         local targetName = args[1]
         local radius = tonumber(args[2]) or 10
@@ -3294,7 +3287,7 @@ end, {
 })
 
 CommandRegistry:addCommand("unorbit", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdunorbit then
+    if getgenv().Settings:findBot(player.Name) and cmdunorbit then
         orbitbool = false
         orbit2bool = false
         game.Workspace.Gravity = 196.2
@@ -3306,7 +3299,7 @@ end, {
 })
 
 CommandRegistry:addCommand("goto", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdgoto then
+    if getgenv().Settings:findBot(player.Name) and cmdgoto then
         disablebool()
         local targetName = args[1]
         local targetPlayer = findPlayerByName(targetName)
@@ -3322,7 +3315,7 @@ end, {
 })
 
 CommandRegistry:addCommand("tower", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdtower then
+    if getgenv().Settings:findBot(player.Name) and cmdtower then
         disablebool()
         local targetName = args[1]
         local targetPlayer = findPlayerByName(targetName)
@@ -3338,7 +3331,7 @@ end, {
 })
 
 CommandRegistry:addCommand("reset", function(playerpower, args)
-    if table.find(bots, player.DisplayName) and cmdreset then
+    if getgenv().Settings:findBot(player.Name) and cmdreset then
         disablebool()
         local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
         if humanoid then
@@ -3352,6 +3345,9 @@ end, {
 })
 
 local function modifiedChatHandler(playerpower, message)
+    -- Get prefix from Settings
+    local prefix = getgenv().Settings.prefix
+    
     -- Check if the message starts with the prefix
     if message:sub(1, #prefix) == prefix then
         -- Remove the prefix and split the message into parts
@@ -3365,13 +3361,14 @@ local function modifiedChatHandler(playerpower, message)
         local commandName = table.remove(parts, 1):lower()
         
         -- Check if the player is an admin or the owner
+        local owner = getgenv().Settings.mainAccount
         if playerpower.Name == owner or table.find(Admins, playerpower.Name) then
             -- Try to find the command in the registry
             local command = CommandRegistry:getCommand(commandName)
             
             if command then
-                -- Check if the bot is part of the bots list
-                if table.find(bots, player.DisplayName) then
+                -- Check if the bot is part of the bots list using Settings:findBot
+                if getgenv().Settings:findBot(player.Name) then
                     -- Execute the command
                     command.func(playerpower, parts)
                 end
@@ -3390,19 +3387,17 @@ local function modifiedChatHandler(playerpower, message)
     end
 end
 
--- Chat Listener Function
 local function connectChatListener(playerpower)
     playerpower.Chatted:Connect(function(message)
         modifiedChatHandler(playerpower, message)
     end)
 end
 
---listen to owner
+local ownerPlayer = game.Players:FindFirstChild(getgenv().Settings.mainAccount)
 if ownerPlayer then
     connectChatListener(ownerPlayer)
 end
 
---listen to admins
 while adminbool do
     for _, adminName in pairs(adminNotConnected) do
         local adminPlayer = game.Players:FindFirstChild(adminName)
@@ -3414,9 +3409,12 @@ while adminbool do
     wait(2)
 end
 
---listen to admins
 game.Players.PlayerAdded:Connect(function(player)
     if table.find(Admins, player.Name) then
+        connectChatListener(player)
+    end
+
+    if player.Name == getgenv().Settings.mainAccount then
         connectChatListener(player)
     end
 end)
