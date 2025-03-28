@@ -746,77 +746,79 @@ local function explode(targetPlayer)
   end)
 end
 
--- firework
 local function fireworks(targetPlayer)
-  if player and player.Character then
-    local humanoid = player.Character:FindFirstChild("Humanoid")
-    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-    
-    if humanoid and humanoidRootPart then
-      humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    if player and player.Character then
+      local humanoid = player.Character:FindFirstChild("Humanoid")
+      local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
       
-      local Velocity = Instance.new("BodyVelocity")
-      Velocity.Name = "Upward"
-      Velocity.Parent = humanoidRootPart
-      Velocity.MaxForce = Vector3.new(0, math.huge, 0)
-      
-      local upwardSpeed = 45
-      Velocity.Velocity = Vector3.new(
-        0,
-        upwardSpeed,
-        0
-      )
-      
-      local InitialSpin = Instance.new("BodyAngularVelocity")
-      InitialSpin.Name = "InitialSpinning"
-      InitialSpin.Parent = humanoidRootPart
-      InitialSpin.MaxTorque = Vector3.new(0, math.huge, 0)
-      InitialSpin.AngularVelocity = Vector3.new(0, 25, 0)
-      
-      local Spin = nil
-
-      task.delay(1.9, function()
-        if InitialSpin then InitialSpin:Destroy() end
+      if humanoid and humanoidRootPart then
+        humanoid:ChangeState(Enum.HumanoidStateType.Physics)
         
-        Spin = Instance.new("BodyAngularVelocity")
-        Spin.Name = "Spinning"
-        Spin.Parent = humanoidRootPart
-        Spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        local Velocity = Instance.new("BodyVelocity")
+        Velocity.Name = "Upward"
+        Velocity.Parent = humanoidRootPart
+        Velocity.MaxForce = Vector3.new(0, math.huge, 0)
         
-        local spinSpeedX = math.random(35, 60)
-        local spinSpeedY = math.random(35, 60)
-        local spinSpeedZ = math.random(35, 60)
-        Spin.AngularVelocity = Vector3.new(spinSpeedX, spinSpeedY, spinSpeedZ)
-      end)
-      
-      task.delay(2.0, function()
-        if humanoid then
-          if Spin then Spin:Destroy() end
-          if Velocity then Velocity:Destroy() end
-          humanoid.Health = 0
-        end
-      end)
-      
-      if targetPlayer and targetPlayer.Character then
-        local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if targetHumanoidRootPart then
-          local botOrder = getgenv().Settings:findBot(userName)
+        local upwardSpeed = 45
+        Velocity.Velocity = Vector3.new(
+          0,
+          upwardSpeed,
+          0
+        )
+        
+        local InitialSpin = Instance.new("BodyAngularVelocity")
+        InitialSpin.Name = "InitialSpinning"
+        InitialSpin.Parent = humanoidRootPart
+        InitialSpin.MaxTorque = Vector3.new(0, math.huge, 0)
+        InitialSpin.AngularVelocity = Vector3.new(0, 25, 0)
+        
+        local Spin = nil
+  
+        task.delay(1.9, function()
+          if InitialSpin then InitialSpin:Destroy() end
           
-          local heightOffset = 0
-          if botOrder == 1 then
-            heightOffset = 5
-          else
-            heightOffset = 4 + ((botOrder - 1) * 2)
+          Spin = Instance.new("BodyAngularVelocity")
+          Spin.Name = "Spinning"
+          Spin.Parent = humanoidRootPart
+          Spin.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+          
+          local spinSpeedX = math.random(35, 60)
+          local spinSpeedY = math.random(35, 60)
+          local spinSpeedZ = math.random(35, 60)
+          Spin.AngularVelocity = Vector3.new(spinSpeedX, spinSpeedY, spinSpeedZ)
+        end)
+        
+        task.delay(2.0, function()
+          if humanoid then
+            if Spin then Spin:Destroy() end
+            if Velocity then Velocity:Destroy() end
+            humanoid.Health = 0
           end
-          
-          local targetPosition = targetHumanoidRootPart.Position + Vector3.new(0, heightOffset, 0)
-          
-          humanoidRootPart.CFrame = CFrame.new(targetPosition)
+        end)
+        
+        if targetPlayer and targetPlayer.Character then
+          local targetHumanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+          if targetHumanoidRootPart then
+            local userName = player.Name
+            local botOrder = getgenv().Settings:findBot(userName)
+            
+            local heightOffset = 0
+            if botOrder then
+              if botOrder == 1 then
+                heightOffset = 5
+              else
+                heightOffset = 4 + ((botOrder - 1) * 2)
+              end
+              
+              local targetPosition = targetHumanoidRootPart.Position + Vector3.new(0, heightOffset, 0)
+              
+              humanoidRootPart.CFrame = CFrame.new(targetPosition)
+            end
+          end
         end
       end
     end
   end
-end
 
 -- nuke
 local function nuke(targetPlayer, height, velocity)
@@ -2572,7 +2574,7 @@ CommandRegistry:addCommand("cmds", function(playerpower, args)
 end, {
     description = "Show available commands",
     usage = "cmds",
-    aliases = {"commands", "help"}
+    aliases = {"commands"}
 })
 
 CommandRegistry:addCommand("args", function(playerpower, args)
